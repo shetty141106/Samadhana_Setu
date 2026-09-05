@@ -8,5 +8,5 @@ public class Department {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY) private Long id;
     @Column(nullable=false) private String name;
     private String code;
-    @ManyToOne @JoinColumn(name="university_id", nullable=false) private University university;
+    @ManyToOne(fetch=FetchType.LAZY) @JoinColumn(name="university_id", nullable=false) private University university;
 }
