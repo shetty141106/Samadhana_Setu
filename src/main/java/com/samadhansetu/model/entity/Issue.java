@@ -14,6 +14,7 @@ public class Issue {
     private String location;
     private String latitude;
     private String longitude;
+    private String category;
     @Enumerated(EnumType.STRING) private IssueStatus status;
     @Enumerated(EnumType.STRING) private IssuePriority priority;
     @ManyToOne private Citizen reportedBy;
