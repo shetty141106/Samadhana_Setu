@@ -2,7 +2,7 @@
 
 ## Current Status
 
-**Phases 1–9 have now been implemented directly on `main`.** The backend currently covers foundation, authentication, citizen issue management, AI processing, university collaboration, project/team lifecycle, industry/CSR sponsorship, dashboard analytics, and notifications.
+**Phases 1–10 have now been implemented directly on `main`.** The backend currently covers foundation, authentication, citizen issue management, AI processing, university collaboration, project/team lifecycle, industry/CSR sponsorship, dashboard analytics, notifications, and security hardening.
 
 Implementation is aligned with `README folder/PROJECT_CONTEXT.md` and `README folder/samadhansetu_backend_context.md`. A full Maven build and runtime end-to-end test still needs to be run in a local/CI environment before calling the backend production-ready.
 
@@ -124,17 +124,22 @@ Implementation is aligned with `README folder/PROJECT_CONTEXT.md` and `README fo
 - [x] Mark notification as read
 - [x] Delete notifications
 
+### Phase 10 — Security Hardening ✅
+- [x] Role-based authorization for management APIs
+- [x] Protected university/department/faculty management endpoints
+- [x] Protected AI and dashboard endpoints
+- [x] Authenticated notification endpoints
+- [x] Citizen-only issue creation authorization
+- [x] JWT invalid/expired token handling
+- [x] Security context cleanup on invalid JWT
+- [x] Global exception handling
+- [x] Safe unexpected-error responses
+- [x] Request validation for issue creation/update
+- [x] Method-security support enabled
+
 ---
 
 ## Remaining Phases
-
-### Phase 10 — Security Hardening
-- [ ] Review endpoint authorization
-- [ ] Apply role-specific permissions to management APIs
-- [ ] JWT/security edge cases
-- [ ] Request validation
-- [ ] Global exception handling and secure error responses
-- [ ] API security review
 
 ### Phase 11 — Testing
 - [ ] Service unit tests
@@ -206,7 +211,7 @@ Implementation is aligned with `README folder/PROJECT_CONTEXT.md` and `README fo
 | 7 | Industry & CSR | ✅ Completed |
 | 8 | Dashboard & Analytics | ✅ Completed |
 | 9 | Notifications | ✅ Completed |
-| 10 | Security Hardening | ⬜ Remaining |
+| 10 | Security Hardening | ✅ Completed |
 | 11 | Testing | ⬜ Remaining |
 | 12 | API Documentation | ⬜ Remaining |
 | 13 | Docker & Deployment | ⬜ Remaining |
@@ -215,6 +220,6 @@ Implementation is aligned with `README folder/PROJECT_CONTEXT.md` and `README fo
 
 ## Current Next Step
 
-**Phase 10 — Security Hardening.**
+**Phase 11 — Testing.**
 
-Before production deployment, run a complete Maven build and automated test suite, then perform end-to-end API verification for Phases 1–9.
+Before production deployment, run a complete Maven build and automated test suite, then perform end-to-end API verification for Phases 1–10.
