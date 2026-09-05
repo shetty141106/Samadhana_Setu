@@ -4,7 +4,9 @@
 
 **Phases 1–10 are implemented directly on `main`. Phase 11 testing is in progress.** The backend covers foundation, authentication, citizen issue management, the complete prototype AI/ML pipeline, university collaboration, project/team lifecycle, industry/CSR sponsorship, dashboard analytics, notifications, and security hardening.
 
-The AI/ML prototype is now implemented end-to-end according to `readme/ai_ml_context.md`: FastAPI orchestration, Gemini NLP for Hindi/English translation + summarization + canonical domain classification, rule-based prototype priority, Gemini embeddings with FAISS semantic deduplication, duplicate similarity/distance output, and Spring Boot category-based university routing. A deterministic fallback remains available when external AI credentials or the Python service are unavailable.
+The AI/ML prototype is implemented end-to-end according to `readme/ai_ml_context.md`: FastAPI orchestration, Gemini NLP for Hindi/English translation + summarization + canonical domain classification, rule-based prototype priority, Gemini embeddings with FAISS semantic deduplication, duplicate similarity/distance output, and Spring Boot category-based university routing. A deterministic fallback remains available when external AI credentials or the Python service are unavailable.
+
+**AI/ML code scope is complete for the defined prototype. Live Gemini execution is intentionally deferred until a local `GEMINI_API_KEY` is configured; the real key must never be committed to GitHub.**
 
 Automated unit tests cover core services, AI processing, university routing, notifications, JWT behavior, and FAISS deduplication. A full Maven build/runtime end-to-end verification still needs to be run in a local/CI environment before calling the entire backend production-ready.
 
@@ -39,7 +41,7 @@ Automated unit tests cover core services, AI processing, university routing, not
 - [x] Issue CRUD/workflow foundation
 - [x] Evidence media handling foundation
 
-### Phase 4 — AI Problem Processing ✅
+### Phase 4 — AI Problem Processing ✅ Prototype Scope Complete
 - [x] Standalone Python FastAPI AI microservice
 - [x] Spring Boot `AiIntegrationController` / `AiBridgeService` integration
 - [x] AI request/response DTO contract
@@ -59,6 +61,10 @@ Automated unit tests cover core services, AI processing, university routing, not
 - [x] AI category persistence on `Issue` for analytics
 - [x] Automatic AI invocation on every new citizen issue submission
 - [x] AI service tests and deterministic fallback tests
+- [x] AI CI test workflow
+- [x] `.env.example` configuration for Gemini credentials
+- [ ] Configure a real `GEMINI_API_KEY` locally for live Gemini execution
+- [ ] Live Gemini/FAISS runtime verification
 
 ### Phase 5 — University Collaboration ✅
 - [x] University entity and repository
@@ -163,6 +169,7 @@ Automated unit tests cover core services, AI processing, university routing, not
 - [ ] Integration tests
 - [ ] End-to-end citizen → AI → university → project workflow test
 - [ ] Full Maven build verification in CI/local environment
+- [ ] Live AI service runtime verification with configured Gemini credentials
 
 ---
 
@@ -218,7 +225,7 @@ Automated unit tests cover core services, AI processing, university routing, not
 | 1 | Foundation | ✅ Completed |
 | 2 | Authentication & RBAC | ✅ Completed |
 | 3 | Citizen Issue Management | ✅ Completed |
-| 4 | AI Problem Processing | ✅ Prototype complete |
+| 4 | AI Problem Processing | ✅ Prototype scope complete; live key/runtime verification pending |
 | 5 | University Collaboration | ✅ Completed |
 | 6 | Project & Team Management | ✅ Completed |
 | 7 | Industry & CSR | ✅ Completed |
@@ -235,4 +242,4 @@ Automated unit tests cover core services, AI processing, university routing, not
 
 **Phase 11 — Testing.**
 
-Continue with repository/controller/integration tests, then run the complete Maven build and automated test suite in a local/CI environment. After Phase 11 is verified, proceed to Phase 12 — API Documentation.
+Continue with repository/controller/integration tests, then run the complete Maven build and automated test suite in a local/CI environment. Live Gemini testing can be performed later by configuring `GEMINI_API_KEY`; the key must remain outside GitHub. After Phase 11 is verified, proceed to Phase 12 — API Documentation.
