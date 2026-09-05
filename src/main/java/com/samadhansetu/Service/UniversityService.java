@@ -1,14 +1,76 @@
 package com.samadhansetu.Service;
+
 import com.samadhansetu.Repository.UniversityRepository;
-import com.samadhansetu.dto.*; import com.samadhansetu.model.entity.University; import lombok.RequiredArgsConstructor; import org.springframework.stereotype.Service; import java.util.*;
-@Service @RequiredArgsConstructor public class UniversityService {
- private final UniversityRepository repo;
- public UniversityResponseDto createUniversity(UniversityRequestDto r){if(r.getCode()!=null&&repo.existsByCode(r.getCode()))throw new IllegalArgumentException("University with code already exists: "+r.getCode()); return map(repo.save(University.builder().name(r.getName()).code(r.getCode()).location(r.getLocation()).build()));}
- public UniversityResponseDto getUniversityById(Long id){return map(repo.findById(id).orElseThrow(()->new IllegalArgumentException("University not found: "+id)));}
- public List<UniversityResponseDto> getAllUniversities(){return repo.findAll().stream().map(this::map).toList();}
- public UniversityResponseDto updateUniversity(Long id,UniversityRequestDto r){University u=repo.findById(id).orElseThrow(()->new IllegalArgumentException("University not found: "+id));u.setName(r.getName());u.setCode(r.getCode());u.setLocation(r.getLocation());return map(repo.save(u));}
- public void deleteUniversity(Long id){if(!repo.existsById(id))throw new IllegalArgumentException("University not found: "+id);repo.deleteById(id);}
- public List<UniversityResponseDto> searchByName(String n){return repo.findByNameContainingIgnoreCase(n).stream().map(this::map).toList();}
- public List<UniversityResponseDto> searchByLocation(String l){return repo.findByLocationContainingIgnoreCase(l).stream().map(this::map).toList();}
- private UniversityResponseDto map(University u){return UniversityResponseDto.builder().id(u.getId()).name(u.getName()).code(u.getCode()).location(u.getLocation()).build();}
+import com.samadhansetu.dto.UniversityRequestDto;
+import com.samadhansetu.dto.UniversityResponseDto;
+import com.samadhansetu.model.entity.University;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+@Service
+@RequiredArgsConstructor
+public class UniversityService {
+
+    private final UniversityRepository universityRepository;
+
+    public UniversityResponseDto createUniversity(UniversityRequestDto request) {
+        if (request.getCode() != null && universityRepository.existsByCode(request.getCode())) {
+            throw new IllegalArgumentException("University with code already exists: " + request.getCode());
+        }
+        University university = new University();
+        university.setName(request.getName());
+        university.setCode(request.getCode());
+        university.setLocation(request.getLocation());
+        return convertToResponse(universityRepository.save(university));
+    }
+
+    public UniversityResponseDto getUniversityById(Long id) {
+        return convertToResponse(findUniversity(id));
+    }
+
+    public List<UniversityResponseDto> getAllUniversities() {
+        return universityRepository.findAll().stream().map(this::convertToResponse).toList();
+    }
+
+    public UniversityResponseDto updateUniversity(Long id, UniversityRequestDto request) {
+        University university = findUniversity(id);
+        if (request.getCode() != null && !request.getCode().equals(university.getCode())
+                && universityRepository.existsByCode(request.getCode())) {
+            throw new IllegalArgumentException("University with code already exists: " + request.getCode());
+        }
+        university.setName(request.getName());
+        university.setCode(request.getCode());
+        university.setLocation(request.getLocation());
+        return convertToResponse(universityRepository.save(university));
+    }
+
+    public void deleteUniversity(Long id) {
+        universityRepository.delete(findUniversity(id));
+    }
+
+    public List<UniversityResponseDto> searchByName(String name) {
+        return universityRepository.findByNameContainingIgnoreCase(name).stream()
+                .map(this::convertToResponse).toList();
+    }
+
+    public List<UniversityResponseDto> searchByLocation(String location) {
+        return universityRepository.findByLocationContainingIgnoreCase(location).stream()
+                .map(this::convertToResponse).toList();
+    }
+
+    private University findUniversity(Long id) {
+        return universityRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("University not found with id: " + id));
+    }
+
+    private UniversityResponseDto convertToResponse(University university) {
+        return UniversityResponseDto.builder()
+                .id(university.getId())
+                .name(university.getName())
+                .code(university.getCode())
+                .location(university.getLocation())
+                .build();
+    }
 }
