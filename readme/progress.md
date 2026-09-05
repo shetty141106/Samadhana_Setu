@@ -2,9 +2,9 @@
 
 ## Current Status
 
-**Phases 1–10 have now been implemented directly on `main`.** The backend currently covers foundation, authentication, citizen issue management, AI processing, university collaboration, project/team lifecycle, industry/CSR sponsorship, dashboard analytics, notifications, and security hardening.
+**Phases 1–10 are implemented directly on `main`. Phase 11 testing has started.** The backend currently covers foundation, authentication, citizen issue management, AI processing, university collaboration, project/team lifecycle, industry/CSR sponsorship, dashboard analytics, notifications, and security hardening.
 
-Implementation is aligned with `README folder/PROJECT_CONTEXT.md` and `README folder/samadhansetu_backend_context.md`. A full Maven build and runtime end-to-end test still needs to be run in a local/CI environment before calling the backend production-ready.
+Implementation is aligned with `README folder/PROJECT_CONTEXT.md` and `README folder/samadhansetu_backend_context.md`. Automated unit tests have now been added for core services, AI processing, university routing, notifications, and JWT behavior. A full Maven build and runtime end-to-end test still needs to be run in a local/CI environment before calling the backend production-ready.
 
 ---
 
@@ -139,22 +139,24 @@ Implementation is aligned with `README folder/PROJECT_CONTEXT.md` and `README fo
 
 ---
 
-## Remaining Phases
-
-### Phase 11 — Testing
-- [ ] Service unit tests
+## Phase 11 — Testing 🚧 In Progress
+- [x] University service unit tests
+- [x] Notification service unit tests
+- [x] AI processing unit tests
+- [x] University routing unit tests
+- [x] JWT service tests
 - [ ] Repository tests
 - [ ] Controller/API tests
-- [ ] Authentication/security tests
-- [ ] AI processing tests
-- [ ] University routing tests
 - [ ] Project/team lifecycle tests
 - [ ] Industry/CSR tests
 - [ ] Dashboard analytics tests
-- [ ] Notification tests
 - [ ] Integration tests
 - [ ] End-to-end citizen → AI → university → project workflow test
 - [ ] Full Maven build verification in CI/local environment
+
+---
+
+## Remaining Phases
 
 ### Phase 12 — API Documentation
 - [ ] OpenAPI/Swagger configuration
@@ -212,7 +214,7 @@ Implementation is aligned with `README folder/PROJECT_CONTEXT.md` and `README fo
 | 8 | Dashboard & Analytics | ✅ Completed |
 | 9 | Notifications | ✅ Completed |
 | 10 | Security Hardening | ✅ Completed |
-| 11 | Testing | ⬜ Remaining |
+| 11 | Testing | 🚧 In Progress |
 | 12 | API Documentation | ⬜ Remaining |
 | 13 | Docker & Deployment | ⬜ Remaining |
 | 14 | Frontend Integration | ⬜ Remaining |
@@ -222,4 +224,4 @@ Implementation is aligned with `README folder/PROJECT_CONTEXT.md` and `README fo
 
 **Phase 11 — Testing.**
 
-Before production deployment, run a complete Maven build and automated test suite, then perform end-to-end API verification for Phases 1–10.
+Continue with repository/controller/integration tests, then run the complete Maven build and automated test suite in a local/CI environment. After Phase 11 is verified, proceed to Phase 12 — API Documentation.
