@@ -2,9 +2,11 @@
 
 ## Current Status
 
-**Phases 1–10 are implemented directly on `main`. Phase 11 testing has started.** The backend currently covers foundation, authentication, citizen issue management, AI processing, university collaboration, project/team lifecycle, industry/CSR sponsorship, dashboard analytics, notifications, and security hardening.
+**Phases 1–10 are implemented directly on `main`. Phase 11 testing is in progress.** The backend covers foundation, authentication, citizen issue management, the complete prototype AI/ML pipeline, university collaboration, project/team lifecycle, industry/CSR sponsorship, dashboard analytics, notifications, and security hardening.
 
-Implementation is aligned with `README folder/PROJECT_CONTEXT.md` and `README folder/samadhansetu_backend_context.md`. Automated unit tests have now been added for core services, AI processing, university routing, notifications, and JWT behavior. A full Maven build and runtime end-to-end test still needs to be run in a local/CI environment before calling the backend production-ready.
+The AI/ML prototype is now implemented end-to-end according to `readme/ai_ml_context.md`: FastAPI orchestration, Gemini NLP for Hindi/English translation + summarization + canonical domain classification, rule-based prototype priority, Gemini embeddings with FAISS semantic deduplication, duplicate similarity/distance output, and Spring Boot category-based university routing. A deterministic fallback remains available when external AI credentials or the Python service are unavailable.
+
+Automated unit tests cover core services, AI processing, university routing, notifications, JWT behavior, and FAISS deduplication. A full Maven build/runtime end-to-end verification still needs to be run in a local/CI environment before calling the entire backend production-ready.
 
 ---
 
@@ -38,19 +40,25 @@ Implementation is aligned with `README folder/PROJECT_CONTEXT.md` and `README fo
 - [x] Evidence media handling foundation
 
 ### Phase 4 — AI Problem Processing ✅
-- [x] AI request/response DTOs
-- [x] `AiBridgeService`
-- [x] Optional external Python AI integration
-- [x] Rule-based fallback classifier
-- [x] Required civic problem categories
-- [x] Hindi keyword support
+- [x] Standalone Python FastAPI AI microservice
+- [x] Spring Boot `AiIntegrationController` / `AiBridgeService` integration
+- [x] AI request/response DTO contract
+- [x] Gemini NLP integration
+- [x] Hindi/English language detection
+- [x] Hindi → English translation
+- [x] 1–2 sentence issue summarization
+- [x] Exact canonical 10-domain classification
 - [x] Confidence score generation
-- [x] Summary generation
-- [x] Duplicate issue detection using text similarity
-- [x] AI processing REST endpoint
-- [x] AI source tracking
-- [x] University recommendation/routing integration
+- [x] Rule-based prototype priority/urgency scoring
+- [x] Gemini text embeddings
+- [x] FAISS vector similarity search
+- [x] Duplicate flag + similarity percentage + candidate issue id
+- [x] Optional geographic distance for duplicate matches using plain lat/long
+- [x] Spring Boot fallback duplicate matching when Python AI is unavailable
+- [x] Category-based rule routing to university/department
 - [x] AI category persistence on `Issue` for analytics
+- [x] Automatic AI invocation on every new citizen issue submission
+- [x] AI service tests and deterministic fallback tests
 
 ### Phase 5 — University Collaboration ✅
 - [x] University entity and repository
@@ -145,6 +153,8 @@ Implementation is aligned with `README folder/PROJECT_CONTEXT.md` and `README fo
 - [x] AI processing unit tests
 - [x] University routing unit tests
 - [x] JWT service tests
+- [x] FAISS semantic deduplication unit test
+- [x] Complete prototype AI fallback contract test
 - [ ] Repository tests
 - [ ] Controller/API tests
 - [ ] Project/team lifecycle tests
@@ -176,6 +186,7 @@ Implementation is aligned with `README folder/PROJECT_CONTEXT.md` and `README fo
 - [ ] Database deployment configuration
 - [ ] Environment variables/secrets
 - [ ] Backend cloud deployment
+- [ ] AI service cloud deployment
 - [ ] Production API verification
 
 ### Phase 14 — Frontend Integration
@@ -207,7 +218,7 @@ Implementation is aligned with `README folder/PROJECT_CONTEXT.md` and `README fo
 | 1 | Foundation | ✅ Completed |
 | 2 | Authentication & RBAC | ✅ Completed |
 | 3 | Citizen Issue Management | ✅ Completed |
-| 4 | AI Problem Processing | ✅ Completed |
+| 4 | AI Problem Processing | ✅ Prototype complete |
 | 5 | University Collaboration | ✅ Completed |
 | 6 | Project & Team Management | ✅ Completed |
 | 7 | Industry & CSR | ✅ Completed |
