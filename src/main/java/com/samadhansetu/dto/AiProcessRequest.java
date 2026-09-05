@@ -2,6 +2,9 @@ package com.samadhansetu.dto;
 
 import lombok.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -14,4 +17,6 @@ public class AiProcessRequest {
     private String location;
     private Double latitude;
     private Double longitude;
+    @Builder.Default
+    private List<AiIssueCandidate> candidates = new ArrayList<>();
 }
