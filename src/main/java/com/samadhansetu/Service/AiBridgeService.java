@@ -1,6 +1,8 @@
 package com.samadhansetu.Service;
 
 import com.samadhansetu.Repository.IssueRepository;
+import com.samadhansetu.dto.AiDuplicateMatch;
+import com.samadhansetu.dto.AiIssueCandidate;
 import com.samadhansetu.dto.AiProcessRequest;
 import com.samadhansetu.dto.AiProcessResponse;
 import com.samadhansetu.dto.UniversityRoutingResponseDto;
@@ -13,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -27,9 +30,17 @@ public class AiBridgeService {
     public AiProcessResponse processIssue(Long issueId) {
         Issue issue = issueRepository.findById(issueId)
                 .orElseThrow(() -> new IllegalArgumentException("Issue not found: " + issueId));
+
         AiProcessRequest request = AiProcessRequest.builder()
-                .issueId(issueId).title(issue.getTitle()).description(issue.getDescription())
-                .location(issue.getLocation()).build();
+                .issueId(issueId)
+                .title(issue.getTitle())
+                .description(issue.getDescription())
+                .location(issue.getLocation())
+                .latitude(parseCoordinate(issue.getLatitude()))
+                .longitude(parseCoordinate(issue.getLongitude()))
+                .candidates(buildCandidates(issueId))
+                .build();
+
         AiProcessResponse response = process(request);
         applyResult(issue, response);
         return response;
@@ -38,19 +49,48 @@ public class AiBridgeService {
     public AiProcessResponse process(AiProcessRequest request) {
         try {
             AiProcessResponse response = restClient.post().uri(aiServiceUrl)
-                    .contentType(MediaType.APPLICATION_JSON).body(request)
-                    .retrieve().body(AiProcessResponse.class);
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(request)
+                    .retrieve()
+                    .body(AiProcessResponse.class);
             if (response != null) {
-                response.setSource("PYTHON_AI");
+                if (response.getSource() == null || response.getSource().isBlank()) {
+                    response.setSource("PYTHON_AI");
+                }
                 enrichUniversityRecommendation(response);
                 return response;
             }
         } catch (Exception ignored) {
-            // Fall back to local deterministic prototype processing.
+            // Deterministic fallback keeps the prototype operational when the
+            // optional Python/Gemini infrastructure is unavailable.
         }
+
         AiProcessResponse response = fallback(request);
         enrichUniversityRecommendation(response);
         return response;
+    }
+
+    private List<AiIssueCandidate> buildCandidates(Long currentIssueId) {
+        return issueRepository.findAll().stream()
+                .filter(issue -> !Objects.equals(issue.getId(), currentIssueId))
+                .map(issue -> AiIssueCandidate.builder()
+                        .issueId(issue.getId())
+                        .title(issue.getTitle())
+                        .description(issue.getDescription())
+                        .location(issue.getLocation())
+                        .latitude(parseCoordinate(issue.getLatitude()))
+                        .longitude(parseCoordinate(issue.getLongitude()))
+                        .build())
+                .limit(500)
+                .collect(Collectors.toList());
+    }
+
+    private Double parseCoordinate(String value) {
+        try {
+            return value == null || value.isBlank() ? null : Double.parseDouble(value);
+        } catch (NumberFormatException ignored) {
+            return null;
+        }
     }
 
     private void applyResult(Issue issue, AiProcessResponse response) {
@@ -63,7 +103,7 @@ public class AiBridgeService {
     }
 
     private void enrichUniversityRecommendation(AiProcessResponse response) {
-        if (response.getCategoryTag() == null) return;
+        if (response == null || response.getCategoryTag() == null) return;
         List<UniversityRoutingResponseDto> matches = universityRoutingService.route(response.getCategoryTag());
         if (!matches.isEmpty()) response.setMatchedUniversityId(matches.get(0).getUniversityId());
     }
@@ -88,20 +128,78 @@ public class AiBridgeService {
         List<String> keywords = new ArrayList<>();
         int best = 0;
         for (var e : rules.entrySet()) {
-            int hits = 0; List<String> found = new ArrayList<>();
-            for (String k : e.getValue()) if (text.contains(k.toLowerCase(Locale.ROOT))) { hits++; found.add(k); }
-            if (hits > best) { best = hits; category = e.getKey(); keywords = found; confidence = Math.min(.95, .60 + .12 * hits); }
+            int hits = 0;
+            List<String> found = new ArrayList<>();
+            for (String k : e.getValue()) {
+                if (text.contains(k.toLowerCase(Locale.ROOT))) {
+                    hits++;
+                    found.add(k);
+                }
+            }
+            if (hits > best) {
+                best = hits;
+                category = e.getKey();
+                keywords = found;
+                confidence = Math.min(.95, .60 + .12 * hits);
+            }
         }
+
         String priority = containsAny(text, "death", "accident", "emergency", "मौत", "दुर्घटना") ? "CRITICAL" :
                 containsAny(text, "drinking water", "three months", "hospital", "no electricity", "danger") ? "HIGH" :
                 containsAny(text, "damaged", "delay", "broken", "blocked", "खराब", "देरी") ? "MEDIUM" : "LOW";
+
+        AiDuplicateMatch duplicate = localDuplicate(r);
         return AiProcessResponse.builder()
-                .issueId(r.getIssueId()).language(text.matches(".*[\\u0900-\\u097F].*") ? "hi" : "en")
-                .translatedDescription(r.getDescription()).summary(makeSummary(r.getDescription()))
-                .categoryTag(category).confidence(confidence).keywords(keywords.toArray(String[]::new))
-                .priority(priority).priorityScore(switch (priority) { case "CRITICAL" -> 92; case "HIGH" -> 78; case "MEDIUM" -> 60; default -> 35; })
+                .issueId(r.getIssueId())
+                .language(text.matches(".*[\\u0900-\\u097F].*") ? "hi" : "en")
+                .translatedDescription(r.getDescription())
+                .summary(makeSummary(r.getDescription()))
+                .categoryTag(category)
+                .confidence(confidence)
+                .keywords(keywords.toArray(String[]::new))
+                .priority(priority)
+                .priorityScore(switch (priority) { case "CRITICAL" -> 92; case "HIGH" -> 78; case "MEDIUM" -> 60; default -> 35; })
                 .priorityReasons(new String[]{"deterministic prototype fallback"})
-                .source("RULE_BASED_FALLBACK").build();
+                .duplicateMatch(duplicate)
+                .source("RULE_BASED_FALLBACK")
+                .build();
+    }
+
+    private AiDuplicateMatch localDuplicate(AiProcessRequest request) {
+        String current = normalize((request.getTitle() + " " + request.getDescription()));
+        if (current.isBlank() || request.getCandidates() == null) return AiDuplicateMatch.builder().build();
+        Set<String> currentTokens = tokens(current);
+        AiDuplicateMatch best = AiDuplicateMatch.builder().build();
+        double bestScore = 0.0;
+        for (AiIssueCandidate candidate : request.getCandidates()) {
+            Set<String> candidateTokens = tokens(normalize(candidate.getTitle() + " " + candidate.getDescription()));
+            if (candidateTokens.isEmpty()) continue;
+            Set<String> intersection = new HashSet<>(currentTokens);
+            intersection.retainAll(candidateTokens);
+            Set<String> union = new HashSet<>(currentTokens);
+            union.addAll(candidateTokens);
+            double score = union.isEmpty() ? 0.0 : (double) intersection.size() / union.size();
+            if (score > bestScore) {
+                bestScore = score;
+                best = AiDuplicateMatch.builder()
+                        .found(score >= 0.55)
+                        .similarityPercentage(score * 100)
+                        .candidateIssueId(candidate.getIssueId())
+                        .distanceKm(null)
+                        .build();
+            }
+        }
+        return best;
+    }
+
+    private Set<String> tokens(String value) {
+        return Arrays.stream(value.toLowerCase(Locale.ROOT).split("[^\\p{L}\\p{N}]+"))
+                .filter(token -> token.length() > 2)
+                .collect(Collectors.toSet());
+    }
+
+    private String normalize(String value) {
+        return value == null ? "" : value.replaceAll("\\s+", " ").trim();
     }
 
     private boolean containsAny(String text, String... values) {
