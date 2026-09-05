@@ -2,7 +2,7 @@
 
 ## Current Status
 
-**Phases 1–8 have now been implemented directly on `main`.** The backend currently covers foundation, authentication, citizen issue management, AI processing, university collaboration, project/team lifecycle, industry/CSR sponsorship, and dashboard analytics.
+**Phases 1–9 have now been implemented directly on `main`.** The backend currently covers foundation, authentication, citizen issue management, AI processing, university collaboration, project/team lifecycle, industry/CSR sponsorship, dashboard analytics, and notifications.
 
 Implementation is aligned with `README folder/PROJECT_CONTEXT.md` and `README folder/samadhansetu_backend_context.md`. A full Maven build and runtime end-to-end test still needs to be run in a local/CI environment before calling the backend production-ready.
 
@@ -81,8 +81,8 @@ Implementation is aligned with `README folder/PROJECT_CONTEXT.md` and `README fo
 - [x] Task creation/listing/update/deletion
 - [x] Task assignment to users
 - [x] Task-to-milestone relationship
-- [x] Kanban-compatible task statuses (`TODO`, `IN_PROGRESS`, `REVIEW`, `DONE`)
-- [x] Project progress counters for team, milestones and tasks
+- [x] Kanban-compatible task statuses
+- [x] Project progress counters
 - [x] Project REST APIs
 
 ### Phase 7 — Industry & CSR ✅
@@ -112,16 +112,21 @@ Implementation is aligned with `README folder/PROJECT_CONTEXT.md` and `README fo
 - [x] Sponsorship count and total funding analytics
 - [x] Dashboard REST endpoints
 
+### Phase 9 — Notifications & Communication ✅
+- [x] Notification repository
+- [x] Notification service
+- [x] Notification request/response DTOs
+- [x] Notification REST controller
+- [x] Create notifications
+- [x] Get all notifications for a user
+- [x] Get unread notifications
+- [x] Unread count
+- [x] Mark notification as read
+- [x] Delete notifications
+
 ---
 
 ## Remaining Phases
-
-### Phase 9 — Notifications & Communication
-- [ ] Complete notification service
-- [ ] Notification REST APIs
-- [ ] User notification management
-- [ ] Read/unread handling
-- [ ] Workflow-event notification triggers
 
 ### Phase 10 — Security Hardening
 - [ ] Review endpoint authorization
@@ -141,6 +146,7 @@ Implementation is aligned with `README folder/PROJECT_CONTEXT.md` and `README fo
 - [ ] Project/team lifecycle tests
 - [ ] Industry/CSR tests
 - [ ] Dashboard analytics tests
+- [ ] Notification tests
 - [ ] Integration tests
 - [ ] End-to-end citizen → AI → university → project workflow test
 - [ ] Full Maven build verification in CI/local environment
@@ -199,7 +205,7 @@ Implementation is aligned with `README folder/PROJECT_CONTEXT.md` and `README fo
 | 6 | Project & Team Management | ✅ Completed |
 | 7 | Industry & CSR | ✅ Completed |
 | 8 | Dashboard & Analytics | ✅ Completed |
-| 9 | Notifications | ⬜ Remaining |
+| 9 | Notifications | ✅ Completed |
 | 10 | Security Hardening | ⬜ Remaining |
 | 11 | Testing | ⬜ Remaining |
 | 12 | API Documentation | ⬜ Remaining |
@@ -209,6 +215,6 @@ Implementation is aligned with `README folder/PROJECT_CONTEXT.md` and `README fo
 
 ## Current Next Step
 
-**Phase 9 — Notifications & Communication.**
+**Phase 10 — Security Hardening.**
 
-Before production deployment, run a complete Maven build and automated test suite, then perform end-to-end API verification for Phases 1–8.
+Before production deployment, run a complete Maven build and automated test suite, then perform end-to-end API verification for Phases 1–9.
