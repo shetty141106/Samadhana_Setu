@@ -2,6 +2,15 @@ from typing import Optional
 from pydantic import BaseModel, Field
 
 
+class IssueCandidate(BaseModel):
+    issue_id: int
+    title: str = ""
+    description: str = ""
+    location: Optional[str] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+
+
 class AnalyzeRequest(BaseModel):
     issue_id: Optional[int] = None
     title: str = Field(min_length=1)
@@ -9,6 +18,7 @@ class AnalyzeRequest(BaseModel):
     latitude: Optional[float] = None
     longitude: Optional[float] = None
     location: Optional[str] = None
+    candidates: list[IssueCandidate] = Field(default_factory=list)
 
 
 class DuplicateMatch(BaseModel):
@@ -20,7 +30,7 @@ class DuplicateMatch(BaseModel):
 
 class RoutingHints(BaseModel):
     category: str
-    discipline_hints: list[str] = []
+    discipline_hints: list[str] = Field(default_factory=list)
 
 
 class AnalyzeResponse(BaseModel):
