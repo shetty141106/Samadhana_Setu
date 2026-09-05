@@ -11,13 +11,12 @@ class PrototypeAI:
         self.gemini = GeminiService()
         self.deduplicator = FaissDeduplicator()
 
-    def analyze(self, request: AnalyzeRequest) -> AnalyzeResponse:
+    def analyze(self, request: AnalyzeRequest) -> tuple[AnalyzeResponse, str]:
         raw = normalize(f"{request.title}. {request.description}")
 
         try:
             nlp = self.gemini.analyze(request.title, request.description)
         except Exception:
-            # Deterministic fallback keeps the prototype usable without credentials.
             category, confidence, keywords = classify(raw)
             nlp = {
                 "language": detect_language(raw),
@@ -39,7 +38,7 @@ class PrototypeAI:
         if request.candidates:
             try:
                 match = self.deduplicator.find_match(
-                    f"{nlp['translated_description']}",
+                    nlp["translated_description"],
                     [candidate.model_dump() for candidate in request.candidates],
                     request.latitude,
                     request.longitude,
@@ -48,12 +47,24 @@ class PrototypeAI:
                 if duplicate.found:
                     source = f"{source}+FAISS"
             except Exception:
-                # If vector infrastructure is unavailable, Spring Boot's existing
-                # deterministic fallback remains the safety net.
+                # Spring Boot retains its deterministic fallback if vector services
+                # are unavailable, so the citizen flow remains operational.
                 pass
 
         category = nlp["category_tag"]
-        return AnalyzeResponse(
+        discipline_hints = {
+            "Water Resources": ["Civil Engineering", "Environmental Engineering"],
+            "Education": ["Education", "Computer Science"],
+            "Agriculture": ["Agricultural Engineering", "Agriculture"],
+            "Healthcare": ["Medicine", "Nursing", "Pharmacy"],
+            "Environment": ["Environmental Engineering", "Environmental Science"],
+            "Energy": ["Electrical Engineering", "Mechanical Engineering"],
+            "Urban Development": ["Civil Engineering", "Architecture", "Urban Planning"],
+            "Accessibility": ["Civil Engineering", "Computer Science", "Mechanical Engineering"],
+            "Public Administration": ["Public Administration", "Management", "Social Science"],
+            "Rural Livelihoods": ["Rural Development", "Economics", "Agriculture"],
+        }
+        response = AnalyzeResponse(
             issue_id=request.issue_id,
             language=nlp["language"],
             translated_description=nlp["translated_description"],
@@ -65,16 +76,6 @@ class PrototypeAI:
             priority_score=priority_score,
             priority_reasons=reasons,
             duplicate_match=duplicate,
-            routing=RoutingHints(category=category, discipline_hints={
-                "Water Resources": ["Civil Engineering", "Environmental Engineering"],
-                "Education": ["Education", "Computer Science"],
-                "Agriculture": ["Agricultural Engineering", "Agriculture"],
-                "Healthcare": ["Medicine", "Nursing", "Pharmacy"],
-                "Environment": ["Environmental Engineering", "Environmental Science"],
-                "Energy": ["Electrical Engineering", "Mechanical Engineering"],
-                "Urban Development": ["Civil Engineering", "Architecture", "Urban Planning"],
-                "Accessibility": ["Civil Engineering", "Computer Science", "Mechanical Engineering"],
-                "Public Administration": ["Public Administration", "Management", "Social Science"],
-                "Rural Livelihoods": ["Rural Development", "Economics", "Agriculture"],
-            }.get(category, [category])),
-        ), source
+            routing=RoutingHints(category=category, discipline_hints=discipline_hints.get(category, [category])),
+        )
+        return response, source
