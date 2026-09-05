@@ -47,3 +47,4 @@ class AnalyzeResponse(BaseModel):
     duplicate_match: DuplicateMatch
     matched_university_id: Optional[int] = None
     routing: RoutingHints
+    source: Optional[str] = None
