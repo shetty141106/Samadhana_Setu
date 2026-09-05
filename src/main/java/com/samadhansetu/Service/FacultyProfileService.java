@@ -45,11 +45,11 @@ public class FacultyProfileService {
     }
 
     public List<FacultyProfileResponseDto> byUniversity(Long id) {
-        return profileRepository.findByFacultyUniversityId(id).stream().map(this::map).toList();
+        return profileRepository.findByFaculty_University_Id(id).stream().map(this::map).toList();
     }
 
     public List<FacultyProfileResponseDto> byDepartment(Long id) {
-        return profileRepository.findByFacultyDepartmentId(id).stream().map(this::map).toList();
+        return profileRepository.findByFaculty_Department_Id(id).stream().map(this::map).toList();
     }
 
     public List<FacultyProfileResponseDto> searchSpecialization(String specialization) {
