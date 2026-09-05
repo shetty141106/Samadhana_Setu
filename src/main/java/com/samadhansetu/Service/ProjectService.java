@@ -1,4 +1,31 @@
 package com.samadhansetu.Service;
 
+import com.samadhansetu.Repository.*;
+import com.samadhansetu.dto.*;
+import com.samadhansetu.model.entity.*;
+import com.samadhansetu.model.enums.*;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import java.util.*;
+
+@Service @RequiredArgsConstructor
 public class ProjectService {
+    private final ProjectRepository projects; private final UniversityRepository universities; private final TeamMemberRepository members; private final MilestoneRepository milestones; private final TaskRepository tasks; private final UserRepository users;
+    public ProjectResponseDto create(ProjectRequestDto r){Project p=Project.builder().title(r.getTitle()).description(r.getDescription()).status(r.getStatus()==null?ProjectStatus.PLANNED:r.getStatus()).build();if(r.getUniversityId()!=null)p.setUniversity(universities.findById(r.getUniversityId()).orElseThrow(()->new IllegalArgumentException("University not found: "+r.getUniversityId())));return map(projects.save(p));}
+    public ProjectResponseDto get(Long id){return map(find(id));} public List<ProjectResponseDto> all(){return projects.findAll().stream().map(this::map).toList();} public List<ProjectResponseDto> byUniversity(Long id){return projects.findByUniversityId(id).stream().map(this::map).toList();} public List<ProjectResponseDto> byStatus(ProjectStatus s){return projects.findByStatus(s).stream().map(this::map).toList();}
+    public ProjectResponseDto update(Long id,ProjectRequestDto r){Project p=find(id);p.setTitle(r.getTitle());p.setDescription(r.getDescription());if(r.getStatus()!=null)p.setStatus(r.getStatus());if(r.getUniversityId()!=null)p.setUniversity(universities.findById(r.getUniversityId()).orElseThrow(()->new IllegalArgumentException("University not found: "+r.getUniversityId())));return map(projects.save(p));}
+    public void delete(Long id){projects.delete(find(id));}
+    public TeamMemberResponseDto addMember(Long projectId,TeamMemberRequestDto r){Project p=find(projectId);User u=users.findById(r.getUserId()).orElseThrow(()->new IllegalArgumentException("User not found: "+r.getUserId()));if(members.existsByProjectIdAndUserId(projectId,r.getUserId()))throw new IllegalArgumentException("User already belongs to project");return memberMap(members.save(TeamMember.builder().project(p).user(u).memberRole(r.getMemberRole()).build()));}
+    public List<TeamMemberResponseDto> members(Long id){return members.findByProjectId(id).stream().map(this::memberMap).toList();} public void removeMember(Long id){if(!members.existsById(id))throw new IllegalArgumentException("Team member not found: "+id);members.deleteById(id);}
+    public MilestoneResponseDto addMilestone(Long projectId,MilestoneRequestDto r){Milestone m=Milestone.builder().project(find(projectId)).title(r.getTitle()).startDate(r.getStartDate()).endDate(r.getEndDate()).status(r.getStatus()==null?MilestoneStatus.PENDING:r.getStatus()).build();return milestoneMap(milestones.save(m));}
+    public List<MilestoneResponseDto> milestones(Long id){return milestones.findByProjectId(id).stream().map(this::milestoneMap).toList();}
+    public TaskResponseDto addTask(Long projectId,TaskRequestDto r){Project p=find(projectId);Task t=Task.builder().project(p).title(r.getTitle()).description(r.getDescription()).dueDate(r.getDueDate()).status(r.getStatus()==null?TaskStatus.TODO:r.getStatus()).build();if(r.getMilestoneId()!=null)t.setMilestone(milestones.findById(r.getMilestoneId()).orElseThrow(()->new IllegalArgumentException("Milestone not found: "+r.getMilestoneId())));if(r.getAssignedToId()!=null)t.setAssignedTo(users.findById(r.getAssignedToId()).orElseThrow(()->new IllegalArgumentException("User not found: "+r.getAssignedToId())));return taskMap(tasks.save(t));}
+    public List<TaskResponseDto> tasks(Long id){return tasks.findByProjectId(id).stream().map(this::taskMap).toList();}
+    public TaskResponseDto updateTask(Long id,TaskRequestDto r){Task t=tasks.findById(id).orElseThrow(()->new IllegalArgumentException("Task not found: "+id));t.setTitle(r.getTitle());t.setDescription(r.getDescription());t.setDueDate(r.getDueDate());if(r.getStatus()!=null)t.setStatus(r.getStatus());t.setMilestone(r.getMilestoneId()==null?null:milestones.findById(r.getMilestoneId()).orElseThrow(()->new IllegalArgumentException("Milestone not found: "+r.getMilestoneId())));t.setAssignedTo(r.getAssignedToId()==null?null:users.findById(r.getAssignedToId()).orElseThrow(()->new IllegalArgumentException("User not found: "+r.getAssignedToId())));return taskMap(tasks.save(t));}
+    public void deleteTask(Long id){if(!tasks.existsById(id))throw new IllegalArgumentException("Task not found: "+id);tasks.deleteById(id);}
+    private Project find(Long id){return projects.findById(id).orElseThrow(()->new IllegalArgumentException("Project not found: "+id));}
+    private ProjectResponseDto map(Project p){return ProjectResponseDto.builder().id(p.getId()).title(p.getTitle()).description(p.getDescription()).status(p.getStatus()).universityId(p.getUniversity()==null?null:p.getUniversity().getId()).universityName(p.getUniversity()==null?null:p.getUniversity().getName()).teamSize(members.findByProjectId(p.getId()).size()).milestoneCount(milestones.findByProjectId(p.getId()).size()).taskCount(tasks.findByProjectId(p.getId()).size()).build();}
+    private TeamMemberResponseDto memberMap(TeamMember m){return TeamMemberResponseDto.builder().id(m.getId()).projectId(m.getProject().getId()).userId(m.getUser().getId()).userName(m.getUser().getName()).memberRole(m.getMemberRole()).build();}
+    private MilestoneResponseDto milestoneMap(Milestone m){return MilestoneResponseDto.builder().id(m.getId()).projectId(m.getProject().getId()).title(m.getTitle()).startDate(m.getStartDate()).endDate(m.getEndDate()).status(m.getStatus()).taskCount(tasks.findByMilestoneId(m.getId()).size()).build();}
+    private TaskResponseDto taskMap(Task t){return TaskResponseDto.builder().id(t.getId()).projectId(t.getProject().getId()).milestoneId(t.getMilestone()==null?null:t.getMilestone().getId()).assignedToId(t.getAssignedTo()==null?null:t.getAssignedTo().getId()).assignedToName(t.getAssignedTo()==null?null:t.getAssignedTo().getName()).title(t.getTitle()).description(t.getDescription()).dueDate(t.getDueDate()).status(t.getStatus()).build();}
 }
