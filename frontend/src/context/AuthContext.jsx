@@ -3,7 +3,7 @@ import { ROLES, ROLE_CONFIGS } from '../utils/constants';
 import { MOCK_USERS, MOCK_NOTIFICATIONS } from '../data/mockData';
 import { authApi } from '../api/auth.api';
 import { notificationApi } from '../api/notification.api';
-import { clearAuthToken } from '../api/client';
+import { clearAuthToken, setAuthToken } from '../api/client';
 
 const AuthContext = createContext(null);
 const LIVE_AUTH = import.meta.env.VITE_ENABLE_LIVE_API === 'true';
@@ -44,8 +44,17 @@ export const AuthProvider = ({ children }) => {
 
   const register = async payload => {
     setAuthLoading(true); setAuthError('');
-    try { if (!LIVE_AUTH) return null; const response = await authApi.register(payload); if (response?.token) { const nextSession = { ...response, role: normalizeRole(response.role) }; localStorage.setItem(SESSION_KEY, JSON.stringify(nextSession)); setSession(nextSession); } return response; }
-    catch (error) { setAuthError(error.message || 'Unable to register.'); throw error; }
+    try {
+      if (!LIVE_AUTH) return null;
+      const response = await authApi.register(payload);
+      if (response?.token) {
+        const nextSession = { ...response, role: normalizeRole(response.role) };
+        setAuthToken(response.token);
+        localStorage.setItem(SESSION_KEY, JSON.stringify(nextSession));
+        setSession(nextSession);
+      }
+      return response;
+    } catch (error) { setAuthError(error.message || 'Unable to register.'); throw error; }
     finally { setAuthLoading(false); }
   };
 
