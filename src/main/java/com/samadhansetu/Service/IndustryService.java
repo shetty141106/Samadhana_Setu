@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
 
 @Service @RequiredArgsConstructor
@@ -39,12 +40,23 @@ public class IndustryService {
 
     public void delete(Long id) { organizations.delete(findOwnedOrg(id)); }
 
+    @Transactional
     public SponsorshipResponseDto sponsor(SponsorshipRequestDto r) {
+        if (r == null || r.getOrganizationId() == null) throw new IllegalArgumentException("Industry organization is required");
+        if (r.getProjectId() == null) throw new IllegalArgumentException("Project is required");
+        if (r.getAmount() == null || r.getAmount().signum() <= 0) throw new IllegalArgumentException("Sponsorship amount must be greater than zero");
+
         Organization o = findOrg(r.getOrganizationId());
         if (!isAdmin() && !ownsOrganization(o.getId())) throw new IllegalArgumentException("You can only sponsor using your own industry organization");
         Project p = projects.findById(r.getProjectId()).orElseThrow(() -> new IllegalArgumentException("Project not found: " + r.getProjectId()));
-        if (r.getAmount() == null || r.getAmount().signum() <= 0) throw new IllegalArgumentException("Sponsorship amount must be greater than zero");
-        return smap(sponsorships.save(Sponsorship.builder().organization(o).project(p).amount(r.getAmount()).status(r.getStatus() == null ? "PENDING" : r.getStatus()).build()));
+
+        Sponsorship saved = sponsorships.save(Sponsorship.builder()
+                .organization(o)
+                .project(p)
+                .amount(r.getAmount())
+                .status(r.getStatus() == null ? "PENDING" : r.getStatus())
+                .build());
+        return smap(saved);
     }
 
     public SponsorshipResponseDto getSponsorship(Long id) {
@@ -72,6 +84,7 @@ public class IndustryService {
         return sponsorships.findByProjectId(id).stream().filter(s -> s.getOrganization() != null && organizationId.equals(s.getOrganization().getId())).map(this::smap).toList();
     }
 
+    @Transactional
     public SponsorshipResponseDto updateSponsorship(Long id, SponsorshipRequestDto r) {
         Sponsorship s = sponsorships.findById(id).orElseThrow(() -> new IllegalArgumentException("Sponsorship not found: " + id));
         assertSponsorshipAccess(s);
