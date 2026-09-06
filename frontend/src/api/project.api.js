@@ -26,23 +26,14 @@ export const deleteTask = (taskId) => apiClient.delete(`/api/projects/tasks/${ta
 export const listMilestones = (projectId) => apiClient.get(`/api/projects/${projectId}/milestones`);
 export const createMilestone = (projectId, payload) => apiClient.post(`/api/projects/${projectId}/milestones`, payload);
 
-export const projectApi = {
-  listProjects,
-  getProject,
-  listProjectsByUniversity,
-  listProjectsByStatus,
-  createProject,
-  updateProject,
-  deleteProject,
-  listTeamMembers,
-  addTeamMember,
-  removeTeamMember,
-  listTasks,
-  createTask,
-  updateTask,
-  deleteTask,
-  listMilestones,
-  createMilestone,
-  mapTaskToUiModel,
-  mapTaskToApiModel
+export const hydrateProject = async (project) => {
+  const [milestones, tasks] = await Promise.all([listMilestones(project.id), listTasks(project.id)]);
+  return { ...project, milestones, kanbanTasks: tasks, tasks };
 };
+
+export const listProjectsWithDetails = async () => {
+  const projects = await listProjects();
+  return Promise.all(projects.map(hydrateProject));
+};
+
+export const projectApi = { listProjects, getProject, listProjectsByUniversity, listProjectsByStatus, createProject, updateProject, deleteProject, listTeamMembers, addTeamMember, removeTeamMember, listTasks, createTask, updateTask, deleteTask, listMilestones, createMilestone, hydrateProject, listProjectsWithDetails, mapTaskToUiModel, mapTaskToApiModel };
