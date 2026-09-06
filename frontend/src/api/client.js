@@ -60,7 +60,10 @@ export const apiRequest = async (path, options = {}) => {
 
   const data = await parseResponse(response);
   if (!response.ok) {
-    if (response.status === 401) clearAuthToken();
+    if (response.status === 401) {
+      clearAuthToken();
+      window.dispatchEvent(new Event('samadhansetu-auth-invalidated'));
+    }
     const message = data?.message || data?.error || (typeof data === 'string' ? data : `Request failed with status ${response.status}`);
     throw new ApiError(message, response.status, data);
   }
