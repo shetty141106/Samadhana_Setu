@@ -2,6 +2,8 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { INITIAL_ISSUES, INITIAL_PROJECTS, PLATFORM_STATS, MOCK_CSR_SPONSORS } from '../data/mockData';
 import { useAuth } from './AuthContext';
 import { issueApi } from '../api/issue.api';
+import { universityApi } from '../api/university.api';
+import { projectApi } from '../api/project.api';
 
 const DataContext = createContext(null);
 const LIVE_API = import.meta.env.VITE_ENABLE_LIVE_API === 'true';
@@ -10,6 +12,7 @@ export const DataProvider = ({ children }) => {
   const { currentUser, isAuthenticated } = useAuth();
   const [issues, setIssues] = useState(INITIAL_ISSUES);
   const [projects, setProjects] = useState(INITIAL_PROJECTS);
+  const [universities, setUniversities] = useState([]);
   const [sponsors, setSponsors] = useState(MOCK_CSR_SPONSORS);
   const [stats, setStats] = useState(PLATFORM_STATS);
   const [dataLoading, setDataLoading] = useState(false);
@@ -18,40 +21,42 @@ export const DataProvider = ({ children }) => {
   useEffect(() => {
     if (!LIVE_API || !isAuthenticated) return;
     let cancelled = false;
-    const loadIssues = async () => {
-      setDataLoading(true);
-      setDataError('');
+    const loadLiveData = async () => {
+      setDataLoading(true); setDataError('');
       try {
-        const loaded = currentUser?.id && currentUser.role === 'citizen'
-          ? await issueApi.getCitizenIssues(currentUser.id)
-          : await issueApi.listIssues();
-        if (!cancelled) setIssues(loaded);
+        const issuePromise = currentUser?.id && currentUser.role === 'citizen' ? issueApi.getCitizenIssues(currentUser.id) : issueApi.listIssues();
+        const [loadedIssues, loadedProjects, loadedUniversities] = await Promise.all([
+          issuePromise,
+          projectApi.listProjectsWithDetails(),
+          universityApi.listUniversities()
+        ]);
+        if (!cancelled) {
+          setIssues(loadedIssues);
+          setProjects(loadedProjects);
+          setUniversities(loadedUniversities);
+        }
       } catch (error) {
-        if (!cancelled) setDataError(error.message || 'Unable to load issues.');
+        if (!cancelled) setDataError(error.message || 'Unable to load live platform data.');
       } finally {
         if (!cancelled) setDataLoading(false);
       }
     };
-    loadIssues();
+    loadLiveData();
     return () => { cancelled = true; };
   }, [isAuthenticated, currentUser?.id, currentUser?.role]);
+
+  const routeIssueToUniversities = async (category) => {
+    if (!LIVE_API) return [];
+    return universityApi.routeIssueToUniversities(category);
+  };
 
   const addIssue = async (newIssue) => {
     if (LIVE_API && isAuthenticated) {
       const created = await issueApi.createIssue(newIssue);
-      setIssues(prev => [
-        { ...created, category: newIssue.category, categoryLabel: newIssue.categoryLabel, district: newIssue.district, submittedBy: `${currentUser.name} (Citizen)`, images: newIssue.images || [] },
-        ...prev
-      ]);
+      setIssues(prev => [{ ...created, category: newIssue.category, categoryLabel: newIssue.categoryLabel, district: newIssue.district, submittedBy: `${currentUser.name} (Citizen)`, images: newIssue.images || [] }, ...prev]);
       return created;
     }
-
-    const issueWithId = {
-      id: `JH-ISSUE-2025-${String(issues.length + 120).padStart(3, '0')}`,
-      reportedDate: new Date().toISOString().split('T')[0], status: 'SUBMITTED', upvotes: 1,
-      timeline: [{ status: 'SUBMITTED', date: new Date().toISOString().split('T')[0], remark: 'Grievance registered with evidence by citizen' }],
-      ...newIssue
-    };
+    const issueWithId = { id: `JH-ISSUE-2025-${String(issues.length + 120).padStart(3, '0')}`, reportedDate: new Date().toISOString().split('T')[0], status: 'SUBMITTED', upvotes: 1, timeline: [{ status: 'SUBMITTED', date: new Date().toISOString().split('T')[0], remark: 'Grievance registered with evidence by citizen' }], ...newIssue };
     setIssues(prev => [issueWithId, ...prev]);
     setStats(prev => ({ ...prev, totalIssuesReported: prev.totalIssuesReported + 1 }));
     return issueWithId;
@@ -77,7 +82,7 @@ export const DataProvider = ({ children }) => {
   const sponsorProject = (projectId, amount, sponsorName) => setProjects(prev => prev.map(prj => prj.id === projectId ? { ...prj, budgetFunded: prj.budgetFunded + Number(amount), sponsor: sponsorName || prj.sponsor, stage: prj.budgetFunded + Number(amount) >= prj.budgetTotal ? 'Fully Funded' : 'CSR Funded' } : prj));
   const updateMilestone = (projectId, index, newStatus) => setProjects(prev => prev.map(prj => { if (prj.id !== projectId) return prj; const milestones = [...prj.milestones]; if (milestones[index]) milestones[index] = { ...milestones[index], status: newStatus }; return { ...prj, milestones }; }));
 
-  return <DataContext.Provider value={{ issues, projects, sponsors, stats, dataLoading, dataError, addIssue, upvoteIssue, verifyIssue, updateTaskStatus, addKanbanTask, sponsorProject, updateMilestone }}>{children}</DataContext.Provider>;
+  return <DataContext.Provider value={{ issues, projects, universities, sponsors, stats, dataLoading, dataError, addIssue, upvoteIssue, verifyIssue, updateTaskStatus, addKanbanTask, sponsorProject, updateMilestone, routeIssueToUniversities }}>{children}</DataContext.Provider>;
 };
 
 export const useData = () => {
