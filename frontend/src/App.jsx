@@ -4,6 +4,7 @@ import { DataProvider } from './context/DataContext';
 import { AppShell } from './components/layout/AppShell';
 import { LandingPage } from './pages/landing/LandingPage';
 import { Login } from './pages/auth/Login';
+import { Register } from './pages/auth/Register';
 import { CitizenDashboard } from './pages/citizen/CitizenDashboard';
 import { NodalDashboard } from './pages/nodal/NodalDashboard';
 import { FacultyDashboard } from './pages/faculty/FacultyDashboard';
@@ -18,22 +19,11 @@ function MainAppContent() {
   const [currentPath, setCurrentPath] = useState('landing');
 
   const renderCurrentView = () => {
-    // 1. Public Landing Page
-    if (currentPath === 'landing') {
-      return <LandingPage onNavigate={(path) => setCurrentPath(path)} />;
-    }
+    if (currentPath === 'landing') return <LandingPage onNavigate={(path) => setCurrentPath(path)} />;
+    if (currentPath === 'login') return <Login onNavigate={(path) => setCurrentPath(path)} />;
+    if (currentPath === 'register') return <Register onNavigate={(path) => setCurrentPath(path)} />;
+    if (currentPath === 'profile') return <ProfilePage onNavigate={(path) => setCurrentPath(path)} />;
 
-    // 2. Login / Role Switch
-    if (currentPath === 'login') {
-      return <Login onNavigate={(path) => setCurrentPath(path)} />;
-    }
-
-    // 3. Shared Profile
-    if (currentPath === 'profile') {
-      return <ProfilePage onNavigate={(path) => setCurrentPath(path)} />;
-    }
-
-    // 4. Role Based Routing
     switch (currentRole) {
       case ROLES.CITIZEN:
         return <CitizenDashboard currentPath={currentPath} onNavigate={(path) => setCurrentPath(path)} />;
@@ -52,7 +42,7 @@ function MainAppContent() {
     }
   };
 
-  const isLandingView = currentPath === 'landing' || currentPath === 'login';
+  const isLandingView = ['landing', 'login', 'register'].includes(currentPath);
 
   return (
     <AppShell

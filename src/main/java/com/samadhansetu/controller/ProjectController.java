@@ -23,6 +23,7 @@ public class ProjectController {
     @DeleteMapping("/team/{memberId}") public ResponseEntity<Void> removeMember(@PathVariable Long memberId){service.removeMember(memberId);return ResponseEntity.noContent().build();}
     @PostMapping("/{id}/milestones") public ResponseEntity<MilestoneResponseDto> addMilestone(@PathVariable Long id,@RequestBody MilestoneRequestDto r){return ResponseEntity.status(HttpStatus.CREATED).body(service.addMilestone(id,r));}
     @GetMapping("/{id}/milestones") public List<MilestoneResponseDto> milestones(@PathVariable Long id){return service.milestones(id);}
+    @PutMapping("/milestones/{milestoneId}") public MilestoneResponseDto updateMilestone(@PathVariable Long milestoneId,@RequestBody MilestoneRequestDto r){return service.updateMilestone(milestoneId,r);}
     @PostMapping("/{id}/tasks") public ResponseEntity<TaskResponseDto> addTask(@PathVariable Long id,@RequestBody TaskRequestDto r){return ResponseEntity.status(HttpStatus.CREATED).body(service.addTask(id,r));}
     @GetMapping("/{id}/tasks") public List<TaskResponseDto> tasks(@PathVariable Long id){return service.tasks(id);}
     @PutMapping("/tasks/{taskId}") public TaskResponseDto updateTask(@PathVariable Long taskId,@RequestBody TaskRequestDto r){return service.updateTask(taskId,r);}
