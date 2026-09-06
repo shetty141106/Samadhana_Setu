@@ -37,7 +37,7 @@ public class ProjectService {
 
     public ProjectResponseDto get(Long id){return map(find(id));}
     public List<ProjectResponseDto> all(){return projects.findAll().stream().map(this::map).toList();}
-    public List<ProjectResponseDto> byUniversity(Long id){return projects.findByUniversityId(id).stream().map(this::map).toList();}
+    public ProjectResponseDto byUniversity(Long id){return projects.findByUniversityId(id).stream().map(this::map).toList();}
     public List<ProjectResponseDto> byStatus(ProjectStatus s){return projects.findByStatus(s).stream().map(this::map).toList();}
 
     public ProjectResponseDto update(Long id,ProjectRequestDto r, Authentication authentication){
@@ -97,7 +97,17 @@ public class ProjectService {
 
     public TaskResponseDto updateTask(Long id,TaskRequestDto r, Authentication authentication){
         Task t=tasks.findById(id).orElseThrow(()->new IllegalArgumentException("Task not found: "+id));
-        Project project=t.getProject(); assertProjectMutationAccess(project, authentication);
+        Project project=t.getProject();
+
+        // Students may advance/reverse the status of tasks assigned to them, but may not
+        // edit project structure, task ownership, title, dates, or milestone assignment.
+        if (hasRole(authentication, "STUDENT")) {
+            assertStudentTaskStatusAccess(t, authentication);
+            if (r.getStatus() != null) t.setStatus(r.getStatus());
+            return taskMap(tasks.save(t));
+        }
+
+        assertProjectMutationAccess(project, authentication);
         t.setTitle(r.getTitle()); t.setDescription(r.getDescription()); t.setDueDate(r.getDueDate());
         if(r.getStatus()!=null)t.setStatus(r.getStatus());
         t.setMilestone(r.getMilestoneId()==null?null:findMilestoneForProject(r.getMilestoneId(),project.getId()));
@@ -121,6 +131,14 @@ public class ProjectService {
         User current=currentUser(authentication);
         if(!members.existsByProjectIdAndUserId(project.getId(), current.getId()))
             throw new AccessDeniedException("Faculty can only modify projects they belong to");
+    }
+
+    private void assertStudentTaskStatusAccess(Task task, Authentication authentication){
+        if(authentication==null || !hasRole(authentication,"STUDENT"))
+            throw new AccessDeniedException("Student task access requires a student account");
+        User current=currentUser(authentication);
+        if(task.getAssignedTo()==null || !current.getId().equals(task.getAssignedTo().getId()))
+            throw new AccessDeniedException("Students can only update the status of tasks assigned to them");
     }
 
     private boolean hasRole(Authentication authentication, String role){
