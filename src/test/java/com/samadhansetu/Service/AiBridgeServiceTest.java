@@ -1,6 +1,7 @@
 package com.samadhansetu.Service;
 
 import com.samadhansetu.Repository.IssueRepository;
+import com.samadhansetu.dto.AiIssueCandidate;
 import com.samadhansetu.dto.AiProcessRequest;
 import com.samadhansetu.dto.AiProcessResponse;
 import org.junit.jupiter.api.Test;
@@ -12,7 +13,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class AiBridgeServiceTest {
@@ -28,9 +28,6 @@ class AiBridgeServiceTest {
 
     @Test
     void process_shouldClassifyHealthcareIssue() {
-        when(issueRepository.findAll()).thenReturn(List.of());
-        when(universityRoutingService.route("Healthcare")).thenReturn(List.of());
-
         AiProcessResponse result = aiBridgeService.process(AiProcessRequest.builder()
                 .title("Hospital needs medicine")
                 .description("The village hospital has no doctor or medicine.")
@@ -44,9 +41,6 @@ class AiBridgeServiceTest {
 
     @Test
     void process_shouldClassifyHindiWaterIssue() {
-        when(issueRepository.findAll()).thenReturn(List.of());
-        when(universityRoutingService.route("Water Resources")).thenReturn(List.of());
-
         AiProcessResponse result = aiBridgeService.process(AiProcessRequest.builder()
                 .title("पानी की समस्या")
                 .description("गांव में पीने का पानी और पाइपलाइन उपलब्ध नहीं है।")
@@ -58,17 +52,20 @@ class AiBridgeServiceTest {
 
     @Test
     void process_shouldDetectSimilarIssue() {
-        com.samadhansetu.model.entity.Issue existing = com.samadhansetu.model.entity.Issue.builder()
-                .id(42L).title("Broken drinking water pipeline")
-                .description("Village drinking water pipeline is broken").build();
-        when(issueRepository.findAll()).thenReturn(List.of(existing));
-        when(universityRoutingService.route("Water Resources")).thenReturn(List.of());
+        AiIssueCandidate existing = AiIssueCandidate.builder()
+                .issueId(42L)
+                .title("Broken drinking water pipeline")
+                .description("Village drinking water pipeline is broken")
+                .build();
 
         AiProcessResponse result = aiBridgeService.process(AiProcessRequest.builder()
                 .title("Broken drinking water pipeline")
-                .description("Village drinking water pipeline is broken").build());
+                .description("Village drinking water pipeline is broken")
+                .candidates(List.of(existing))
+                .build());
 
         assertEquals("Water Resources", result.getCategoryTag());
-        assertEquals(42L, result.getDuplicateIssueId());
+        assertTrue(result.getDuplicateMatch().isFound());
+        assertEquals(42L, result.getDuplicateMatch().getCandidateIssueId());
     }
 }
