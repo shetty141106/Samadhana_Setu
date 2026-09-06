@@ -37,7 +37,7 @@ public class ProjectService {
 
     public ProjectResponseDto get(Long id){return map(find(id));}
     public List<ProjectResponseDto> all(){return projects.findAll().stream().map(this::map).toList();}
-    public ProjectResponseDto byUniversity(Long id){return projects.findByUniversityId(id).stream().map(this::map).toList();}
+    public List<ProjectResponseDto> byUniversity(Long id){return projects.findByUniversityId(id).stream().map(this::map).toList();}
     public List<ProjectResponseDto> byStatus(ProjectStatus s){return projects.findByStatus(s).stream().map(this::map).toList();}
 
     public ProjectResponseDto update(Long id,ProjectRequestDto r, Authentication authentication){
