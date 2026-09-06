@@ -31,14 +31,37 @@ export const DataProvider = ({ children }) => {
   }, [currentUser?.id]);
 
   useEffect(() => {
-    if (!LIVE_API || !isAuthenticated) return; let cancelled = false;
-    (async () => { setDataLoading(true); setDataError(''); try {
-      const citizen = currentUser?.id && currentUser.role === 'citizen';
-      const [loadedIssues, loadedProjects] = await Promise.all([citizen ? issueApi.getCitizenIssues(currentUser.id) : issueApi.listIssues(), projectApi.listProjectsWithDetails()]);
-      if (cancelled) return; setIssues(Array.isArray(loadedIssues) ? loadedIssues : []); setProjects(Array.isArray(loadedProjects) ? loadedProjects.map(projectToUi) : []);
-      if (currentUser?.role === 'admin' || currentUser?.role === 'nodal') { try { setDashboard(await dashboardApi.getSummary()); } catch {} }
-      try { setSponsors(await industryApi.listSponsorships()); } catch {}
-    } catch (error) { if (!cancelled) setDataError(error.message || 'Unable to load live platform data. Showing available data.'); } finally { if (!cancelled) setDataLoading(false); } })();
+    if (!LIVE_API || !isAuthenticated) {
+      setDataLoading(false);
+      setDataError('');
+      setDashboard(null);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      setDataLoading(true); setDataError('');
+      try {
+        const isCitizen = currentUser?.role === 'citizen';
+        const canReadOperationalIssues = currentUser?.role === 'admin' || currentUser?.role === 'nodal';
+        const issuePromise = isCitizen
+          ? issueApi.getCitizenIssues(currentUser.id)
+          : canReadOperationalIssues
+            ? issueApi.listIssues()
+            : Promise.resolve([]);
+        const [loadedIssues, loadedProjects] = await Promise.all([issuePromise, projectApi.listProjectsWithDetails()]);
+        if (cancelled) return;
+        setIssues(Array.isArray(loadedIssues) ? loadedIssues : []);
+        setProjects(Array.isArray(loadedProjects) ? loadedProjects.map(projectToUi) : []);
+        if (currentUser?.role === 'admin' || currentUser?.role === 'nodal') {
+          try { setDashboard(await dashboardApi.getSummary()); } catch { setDashboard(null); }
+        }
+        try { setSponsors(await industryApi.listSponsorships()); } catch {}
+      } catch (error) {
+        if (!cancelled) setDataError(error.message || 'Unable to load live platform data.');
+      } finally {
+        if (!cancelled) setDataLoading(false);
+      }
+    })();
     return () => { cancelled = true; };
   }, [isAuthenticated, currentUser?.id, currentUser?.role]);
 
@@ -48,7 +71,8 @@ export const DataProvider = ({ children }) => {
       const uiIssue = { ...created, category: newIssue.category, categoryLabel: newIssue.categoryLabel, district: newIssue.district, submittedBy: `${currentUser.name} (Citizen)`, images: created.images?.length ? created.images : (newIssue.images || []) };
       setIssues(prev => [uiIssue, ...prev]); return uiIssue;
     }
-    const issue = { id: `JH-ISSUE-2025-${String(issues.length + 120).padStart(3, '0')}`, reportedDate: new Date().toISOString().split('T')[0], status: 'SUBMITTED', upvotes: 1, timeline: [{ status: 'SUBMITTED', date: new Date().toISOString().split('T')[0], remark: 'Grievance registered with evidence by citizen' }], ...newIssue }; setIssues(prev => [issue, ...prev]); setStats(prev => ({ ...prev, totalIssuesReported: prev.totalIssuesReported + 1 })); return issue;
+    const issue = { id: `JH-ISSUE-2025-${String(issues.length + 120).padStart(3, '0')}`, reportedDate: new Date().toISOString().split('T')[0], status: 'SUBMITTED', upvotes: 1, timeline: [{ status: 'SUBMITTED', date: new Date().toISOString().split('T')[0], remark: 'Grievance registered with evidence by citizen' }], ...newIssue };
+    setIssues(prev => [issue, ...prev]); setStats(prev => ({ ...prev, totalIssuesReported: prev.totalIssuesReported + 1 })); return issue;
   };
 
   const upvoteIssue = id => {
@@ -80,7 +104,15 @@ export const DataProvider = ({ children }) => {
   const addKanbanTask = async (projectId, taskData) => { if (LIVE_API && isAuthenticated) { const created = await projectApi.createTask(projectId, { title: taskData.title, description: taskData.description || '', dueDate: taskData.dueDate, status: 'TODO', milestoneId: taskData.milestoneId, assignedToId: taskData.assignedToId }); setProjects(prev => prev.map(p => p.id === projectId ? { ...p, kanbanTasks: [...(p.kanbanTasks || []), created] } : p)); return created; } const created = { id: `TSK-${Math.floor(100 + Math.random() * 900)}`, status: 'todo', ...taskData }; setProjects(prev => prev.map(p => p.id === projectId ? { ...p, kanbanTasks: [...(p.kanbanTasks || []), created] } : p)); return created; };
   const sponsorProject = async (projectId, amount, sponsorName, organizationId) => { if (LIVE_API && isAuthenticated) { if (!organizationId) throw new Error('No verified industry organization is available for this account.'); const created = await industryApi.createSponsorship({ organizationId, projectId, amount: Number(amount), status: 'PENDING' }); setSponsors(prev => [created, ...prev]); return created; } setProjects(prev => prev.map(p => p.id === projectId ? { ...p, budgetFunded: Number(p.budgetFunded || 0) + Number(amount), sponsor: sponsorName || p.sponsor, stage: Number(p.budgetFunded || 0) + Number(amount) >= Number(p.budgetTotal || 0) ? 'Fully Funded' : 'CSR Funded' } : p)); };
   const updateMilestone = async (projectId, index, newStatus) => { const milestone = projects.find(p => p.id === projectId)?.milestones?.[index]; if (LIVE_API && isAuthenticated && milestone?.id) { const updated = await projectApi.updateMilestone(milestone.id, { title: milestone.title, startDate: milestone.startDate, endDate: milestone.endDate, status: newStatus.toUpperCase() }); setProjects(prev => prev.map(p => p.id === projectId ? { ...p, milestones: p.milestones.map((m, i) => i === index ? updated : m) } : p)); return updated; } setProjects(prev => prev.map(p => p.id === projectId ? { ...p, milestones: (p.milestones || []).map((m, i) => i === index ? { ...m, status: newStatus } : m) } : p)); };
-  const refreshIssues = async () => { if (!LIVE_API || !isAuthenticated) return; const loaded = currentUser?.id && currentUser.role === 'citizen' ? await issueApi.getCitizenIssues(currentUser.id) : await issueApi.listIssues(); setIssues(Array.isArray(loaded) ? loaded : []); };
+  const refreshIssues = async () => {
+    if (!LIVE_API || !isAuthenticated) return;
+    const loaded = currentUser?.role === 'citizen'
+      ? await issueApi.getCitizenIssues(currentUser.id)
+      : currentUser?.role === 'admin' || currentUser?.role === 'nodal'
+        ? await issueApi.listIssues()
+        : [];
+    setIssues(Array.isArray(loaded) ? loaded : []);
+  };
 
   return <DataContext.Provider value={{ issues, projects, sponsors, stats, dashboard, dataLoading, dataError, liveApi: LIVE_API, addIssue, upvoteIssue, likedIssueIds, isIssueLiked: id => likedIssueIds.has(String(id)), verifyIssue, updateTaskStatus, addKanbanTask, sponsorProject, updateMilestone, refreshIssues }}>{children}</DataContext.Provider>;
 };
