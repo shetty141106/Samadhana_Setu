@@ -12,17 +12,11 @@ const SESSION_KEY = 'samadhansetu_session';
 const normalizeRole = (role) => {
   const value = String(role || '').trim().toUpperCase();
   const aliases = {
-    CITIZEN: ROLES.CITIZEN,
-    NODAL: ROLES.NODAL,
-    NODAL_OFFICER: ROLES.NODAL,
-    FACULTY: ROLES.FACULTY,
-    ACADEMIC_FACULTY: ROLES.FACULTY,
-    STUDENT: ROLES.STUDENT,
-    STUDENT_RESEARCHER: ROLES.STUDENT,
-    INDUSTRY: ROLES.INDUSTRY,
-    INDUSTRY_CSR: ROLES.INDUSTRY,
-    ADMIN: ROLES.ADMIN,
-    SYSTEM_ADMIN: ROLES.ADMIN
+    CITIZEN: ROLES.CITIZEN, NODAL: ROLES.NODAL, NODAL_OFFICER: ROLES.NODAL,
+    FACULTY: ROLES.FACULTY, ACADEMIC_FACULTY: ROLES.FACULTY,
+    STUDENT: ROLES.STUDENT, STUDENT_RESEARCHER: ROLES.STUDENT,
+    INDUSTRY: ROLES.INDUSTRY, INDUSTRY_CSR: ROLES.INDUSTRY,
+    ADMIN: ROLES.ADMIN, SYSTEM_ADMIN: ROLES.ADMIN
   };
   return aliases[value] || ROLES.CITIZEN;
 };
@@ -47,16 +41,16 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const handleAuthInvalidated = () => {
+      clearAuthToken();
+      localStorage.removeItem(SESSION_KEY);
       setSession(null);
       setDemoRole(ROLES.CITIZEN);
       setNotifications(MOCK_NOTIFICATIONS);
+      setAuthError('Your session has expired. Please sign in again.');
     };
     window.addEventListener('samadhansetu-auth-invalidated', handleAuthInvalidated);
     const handleStorage = event => {
-      if (event.key === SESSION_KEY || event.key === 'samadhansetu_token') {
-        const next = readSession();
-        setSession(next);
-      }
+      if (event.key === SESSION_KEY || event.key === 'samadhansetu_token') setSession(readSession());
     };
     window.addEventListener('storage', handleStorage);
     return () => {
@@ -70,9 +64,7 @@ export const AuthProvider = ({ children }) => {
     let cancelled = false;
     notificationApi.listUserNotifications(currentUser.id)
       .then(items => { if (!cancelled && Array.isArray(items)) setNotifications(items.map(notificationToUi)); })
-      .catch(error => {
-        if (error?.status === 401) window.dispatchEvent(new Event('samadhansetu-auth-invalidated'));
-      });
+      .catch(error => { if (error?.status === 401) window.dispatchEvent(new Event('samadhansetu-auth-invalidated')); });
     return () => { cancelled = true; };
   }, [isAuthenticated, currentUser?.id]);
 
@@ -121,6 +113,7 @@ export const AuthProvider = ({ children }) => {
     setSession(null);
     setDemoRole(ROLES.CITIZEN);
     setNotifications(MOCK_NOTIFICATIONS);
+    setAuthError('');
   };
   const switchRole = newRole => { if (!isAuthenticated && Object.values(ROLES).includes(newRole)) setDemoRole(newRole); };
   const markNotificationAsRead = async id => { if (LIVE_AUTH && isAuthenticated) await notificationApi.markAsRead(id).catch(error => { if (error?.status === 401) window.dispatchEvent(new Event('samadhansetu-auth-invalidated')); }); setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true, readStatus: true } : n)); };
