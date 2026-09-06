@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
 import { ROLES } from '../../utils/constants';
+import { industryApi } from '../../api/industry.api';
 import { Modal } from '../ui/Modal';
 import { StatusBadge } from '../ui/StatusBadge';
 import { Button } from '../ui/Button';
@@ -23,8 +24,8 @@ import {
 } from 'lucide-react';
 
 export const IssueDetailModal = ({ issue, isOpen, onClose, onNavigate }) => {
-  const { currentRole } = useAuth();
-  const { verifyIssue, upvoteIssue, sponsorProject } = useData();
+  const { currentRole, currentUser } = useAuth();
+  const { verifyIssue, upvoteIssue, sponsorProject, liveApi } = useData();
 
   const [triageStatus, setTriageStatus] = useState('VERIFIED');
   const [triagePriority, setTriagePriority] = useState(issue?.priority || 'High');
@@ -33,6 +34,24 @@ export const IssueDetailModal = ({ issue, isOpen, onClose, onNavigate }) => {
   const [isUpdating, setIsUpdating] = useState(false);
   const [sponsorAmount, setSponsorAmount] = useState('500000');
   const [showSponsorSuccess, setShowSponsorSuccess] = useState(false);
+  const [sponsorError, setSponsorError] = useState('');
+  const [industryOrganizations, setIndustryOrganizations] = useState([]);
+
+  useEffect(() => {
+    if (!isOpen || currentRole !== ROLES.INDUSTRY || !liveApi) return;
+    let cancelled = false;
+    industryApi.listOrganizations()
+      .then(items => { if (!cancelled) setIndustryOrganizations(Array.isArray(items) ? items : []); })
+      .catch(() => { if (!cancelled) setIndustryOrganizations([]); });
+    return () => { cancelled = true; };
+  }, [isOpen, currentRole, liveApi]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    setShowSponsorSuccess(false);
+    setSponsorError('');
+    setSponsorAmount('500000');
+  }, [isOpen, issue?.id]);
 
   if (!issue) return null;
 
@@ -71,11 +90,22 @@ export const IssueDetailModal = ({ issue, isOpen, onClose, onNavigate }) => {
     }, 500);
   };
 
-  const handleSponsor = () => {
-    if (issue.assignedProject) {
-      sponsorProject(issue.assignedProject, sponsorAmount, 'Tata Steel Foundation');
+  const handleSponsor = async () => {
+    if (!issue.assignedProject || !sponsorAmount) return;
+    setSponsorError('');
+    try {
+      const organizationName = currentUser?.organization || 'Industry Workspace';
+      const organization = industryOrganizations.find(
+        item => String(item.name || '').toLowerCase() === organizationName.toLowerCase()
+      ) || industryOrganizations[0];
+      if (liveApi && !organization?.id) {
+        throw new Error('No verified industry organization is available for this account.');
+      }
+      await sponsorProject(issue.assignedProject, sponsorAmount, organizationName, organization?.id);
+      setShowSponsorSuccess(true);
+    } catch (error) {
+      setSponsorError(error.message || 'Unable to create CSR sponsorship.');
     }
-    setShowSponsorSuccess(true);
   };
 
   return (
@@ -312,17 +342,22 @@ export const IssueDetailModal = ({ issue, isOpen, onClose, onNavigate }) => {
                 ✓ CSR Pledge of ₹{(Number(sponsorAmount)/100000).toFixed(2)} Lakh Confirmed! Transferred to University Escrow.
               </div>
             ) : (
-              <div className="flex items-center gap-3">
-                <input
-                  type="number"
-                  value={sponsorAmount}
-                  onChange={(e) => setSponsorAmount(e.target.value)}
-                  className="px-3 py-1.5 text-xs bg-white border border-orange-300 rounded-lg font-mono font-bold"
-                  placeholder="Amount in ₹"
-                />
-                <Button variant="secondary" size="sm" onClick={handleSponsor}>
-                  Pledge CSR Grant
-                </Button>
+              <div className="space-y-2">
+                {sponsorError && <div role="alert" className="p-2.5 rounded-lg border border-red-200 bg-red-50 text-red-800 text-xs">{sponsorError}</div>}
+                <div className="flex items-center gap-3">
+                  <input
+                    type="number"
+                    min="50000"
+                    step="50000"
+                    value={sponsorAmount}
+                    onChange={(e) => setSponsorAmount(e.target.value)}
+                    className="px-3 py-1.5 text-xs bg-white border border-orange-300 rounded-lg font-mono font-bold"
+                    placeholder="Amount in ₹"
+                  />
+                  <Button variant="secondary" size="sm" onClick={handleSponsor}>
+                    Pledge CSR Grant
+                  </Button>
+                </div>
               </div>
             )}
           </div>
