@@ -46,11 +46,33 @@ export const AuthProvider = ({ children }) => {
   const isAuthenticated = Boolean(session?.token);
 
   useEffect(() => {
+    const handleAuthInvalidated = () => {
+      setSession(null);
+      setDemoRole(ROLES.CITIZEN);
+      setNotifications(MOCK_NOTIFICATIONS);
+    };
+    window.addEventListener('samadhansetu-auth-invalidated', handleAuthInvalidated);
+    const handleStorage = event => {
+      if (event.key === SESSION_KEY || event.key === 'samadhansetu_token') {
+        const next = readSession();
+        setSession(next);
+      }
+    };
+    window.addEventListener('storage', handleStorage);
+    return () => {
+      window.removeEventListener('samadhansetu-auth-invalidated', handleAuthInvalidated);
+      window.removeEventListener('storage', handleStorage);
+    };
+  }, []);
+
+  useEffect(() => {
     if (!LIVE_AUTH || !isAuthenticated || !currentUser?.id) return;
     let cancelled = false;
     notificationApi.listUserNotifications(currentUser.id)
       .then(items => { if (!cancelled && Array.isArray(items)) setNotifications(items.map(notificationToUi)); })
-      .catch(() => {});
+      .catch(error => {
+        if (error?.status === 401) window.dispatchEvent(new Event('samadhansetu-auth-invalidated'));
+      });
     return () => { cancelled = true; };
   }, [isAuthenticated, currentUser?.id]);
 
@@ -63,6 +85,7 @@ export const AuthProvider = ({ children }) => {
         return { ...mock, token: 'demo-token' };
       }
       const response = await authApi.login(credentials);
+      if (!response?.token) throw new Error('The server did not return an authentication token.');
       const nextSession = { ...response, role: normalizeRole(response.role) };
       setAuthToken(response.token);
       localStorage.setItem(SESSION_KEY, JSON.stringify(nextSession));
@@ -100,10 +123,10 @@ export const AuthProvider = ({ children }) => {
     setNotifications(MOCK_NOTIFICATIONS);
   };
   const switchRole = newRole => { if (!isAuthenticated && Object.values(ROLES).includes(newRole)) setDemoRole(newRole); };
-  const markNotificationAsRead = async id => { if (LIVE_AUTH && isAuthenticated) await notificationApi.markAsRead(id).catch(() => {}); setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true, readStatus: true } : n)); };
+  const markNotificationAsRead = async id => { if (LIVE_AUTH && isAuthenticated) await notificationApi.markAsRead(id).catch(error => { if (error?.status === 401) window.dispatchEvent(new Event('samadhansetu-auth-invalidated')); }); setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true, readStatus: true } : n)); };
   const markAllNotificationsAsRead = async () => { const unread = notifications.filter(n => !n.read && !n.readStatus); if (LIVE_AUTH && isAuthenticated) await Promise.allSettled(unread.map(n => notificationApi.markAsRead(n.id))); setNotifications(prev => prev.map(n => ({ ...n, read: true, readStatus: true }))); };
   const toggleLanguage = () => setLanguage(prev => prev === 'en' ? 'hi' : 'en');
   const value = useMemo(() => ({ currentRole, currentUser, roleConfig, switchRole, login, register, logout, isAuthenticated, authLoading, authError, language, toggleLanguage, notifications, markNotificationAsRead, markAllNotificationsAsRead, unreadCount: notifications.filter(n => !n.read && !n.readStatus).length }), [currentRole, currentUser, roleConfig, session, isAuthenticated, authLoading, authError, language, notifications]);
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
-export const useAuth = () => { const context = useContext(AuthContext); if (!context) throw new Error('useAuth must be used within an AuthProvider'); return context; };
+export const useAuth = () => { const context = useContext(AuthContext); if (!context) throw new Error('useAuth must be used within AuthProvider'); return context; };
