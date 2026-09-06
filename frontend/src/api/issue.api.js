@@ -3,12 +3,13 @@ import { apiClient } from './client';
 const statusToUi = { REPORTED: 'SUBMITTED', VERIFIED: 'VERIFIED', ASSIGNED: 'IN_RD', IN_PROGRESS: 'IN_RD', RESOLVED: 'RESOLVED', REJECTED: 'REJECTED' };
 const statusToBackend = { SUBMITTED: 'REPORTED', VERIFIED: 'VERIFIED', IN_RD: 'IN_PROGRESS', RESOLVED: 'RESOLVED', REJECTED: 'REJECTED' };
 const priorityToBackend = (priority) => String(priority || 'MEDIUM').toUpperCase();
+const priorityToUi = (priority) => { const value = String(priority || 'MEDIUM').toLowerCase(); return value.charAt(0).toUpperCase() + value.slice(1); };
 
 export const mapIssueToUiModel = (issue = {}) => ({
   ...issue,
   status: statusToUi[issue.status] || issue.status,
   uiStatus: statusToUi[issue.status] || issue.status,
-  priority: String(issue.priority || 'MEDIUM').toLowerCase(),
+  priority: priorityToUi(issue.priority),
   latitude: issue.latitude != null ? Number(issue.latitude) : null,
   longitude: issue.longitude != null ? Number(issue.longitude) : null,
   coordinates: issue.latitude != null && issue.longitude != null ? { lat: Number(issue.latitude), lng: Number(issue.longitude) } : issue.coordinates || null,
