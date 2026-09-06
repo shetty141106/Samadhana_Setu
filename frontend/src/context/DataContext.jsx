@@ -32,8 +32,7 @@ export const DataProvider = ({ children }) => {
     if (!LIVE_API || !isAuthenticated) return;
     let cancelled = false;
     const load = async () => {
-      setDataLoading(true);
-      setDataError('');
+      setDataLoading(true); setDataError('');
       try {
         const isCitizen = currentUser?.id && currentUser.role === 'citizen';
         const [loadedIssues, loadedProjects] = await Promise.all([
@@ -44,9 +43,9 @@ export const DataProvider = ({ children }) => {
         setIssues(loadedIssues);
         setProjects(loadedProjects.map(projectToUi));
         if (currentUser?.role === 'admin' || currentUser?.role === 'nodal_officer') {
-          try { setDashboard(await dashboardApi.getSummary()); } catch { /* dashboard is optional */ }
+          try { setDashboard(await dashboardApi.getSummary()); } catch { /* optional dashboard */ }
         }
-        try { setSponsors(await industryApi.listSponsorships()); } catch { /* optional until CSR is configured */ }
+        try { setSponsors(await industryApi.listSponsorships()); } catch { /* optional CSR data */ }
       } catch (error) {
         if (!cancelled) setDataError(error.message || 'Unable to load live platform data. Showing available data.');
       } finally {
@@ -64,12 +63,7 @@ export const DataProvider = ({ children }) => {
       setIssues(prev => [uiIssue, ...prev]);
       return uiIssue;
     }
-    const issueWithId = {
-      id: `JH-ISSUE-2025-${String(issues.length + 120).padStart(3, '0')}`,
-      reportedDate: new Date().toISOString().split('T')[0], status: 'SUBMITTED', upvotes: 1,
-      timeline: [{ status: 'SUBMITTED', date: new Date().toISOString().split('T')[0], remark: 'Grievance registered with evidence by citizen' }],
-      ...newIssue
-    };
+    const issueWithId = { id: `JH-ISSUE-2025-${String(issues.length + 120).padStart(3, '0')}`, reportedDate: new Date().toISOString().split('T')[0], status: 'SUBMITTED', upvotes: 1, timeline: [{ status: 'SUBMITTED', date: new Date().toISOString().split('T')[0], remark: 'Grievance registered with evidence by citizen' }], ...newIssue };
     setIssues(prev => [issueWithId, ...prev]);
     setStats(prev => ({ ...prev, totalIssuesReported: prev.totalIssuesReported + 1 }));
     return issueWithId;
@@ -103,14 +97,7 @@ export const DataProvider = ({ children }) => {
 
   const addKanbanTask = async (projectId, taskData) => {
     if (LIVE_API && isAuthenticated) {
-      const created = await projectApi.createTask(projectId, {
-        title: taskData.title,
-        description: taskData.description || '',
-        dueDate: taskData.dueDate,
-        status: 'TODO',
-        milestoneId: taskData.milestoneId,
-        assignedToId: taskData.assignedToId
-      });
+      const created = await projectApi.createTask(projectId, { title: taskData.title, description: taskData.description || '', dueDate: taskData.dueDate, status: 'TODO', milestoneId: taskData.milestoneId, assignedToId: taskData.assignedToId });
       setProjects(prev => prev.map(p => p.id === projectId ? { ...p, kanbanTasks: [...(p.kanbanTasks || []), created] } : p));
       return created;
     }
@@ -129,13 +116,8 @@ export const DataProvider = ({ children }) => {
   };
 
   const updateMilestone = async (projectId, index, newStatus) => {
-    if (LIVE_API && isAuthenticated) {
-      const project = projects.find(p => p.id === projectId);
-      const milestone = project?.milestones?.[index];
-      if (milestone?.id) {
-        const updated = await projectApi.createMilestone; // endpoint currently exposes create only; preserve UI state until backend update endpoint exists.
-      }
-    }
+    // The current backend exposes milestone creation but no milestone-status update route.
+    // Keep the UI optimistic and preserve the operation for the future update endpoint.
     setProjects(prev => prev.map(p => {
       if (p.id !== projectId) return p;
       const milestones = [...(p.milestones || [])];
