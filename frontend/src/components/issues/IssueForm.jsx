@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
+import { aiApi } from '../../api/ai.api';
 import { ISSUE_CATEGORIES, JHARKHAND_DISTRICTS } from '../../utils/constants';
 import { Button } from '../ui/Button';
 import { LocationPicker } from '../maps/LocationPicker';
 import { Camera, MapPin, CheckCircle, Sparkles, X } from 'lucide-react';
+
+const LIVE_API = import.meta.env.VITE_ENABLE_LIVE_API === 'true';
 
 export const IssueForm = ({ onSuccess, onCancel }) => {
   const { currentUser } = useAuth();
@@ -14,6 +17,7 @@ export const IssueForm = ({ onSuccess, onCancel }) => {
   const [previewImages, setPreviewImages] = useState(['https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=800&q=80']);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
+  const [aiResult, setAiResult] = useState(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const sampleForestPhotos = [
@@ -32,14 +36,17 @@ export const IssueForm = ({ onSuccess, onCancel }) => {
     setIsSubmitting(true); setSubmitError('');
     try {
       const catObj = ISSUE_CATEGORIES.find(c => c.id === formData.category);
-      await addIssue({ title: formData.title, description: formData.description, category: formData.category, categoryLabel: catObj?.label || 'Civic Issue', district: formData.district, locationName: formData.locationName, location: formData.locationName, latitude: selectedCoordinates.lat, longitude: selectedCoordinates.lng, coordinates: selectedCoordinates, priority: formData.priority, submittedBy: `${currentUser.name} (Citizen)`, submitterPhone: currentUser.phone || '', images: previewImages });
+      const created = await addIssue({ title: formData.title, description: formData.description, category: formData.category, categoryLabel: catObj?.label || 'Civic Issue', district: formData.district, locationName: formData.locationName, location: formData.locationName, latitude: selectedCoordinates.lat, longitude: selectedCoordinates.lng, coordinates: selectedCoordinates, priority: formData.priority, submittedBy: `${currentUser.name} (Citizen)`, submitterPhone: currentUser.phone || '', images: previewImages });
+      if (LIVE_API && created?.id) {
+        try { setAiResult(await aiApi.processIssueById(created.id)); } catch { setAiResult(null); }
+      }
       setShowSuccessModal(true);
     } catch (error) {
       setSubmitError(error.message || 'Unable to submit the grievance. Please try again.');
     } finally { setIsSubmitting(false); }
   };
 
-  if (showSuccessModal) return <div className="bg-white rounded-2xl border border-jh-green-200 p-8 text-center max-w-lg mx-auto shadow-jh-card animate-in zoom-in-95"><div className="w-16 h-16 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center mx-auto mb-4"><CheckCircle className="w-8 h-8" /></div><h3 className="text-xl font-bold text-jh-green-950 mb-2">Grievance Registered Successfully!</h3><p className="text-xs text-jh-earth-700 leading-relaxed mb-6">Your issue has been routed to the District Nodal Verification Desk for ground inspection and academic solution mapping.</p><Button variant="primary" onClick={() => { setShowSuccessModal(false); onSuccess?.(); }}>Track in My Submissions</Button></div>;
+  if (showSuccessModal) return <div className="bg-white rounded-2xl border border-jh-green-200 p-8 text-center max-w-lg mx-auto shadow-jh-card animate-in zoom-in-95"><div className="w-16 h-16 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center mx-auto mb-4"><CheckCircle className="w-8 h-8" /></div><h3 className="text-xl font-bold text-jh-green-950 mb-2">Grievance Registered Successfully!</h3><p className="text-xs text-jh-earth-700 leading-relaxed mb-4">Your issue has been routed to the District Nodal Verification Desk for ground inspection and academic solution mapping.</p>{aiResult && <div className="text-left rounded-xl border border-jh-green-200 bg-jh-green-50 p-3 mb-5 text-xs"><div className="flex items-center gap-2 font-bold text-jh-green-900 mb-1"><Sparkles className="w-4 h-4" />AI triage completed</div><p><strong>Category:</strong> {aiResult.categoryTag || '—'} &nbsp; <strong>Priority:</strong> {aiResult.priority || '—'}</p><p><strong>Confidence:</strong> {aiResult.confidence != null ? `${Math.round(aiResult.confidence * 100)}%` : '—'}</p>{aiResult.duplicateMatch?.found && <p className="text-amber-800 mt-1">Possible duplicate detected ({aiResult.duplicateMatch.similarityPercentage}%).</p>}</div>}<Button variant="primary" onClick={() => { setShowSuccessModal(false); onSuccess?.(); }}>Track in My Submissions</Button></div>;
 
   return <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-jh-earth-200 shadow-jh-soft p-6 md:p-8 space-y-6">
     <div className="border-b border-jh-earth-200 pb-4"><div className="flex items-center gap-2 text-jh-terracotta-700 text-xs font-bold uppercase tracking-wider mb-1"><Sparkles className="w-4 h-4" /><span>Direct Citizen Grievance Portal</span></div><h2 className="text-xl md:text-2xl font-bold text-jh-green-950">Report an Environmental or Civic Issue</h2><p className="text-xs text-jh-earth-600 mt-1">Provide accurate details and photos to help our district nodal officers and university research teams deploy fast interventions.</p></div>
