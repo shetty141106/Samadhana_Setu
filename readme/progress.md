@@ -20,6 +20,7 @@ Citizen → Issue + exact GPS → Spring Boot → AI processing → Nodal verifi
 - **Fully live/production-verified system:** still below 100% because hosted end-to-end verification and live Gemini verification remain.
 - Authentication defects found during live testing have been corrected.
 - Six-role demo accounts now have role-specific profile records seeded when the deployment demo password is configured.
+- Project lifecycle authorization has been hardened so Faculty users can mutate only projects where they are team members; Admin and Nodal Officer retain platform-level project management access.
 
 > Do not describe the project as 100% production-complete until the final hosted frontend/backend/AI workflow has been manually verified.
 
@@ -43,6 +44,9 @@ Citizen → Issue + exact GPS → Spring Boot → AI processing → Nodal verifi
 - [x] Industry mutation endpoints lacked role-specific method authorization — hardened with `@PreAuthorize`.
 - [x] Six-role demo accounts lacked complete role-profile seeding — completed for Citizen, Nodal Officer, Faculty + FacultyProfile, Student, Industry and Admin.
 - [x] Admin repository/profile lookup required by demo seeding — added.
+- [x] Faculty project mutation could target arbitrary projects — fixed with project team-membership authorization.
+- [x] Faculty project creation did not establish a membership record for the creator — fixed by automatically adding the creating Faculty user to the project team.
+- [x] Project team/member, milestone and task mutations lacked consistent project-level authorization — fixed through centralized project mutation checks.
 
 ## Completed Areas
 
@@ -61,6 +65,7 @@ Citizen → Issue + exact GPS → Spring Boot → AI processing → Nodal verifi
 - [x] Dashboard analytics APIs
 - [x] Notifications APIs
 - [x] Security hardening and validation
+- [x] Project-level Faculty authorization
 
 ### AI/ML — Prototype Scope
 - [x] Python FastAPI AI service
@@ -107,7 +112,7 @@ Citizen → Issue + exact GPS → Spring Boot → AI processing → Nodal verifi
 | 3 | Citizen Issue Management | ✅ Complete |
 | 4 | AI/ML Prototype Pipeline | ✅ Complete for prototype; live Gemini verification pending |
 | 5 | University Collaboration | ✅ Complete |
-| 6 | Project & Team Management | ✅ Complete |
+| 6 | Project & Team Management | ✅ Complete; project-level Faculty authorization hardened |
 | 7 | Industry & CSR | ✅ Complete; authorization/repository defects fixed |
 | 8 | Dashboard & Analytics | ✅ Complete at API/prototype level |
 | 9 | Notifications | ✅ Complete |
@@ -117,12 +122,15 @@ Citizen → Issue + exact GPS → Spring Boot → AI processing → Nodal verifi
 | 13 | Docker & Deployment | 🟡 Deployment live; hosted verification pending |
 | 14 | Frontend Integration | ✅ Complete at integration/code level |
 | 15 | Final Integration & Demo | 🟡 Hosted six-role and complete workflow verification pending |
+| 16.1 | Backend Build & Test Audit | ✅ Complete |
+| 16.2 | Backend Authorization & Ownership Audit | ✅ Complete; project lifecycle authorization hardened |
+| 16.3 | Final Cross-Role Runtime Audit | ⏳ Next |
 
 ---
 
 ## Deployment Verification
 
-The backend deployment for commit `8c5d029e450b1c7ec60933a72b59e232be3a46b7` is **LIVE on Render**. Startup logs after the latest deployment show successful Spring Boot startup and repository initialization with no application-level error logs in the inspected startup window.
+The backend deployment for the latest code is managed by Render from the `main` branch. Previous startup logs showed successful Spring Boot startup and repository initialization with no application-level error logs in the inspected startup window.
 
 The deployment environment contains the demo-seeding password variable required to create the six SIH demo personas. The password itself is not stored in source code.
 
@@ -137,8 +145,6 @@ The deployment environment contains the demo-seeding password variable required 
 - [ ] Verify Industry/CSR sponsorship end-to-end.
 - [ ] Verify Admin analytics/GIS updates from real records.
 - [ ] Verify frontend hosted runtime and CORS.
-
----
 
 ## Environment Gaps
 
@@ -174,4 +180,4 @@ Never commit private credentials.
 
 ## Next Action
 
-**Final hosted verification:** test the six seeded roles, run the complete citizen → AI → nodal → university → project → CSR → admin workflow, fix any runtime failures found during that verification, and only then claim 100% completion.
+**Phase 16.3 — Final Cross-Role Runtime Audit:** test the six seeded roles, verify protected operations and run the complete citizen → AI → nodal → university → project → CSR → admin workflow. Fix any runtime failures found during that verification, and only then claim 100% completion.
