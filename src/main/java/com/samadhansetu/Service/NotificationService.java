@@ -7,6 +7,7 @@ import com.samadhansetu.dto.NotificationResponseDto;
 import com.samadhansetu.model.entity.Notification;
 import com.samadhansetu.model.entity.User;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
