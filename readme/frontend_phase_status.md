@@ -10,52 +10,93 @@ Updated: 2026-09-06
 | 2 | Frontend API client/service layer | COMPLETE |
 | 3 | JWT authentication plumbing | COMPLETE |
 | 4 | Citizen issue API integration | COMPLETE |
-| 5 | Backend-mediated AI processing after issue creation | COMPLETE |
+| 5 | Backend-mediated AI processing | COMPLETE |
 | 6 | Nodal verification API integration | COMPLETE |
 | 7 | University + Faculty project data integration | COMPLETE |
+| 8 | Student + Kanban persistence | COMPLETE |
+| 9 | Milestone persistence | COMPLETE |
+| 10 | Industry / CSR sponsorship integration | COMPLETE |
+| 11 | Admin dashboard analytics API foundation | COMPLETE |
+| 12 | Notifications + profile/session integration | COMPLETE |
+| 13 | Loading / error / empty-state foundation | COMPLETE |
+| 14 | Production API / CORS / environment configuration | COMPLETE |
+| 15 | End-to-end build verification workflow | COMPLETE (workflow added; hosted run must be observed after push) |
 
-## Phase 3
-- Login form calls `POST /api/auth/login` in live mode.
-- JWT is persisted in local storage and attached by the shared API client.
-- Backend role values are normalized to the frontend six-role model.
-- Demo persona launcher remains available when live mode is disabled.
-- Logout clears the token/session.
+## Phase 8 — Student + Kanban
+- Live projects are hydrated with backend team members, milestones and tasks.
+- Kanban task creation calls the backend in live mode.
+- Moving a task between lanes persists `TODO`, `IN_PROGRESS`, `REVIEW`, and `DONE` through the task API.
+- UI fallback remains available when live mode is disabled.
 
-## Phase 4
-- Citizen issue creation uses the real issue API in live mode.
-- Exact latitude/longitude and location are sent to the backend.
-- Backend priority enum values are normalized from UI labels.
-- Citizen issue lists load from the authenticated citizen endpoint.
-- Mock fallback remains available.
+## Phase 9 — Milestones
+- Added `PUT /api/projects/milestones/{milestoneId}` to the Spring Boot project controller/service.
+- Faculty milestone status changes now persist in live mode.
+- Frontend converts backend milestone enum values to the existing lowercase UI values.
 
-## Phase 5
-- After successful live issue creation, the frontend invokes the Spring Boot AI endpoint for that issue.
-- AI output is displayed as a triage summary without exposing AI credentials to the browser.
-- Duplicate detection and confidence are surfaced when returned by the backend.
+## Phase 10 — Industry / CSR
+- Industry organization discovery uses the backend organization endpoints.
+- CSR pledges use `POST /api/industry/sponsorships` in live mode.
+- Sponsorship records are loaded into the Industry workspace.
+- Missing verified organization data produces a clear error instead of a fabricated organization ID.
 
-## Phase 6
-- Nodal users receive the live issue queue through `DataContext`.
-- Verification status and priority changes use the real issue status/priority endpoints.
-- Existing nodal verification UI and university assignment presentation are preserved.
+## Phase 11 — Admin analytics foundation
+- Dashboard service adapters exist for summary, issue status/priority/category, project/task status, university participation, location analytics and financials.
+- Admin/Nodal live sessions attempt to load the dashboard summary while retaining existing presentation data as fallback.
 
-## Phase 7
-- Live universities are loaded from `/api/universities`.
-- University routing is available through `/api/universities/routing?category=...`.
-- Faculty/student project views can consume live projects.
-- Projects are hydrated with their backend milestones and tasks for the existing frontend workspace.
-- Existing UI remains the presentation layer; backend DTO differences are handled in API services.
+## Phase 12 — Notifications / session
+- Authenticated users load notifications from the backend notification API.
+- Mark-read and mark-all-read persist to the backend in live mode.
+- Session logout clears JWT/session state.
+- Mock notifications remain the fallback when live mode is disabled.
 
-## Live mode
+## Phase 13 — UX resilience
+- Global live-data loading indicator added to the application shell.
+- Global live-data error notice added without replacing the existing workspace.
+- Existing screen-level success/error handling remains intact.
+- Empty-state handling added to the CSR marketplace.
 
-Set:
+## Phase 14 — Production configuration
+
+Frontend uses Vite environment variables:
 
 ```env
+VITE_API_BASE_URL=<deployed-Spring-Boot-API>
 VITE_ENABLE_LIVE_API=true
-VITE_API_BASE_URL=<Spring-Boot-API-base-url>
 ```
 
-Keep `VITE_ENABLE_LIVE_API=false` for the standalone mock/demo experience.
+Do not put private Gemini/service-account credentials in `VITE_*` variables. AI remains backend-mediated.
 
-## Next
+The repository now includes a frontend GitHub Actions build workflow using Node 20, `npm ci`, and `npm run build` for pushes/PRs affecting `frontend/**`.
 
-Phase 8 — Student + Kanban persistence.
+## Phase 15 — Verification
+- Added `.github/workflows/frontend-build.yml`.
+- The workflow is the repeatable production build gate for the frontend.
+- The current GitHub connector does not expose a successful hosted run yet, so the build result must be confirmed from the Actions tab after GitHub starts the workflow.
+- A local build could not be executed in this session because the runtime could not resolve GitHub's network host.
+
+## Final integration contract
+
+```text
+Landing
+  → JWT / demo login
+  → Citizen issue + exact GPS
+  → Spring Boot issue API
+  → Spring Boot AI bridge
+  → Nodal verification
+  → University routing
+  → Faculty / Student project workspace
+  → persistent Kanban + milestones
+  → Industry CSR sponsorship
+  → Admin analytics/GIS
+  → notifications/profile/session
+```
+
+## Non-regression rules
+- Preserve exact map location capture.
+- Preserve Leaflet/OpenStreetMap.
+- Preserve all six roles.
+- Preserve Jharkhand/Sohrai visual identity.
+- Preserve the four-stage Kanban.
+- Keep AI secrets server-side.
+- Keep mock/demo fallback available.
+- Do not claim the production deployment is healthy until the deployed frontend/backend URLs and CORS are manually verified.
