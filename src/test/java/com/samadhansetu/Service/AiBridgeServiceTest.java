@@ -36,7 +36,7 @@ class AiBridgeServiceTest {
                 .description("The village hospital has no doctor or medicine.")
                 .location("Ranchi").build());
 
-        assertEquals("Healthcare", result.getCategory());
+        assertEquals("Healthcare", result.getCategoryTag());
         assertTrue(result.getConfidence() > 0.5);
         assertEquals("RULE_BASED_FALLBACK", result.getSource());
         assertNotNull(result.getSummary());
@@ -52,7 +52,7 @@ class AiBridgeServiceTest {
                 .description("गांव में पीने का पानी और पाइपलाइन उपलब्ध नहीं है।")
                 .location("Dumka").build());
 
-        assertEquals("Water Resources", result.getCategory());
+        assertEquals("Water Resources", result.getCategoryTag());
         assertEquals("RULE_BASED_FALLBACK", result.getSource());
     }
 
@@ -68,7 +68,7 @@ class AiBridgeServiceTest {
                 .title("Broken drinking water pipeline")
                 .description("Village drinking water pipeline is broken").build());
 
-        assertEquals("Water Resources", result.getCategory());
+        assertEquals("Water Resources", result.getCategoryTag());
         assertEquals(42L, result.getDuplicateIssueId());
     }
 }
