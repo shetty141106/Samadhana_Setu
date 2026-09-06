@@ -4,11 +4,12 @@ import L from 'leaflet';
 import { JHARKHAND_MAP_CENTER, JHARKHAND_DEFAULT_ZOOM, DISTRICT_COORDINATES } from '../../utils/geoData';
 import { StatusBadge } from '../ui/StatusBadge';
 import { JHARKHAND_DISTRICTS } from '../../utils/constants';
-import { MapPin, Filter, Eye, Layers } from 'lucide-react';
+import { MapPin, Eye } from 'lucide-react';
 
 // Custom Pin Icons for Leaflet
 const createPinIcon = (category, priority) => {
-  const isHigh = priority === 'Critical' || priority === 'High';
+  const normalizedPriority = String(priority ?? '').trim().toLowerCase();
+  const isHigh = normalizedPriority === 'critical' || normalizedPriority === 'high';
   const color = isHigh ? '#C45C26' : '#0B3D2E';
   const border = '#D4AF37';
 
@@ -59,9 +60,17 @@ export const IssueMap = ({
   const [mapCenter, setMapCenter] = useState(JHARKHAND_MAP_CENTER);
   const [zoomLevel, setZoomLevel] = useState(JHARKHAND_DEFAULT_ZOOM);
 
-  const filteredIssues = issues.filter(issue => {
-    const matchCat = activeCategory === 'all' || issue.category === activeCategory;
-    const matchDist = selectedDistrict === 'all' || issue.district.toLowerCase().includes(selectedDistrict.toLowerCase());
+  const safeIssues = Array.isArray(issues) ? issues : [];
+  const normalizedSelectedDistrict = String(selectedDistrict ?? 'all').trim().toLowerCase();
+  const normalizedActiveCategory = String(activeCategory ?? 'all').trim().toLowerCase();
+
+  const filteredIssues = safeIssues.filter(issue => {
+    if (!issue || typeof issue !== 'object') return false;
+
+    const issueCategory = String(issue.category ?? '').trim().toLowerCase();
+    const issueDistrict = String(issue.district ?? '').trim().toLowerCase();
+    const matchCat = normalizedActiveCategory === 'all' || issueCategory === normalizedActiveCategory;
+    const matchDist = normalizedSelectedDistrict === 'all' || issueDistrict.includes(normalizedSelectedDistrict);
     return matchCat && matchDist;
   });
 
@@ -141,11 +150,15 @@ export const IssueMap = ({
           />
 
           {filteredIssues.map((issue) => {
-            if (!issue.coordinates) return null;
+            const coordinates = issue.coordinates;
+            const lat = Number(coordinates?.lat);
+            const lng = Number(coordinates?.lng);
+            if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+
             return (
               <Marker
-                key={issue.id}
-                position={[issue.coordinates.lat, issue.coordinates.lng]}
+                key={issue.id ?? `${lat}-${lng}-${issue.title ?? 'issue'}`}
+                position={[lat, lng]}
                 icon={createPinIcon(issue.category, issue.priority)}
               >
                 <Popup>
@@ -153,25 +166,25 @@ export const IssueMap = ({
                     {issue.images && issue.images[0] && (
                       <img
                         src={issue.images[0]}
-                        alt={issue.title}
+                        alt={issue.title || 'Issue evidence'}
                         className="w-full h-28 object-cover rounded-lg mb-2"
                       />
                     )}
                     <div className="flex items-center justify-between gap-1 mb-1.5">
                       <span className="text-[10px] font-bold text-jh-green-800 uppercase tracking-wider">
-                        {issue.district}
+                        {issue.district || 'District not specified'}
                       </span>
-                      <StatusBadge status={issue.status} />
+                      <StatusBadge status={issue.status || 'REPORTED'} />
                     </div>
                     <h5 className="text-xs font-bold text-jh-charcoal line-clamp-2 mb-1">
-                      {issue.title}
+                      {issue.title || 'Untitled issue'}
                     </h5>
                     <p className="text-[11px] text-jh-earth-700 line-clamp-2 mb-2">
-                      {issue.description}
+                      {issue.description || 'No description available.'}
                     </p>
                     <div className="pt-2 border-t border-jh-earth-200 flex items-center justify-between">
                       <span className="text-[10px] text-jh-earth-600">
-                        {issue.upvotes} citizens supported
+                        {Number(issue.upvotes) || 0} citizens supported
                       </span>
                       {onSelectIssue && (
                         <button
