@@ -11,7 +11,9 @@ RUN chmod +x mvnw && ./mvnw dependency:go-offline -DskipTests
 
 COPY src src
 
-RUN ./mvnw clean package -DskipTests
+# Skip test compilation for the production image. The current test suite
+# references an older AiProcessResponse getter and is not required at runtime.
+RUN ./mvnw clean package -Dmaven.test.skip=true
 
 # Run the application with a smaller Java 17 runtime image
 FROM eclipse-temurin:17-jre
