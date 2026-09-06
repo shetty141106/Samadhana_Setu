@@ -26,10 +26,14 @@ public class IssueController {
     public List<IssueResponseDto> all() { return service.getAll(); }
 
     @GetMapping("/{id}")
-    public IssueResponseDto one(@PathVariable Long id) { return service.getById(id); }
+    public IssueResponseDto one(@PathVariable Long id, Authentication authentication) {
+        return service.getById(id, authentication.getName(), isStaff(authentication));
+    }
 
     @GetMapping("/citizen/{id}")
-    public List<IssueResponseDto> citizen(@PathVariable Long id) { return service.getByCitizen(id); }
+    public List<IssueResponseDto> citizen(@PathVariable Long id, Authentication authentication) {
+        return service.getByCitizen(id, authentication.getName(), isStaff(authentication));
+    }
 
     @GetMapping("/status/{status}")
     public List<IssueResponseDto> status(@PathVariable IssueStatus status) { return service.getByStatus(status); }
@@ -53,5 +57,10 @@ public class IssueController {
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         service.delete(id);
         return ResponseEntity.noContent().build();
+    }
+
+    private boolean isStaff(Authentication authentication) {
+        return authentication.getAuthorities().stream().anyMatch(authority ->
+                "ROLE_ADMIN".equals(authority.getAuthority()) || "ROLE_NODAL_OFFICER".equals(authority.getAuthority()));
     }
 }
