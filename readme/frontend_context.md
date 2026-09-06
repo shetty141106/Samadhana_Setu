@@ -32,12 +32,14 @@ Implemented live integrations include:
 - projects, teams, tasks and Kanban persistence
 - milestone persistence
 - Industry/CSR organizations and sponsorships
-- dashboard summary foundation
+- dashboard summary and selected analytics endpoints
 - notifications/session handling
 - environment-driven API configuration
 - loading/error/empty-state handling
+- authenticated role-aware hash routing
+- centralized 401 session invalidation
 
-Remaining frontend work is primarily **hosted runtime verification and replacing selected hard-coded presentation/demo values with live backend aggregates where backend data is available**.
+Remaining frontend work is primarily **hosted runtime verification, seeded six-role account verification, and replacing selected hard-coded presentation/demo values with live backend aggregates where backend data is available**.
 
 ## 3. Frontend Structure
 
@@ -98,11 +100,11 @@ frontend/
 
 Preserve all six roles unless product scope is deliberately changed.
 
-## 5. Authentication
+## 5. Authentication & Role Routing
 
 `auth.api.js` uses the Spring Boot authentication endpoints and stores the returned JWT through the centralized API client. Registration is also API-backed.
 
-The login screen retains six persona launchers for **explicit demo-mode navigation**. This should not be mistaken for production authentication.
+The login screen retains six persona cards as **account-role selectors**. In live mode, these cards do not perform client-side role switching or impersonation. The backend JWT is authoritative.
 
 Rules:
 
@@ -110,7 +112,11 @@ Rules:
 - handle 401/403 centrally;
 - do not expose JWT signing secrets;
 - do not expose Gemini/database/server credentials through `VITE_*` variables;
-- preserve demo fallback where required for presentation resilience.
+- preserve demo fallback where required for presentation resilience;
+- if the selected login role differs from the server-returned role, reject the mismatch instead of opening the wrong dashboard;
+- authenticated hash routes are constrained to the role returned by the backend;
+- logout clears the JWT and persisted session;
+- backend registration currently creates CITIZEN accounts, so NODAL_OFFICER/FACULTY/STUDENT/INDUSTRY/ADMIN verification requires corresponding backend users.
 
 ## 6. API / DTO Boundary
 
@@ -126,7 +132,7 @@ Spring Boot REST API
 MySQL/TiDB + backend AI service
 ```
 
-`client.js` owns base URL, bearer token, common request behavior and auth/error handling.
+`client.js` owns base URL, bearer token, common request behavior and auth/error handling. A 401 clears the client session and dispatches the shared authentication invalidation event.
 
 `issue.api.js` normalizes backend issue statuses and evidence media. Backend status mapping:
 
@@ -143,7 +149,7 @@ REJECTED     → REJECTED
 
 ## 7. DataContext / Live Mode
 
-`DataContext.jsx` now supports live API hydration when:
+`DataContext.jsx` supports live API hydration when:
 
 ```env
 VITE_ENABLE_LIVE_API=true
@@ -160,6 +166,8 @@ Implemented live mutations include:
 - task status update
 - milestone update
 - CSR sponsorship creation
+
+Issue upvotes are limited to one per user in the current frontend interaction layer using user-scoped localStorage state. This is presentation protection; server-side enforcement should be added if persistent anti-abuse guarantees are required.
 
 ## 8. Citizen Experience
 
@@ -240,6 +248,7 @@ Implemented:
 - sponsorship API
 - sponsorship records in live mode
 - clear error when no verified organization is available
+- issue-detail CSR sponsorship now resolves a verified backend organization before creating a live sponsorship
 
 The UI records sponsorship intent/records. It does not imply real payment settlement.
 
@@ -249,11 +258,13 @@ Implemented:
 
 - state command center
 - dashboard summary integration foundation
+- live issue-category analytics when the dashboard API is available
+- live issue-status analytics when the dashboard API is available
 - GIS issue map
-- analytics charts
+- analytics charts with explicit live/demo fallback labels
 - user/RBAC presentation
 
-**Known remaining cleanup:** some chart datasets and user/persona rows are hard-coded demo presentation values. These should not be described as live telemetry. Replace them with backend values when the relevant aggregation endpoints/data are available.
+The user/persona directory is still demo metadata because no dedicated live user-directory endpoint is currently consumed by the frontend. It is explicitly labelled as demo rather than live governance data.
 
 ## 14. Notifications / Session
 
@@ -263,6 +274,7 @@ Implemented:
 - unread/read state
 - mark read/all read
 - session logout/JWT cleanup
+- centralized auth invalidation on 401
 - fallback mock notifications when live mode is disabled
 
 External SMS/WhatsApp/email delivery is outside the current frontend prototype scope.
@@ -332,19 +344,22 @@ This is the primary SIH demonstration story.
 
 ## 20. Remaining Frontend Work
 
-1. Verify the hosted frontend build/run.
-2. Verify frontend → deployed backend connectivity.
-3. Verify production CORS/JWT behavior.
-4. Verify live AI results through the complete user flow.
-5. Replace important hard-coded Admin/F​aculty/Student presentation values with live backend aggregates where supported.
-6. Confirm Cloudinary evidence upload configuration if used in the final demo.
-7. Execute the complete deployed SIH walkthrough.
+1. Verify the hosted frontend build/run after the latest commits.
+2. Verify frontend → deployed backend connectivity and the corrected login error handling.
+3. Seed/verify real accounts for all six backend roles and complete six-role login checks.
+4. Verify production CORS/JWT behavior.
+5. Verify live AI results through the complete user flow.
+6. Replace remaining important hard-coded Faculty/Student presentation values with live backend aggregates where supported.
+7. Replace demo Admin user governance rows when a live user-directory endpoint is available.
+8. Confirm Cloudinary evidence upload configuration if used in the final demo.
+9. Execute the complete deployed SIH walkthrough.
 
 ## 21. Non-Regression Rules
 
 - Preserve exact GPS capture.
 - Preserve Leaflet/OpenStreetMap.
 - Preserve all six roles.
+- Preserve server-authoritative role assignment; never add client-side role impersonation to live mode.
 - Preserve Jharkhand/Sohrai identity.
 - Preserve four-stage Kanban.
 - Preserve reusable components.
