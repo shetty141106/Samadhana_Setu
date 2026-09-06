@@ -12,7 +12,23 @@ const projectToUi = project => ({ ...project, status: String(project.status || '
 
 export const DataProvider = ({ children }) => {
   const { currentUser, isAuthenticated } = useAuth();
-  const [issues, setIssues] = useState(INITIAL_ISSUES); const [projects, setProjects] = useState(INITIAL_PROJECTS); const [sponsors, setSponsors] = useState(MOCK_CSR_SPONSORS); const [stats, setStats] = useState(PLATFORM_STATS); const [dashboard, setDashboard] = useState(null); const [dataLoading, setDataLoading] = useState(false); const [dataError, setDataError] = useState('');
+  const [issues, setIssues] = useState(INITIAL_ISSUES);
+  const [projects, setProjects] = useState(INITIAL_PROJECTS);
+  const [sponsors, setSponsors] = useState(MOCK_CSR_SPONSORS);
+  const [stats, setStats] = useState(PLATFORM_STATS);
+  const [dashboard, setDashboard] = useState(null);
+  const [likedIssueIds, setLikedIssueIds] = useState(new Set());
+  const [dataLoading, setDataLoading] = useState(false);
+  const [dataError, setDataError] = useState('');
+
+  useEffect(() => {
+    const storageKey = currentUser?.id ? `samadhansetu_upvotes_${currentUser.id}` : null;
+    if (!storageKey) { setLikedIssueIds(new Set()); return; }
+    try {
+      const saved = JSON.parse(localStorage.getItem(storageKey) || '[]');
+      setLikedIssueIds(new Set(Array.isArray(saved) ? saved.map(String) : []));
+    } catch { setLikedIssueIds(new Set()); }
+  }, [currentUser?.id]);
 
   useEffect(() => {
     if (!LIVE_API || !isAuthenticated) return; let cancelled = false;
@@ -34,18 +50,27 @@ export const DataProvider = ({ children }) => {
     }
     const issue = { id: `JH-ISSUE-2025-${String(issues.length + 120).padStart(3, '0')}`, reportedDate: new Date().toISOString().split('T')[0], status: 'SUBMITTED', upvotes: 1, timeline: [{ status: 'SUBMITTED', date: new Date().toISOString().split('T')[0], remark: 'Grievance registered with evidence by citizen' }], ...newIssue }; setIssues(prev => [issue, ...prev]); setStats(prev => ({ ...prev, totalIssuesReported: prev.totalIssuesReported + 1 })); return issue;
   };
-  const upvoteIssue = id => setIssues(prev => prev.map(i => i.id === id ? { ...i, upvotes: Number(i.upvotes || 0) + 1 } : i));
+
+  const upvoteIssue = id => {
+    const issueKey = String(id);
+    const storageKey = currentUser?.id ? `samadhansetu_upvotes_${currentUser.id}` : 'samadhansetu_upvotes_guest';
+    try {
+      const saved = JSON.parse(localStorage.getItem(storageKey) || '[]');
+      const savedIds = Array.isArray(saved) ? saved.map(String) : [];
+      if (savedIds.includes(issueKey)) return false;
+      const nextIds = [...savedIds, issueKey];
+      localStorage.setItem(storageKey, JSON.stringify(nextIds));
+      setLikedIssueIds(new Set(nextIds));
+    } catch { return false; }
+    setIssues(prev => prev.map(i => i.id === id ? { ...i, upvotes: Number(i.upvotes || 0) + 1 } : i));
+    return true;
+  };
+
   const verifyIssue = async (id, { status, priority, nodalRemarks, assignedUniversity }) => {
     if (LIVE_API && isAuthenticated) {
       let updated = null;
-      if (status) {
-        updated = await issueApi.updateIssueStatus(id, status);
-        setIssues(prev => prev.map(i => i.id === id ? { ...i, ...updated, nodalRemarks: nodalRemarks || i.nodalRemarks, assignedUniversity: assignedUniversity || i.assignedUniversity } : i));
-      }
-      if (priority) {
-        updated = await issueApi.updateIssuePriority(id, priority);
-        setIssues(prev => prev.map(i => i.id === id ? { ...i, ...updated, nodalRemarks: nodalRemarks || i.nodalRemarks, assignedUniversity: assignedUniversity || i.assignedUniversity } : i));
-      }
+      if (status) { updated = await issueApi.updateIssueStatus(id, status); setIssues(prev => prev.map(i => i.id === id ? { ...i, ...updated, nodalRemarks: nodalRemarks || i.nodalRemarks, assignedUniversity: assignedUniversity || i.assignedUniversity } : i)); }
+      if (priority) { updated = await issueApi.updateIssuePriority(id, priority); setIssues(prev => prev.map(i => i.id === id ? { ...i, ...updated, nodalRemarks: nodalRemarks || i.nodalRemarks, assignedUniversity: assignedUniversity || i.assignedUniversity } : i)); }
       return updated;
     }
     setIssues(prev => prev.map(i => i.id === id ? { ...i, status, priority: priority || i.priority, nodalRemarks: nodalRemarks || i.nodalRemarks, assignedUniversity: assignedUniversity || i.assignedUniversity, timeline: [...(i.timeline || []), { status, date: new Date().toISOString().split('T')[0], remark: nodalRemarks || `Status updated to ${status} by Nodal Officer` }] } : i));
@@ -57,6 +82,6 @@ export const DataProvider = ({ children }) => {
   const updateMilestone = async (projectId, index, newStatus) => { const milestone = projects.find(p => p.id === projectId)?.milestones?.[index]; if (LIVE_API && isAuthenticated && milestone?.id) { const updated = await projectApi.updateMilestone(milestone.id, { title: milestone.title, startDate: milestone.startDate, endDate: milestone.endDate, status: newStatus.toUpperCase() }); setProjects(prev => prev.map(p => p.id === projectId ? { ...p, milestones: p.milestones.map((m, i) => i === index ? updated : m) } : p)); return updated; } setProjects(prev => prev.map(p => p.id === projectId ? { ...p, milestones: (p.milestones || []).map((m, i) => i === index ? { ...m, status: newStatus } : m) } : p)); };
   const refreshIssues = async () => { if (!LIVE_API || !isAuthenticated) return; const loaded = currentUser?.id && currentUser.role === 'citizen' ? await issueApi.getCitizenIssues(currentUser.id) : await issueApi.listIssues(); setIssues(loaded); };
 
-  return <DataContext.Provider value={{ issues, projects, sponsors, stats, dashboard, dataLoading, dataError, liveApi: LIVE_API, addIssue, upvoteIssue, verifyIssue, updateTaskStatus, addKanbanTask, sponsorProject, updateMilestone, refreshIssues }}>{children}</DataContext.Provider>;
+  return <DataContext.Provider value={{ issues, projects, sponsors, stats, dashboard, dataLoading, dataError, liveApi: LIVE_API, addIssue, upvoteIssue, likedIssueIds, isIssueLiked: id => likedIssueIds.has(String(id)), verifyIssue, updateTaskStatus, addKanbanTask, sponsorProject, updateMilestone, refreshIssues }}>{children}</DataContext.Provider>;
 };
 export const useData = () => { const context = useContext(DataContext); if (!context) throw new Error('useData must be used within a DataProvider'); return context; };
