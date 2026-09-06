@@ -38,9 +38,14 @@ export const DataProvider = ({ children }) => {
   const verifyIssue = async (id, { status, priority, nodalRemarks, assignedUniversity }) => {
     if (LIVE_API && isAuthenticated) {
       let updated = null;
-      if (status) updated = await issueApi.updateIssueStatus(id, status);
-      if (priority) updated = await issueApi.updateIssuePriority(id, priority);
-      if (updated) setIssues(prev => prev.map(i => i.id === id ? { ...i, ...updated, nodalRemarks: nodalRemarks || i.nodalRemarks, assignedUniversity: assignedUniversity || i.assignedUniversity } : i));
+      if (status) {
+        updated = await issueApi.updateIssueStatus(id, status);
+        setIssues(prev => prev.map(i => i.id === id ? { ...i, ...updated, nodalRemarks: nodalRemarks || i.nodalRemarks, assignedUniversity: assignedUniversity || i.assignedUniversity } : i));
+      }
+      if (priority) {
+        updated = await issueApi.updateIssuePriority(id, priority);
+        setIssues(prev => prev.map(i => i.id === id ? { ...i, ...updated, nodalRemarks: nodalRemarks || i.nodalRemarks, assignedUniversity: assignedUniversity || i.assignedUniversity } : i));
+      }
       return updated;
     }
     setIssues(prev => prev.map(i => i.id === id ? { ...i, status, priority: priority || i.priority, nodalRemarks: nodalRemarks || i.nodalRemarks, assignedUniversity: assignedUniversity || i.assignedUniversity, timeline: [...(i.timeline || []), { status, date: new Date().toISOString().split('T')[0], remark: nodalRemarks || `Status updated to ${status} by Nodal Officer` }] } : i));
