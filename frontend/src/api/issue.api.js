@@ -5,17 +5,25 @@ const statusToBackend = { SUBMITTED: 'REPORTED', VERIFIED: 'VERIFIED', IN_RD: 'I
 const priorityToBackend = (priority) => String(priority || 'MEDIUM').toUpperCase();
 const priorityToUi = (priority) => { const value = String(priority || 'MEDIUM').toLowerCase(); return value.charAt(0).toUpperCase() + value.slice(1); };
 
-export const mapIssueToUiModel = (issue = {}) => ({
-  ...issue,
-  status: statusToUi[issue.status] || issue.status,
-  uiStatus: statusToUi[issue.status] || issue.status,
-  priority: priorityToUi(issue.priority),
-  latitude: issue.latitude != null ? Number(issue.latitude) : null,
-  longitude: issue.longitude != null ? Number(issue.longitude) : null,
-  coordinates: issue.latitude != null && issue.longitude != null ? { lat: Number(issue.latitude), lng: Number(issue.longitude) } : issue.coordinates || null,
-  locationName: issue.location || issue.locationName || '',
-  evidenceMedia: issue.evidenceMedia || []
-});
+export const mapIssueToUiModel = (issue = {}) => {
+  const evidenceMedia = Array.isArray(issue.evidenceMedia) ? issue.evidenceMedia : [];
+  const evidenceImages = evidenceMedia
+    .filter(media => String(media.mediaType || 'IMAGE').toUpperCase() === 'IMAGE' && media.mediaUrl)
+    .map(media => media.mediaUrl);
+
+  return {
+    ...issue,
+    status: statusToUi[issue.status] || issue.status,
+    uiStatus: statusToUi[issue.status] || issue.status,
+    priority: priorityToUi(issue.priority),
+    latitude: issue.latitude != null ? Number(issue.latitude) : null,
+    longitude: issue.longitude != null ? Number(issue.longitude) : null,
+    coordinates: issue.latitude != null && issue.longitude != null ? { lat: Number(issue.latitude), lng: Number(issue.longitude) } : issue.coordinates || null,
+    locationName: issue.location || issue.locationName || '',
+    evidenceMedia,
+    images: Array.isArray(issue.images) && issue.images.length ? issue.images : evidenceImages
+  };
+};
 
 export const mapIssueToApiModel = (issue = {}) => ({
   title: issue.title,
