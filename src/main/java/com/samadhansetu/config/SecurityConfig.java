@@ -53,7 +53,10 @@ public class SecurityConfig {
 
                         .requestMatchers("/api/ai/**").authenticated()
                         .requestMatchers("/api/dashboard/**").hasAnyRole("ADMIN", "NODAL_OFFICER")
-                        .requestMatchers("/api/notifications/**").authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/notifications").hasAnyRole("ADMIN", "NODAL_OFFICER", "FACULTY")
+                        .requestMatchers(HttpMethod.GET, "/api/notifications/**").authenticated()
+                        .requestMatchers(HttpMethod.PUT, "/api/notifications/**").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/api/notifications/**").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/projects/**").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/projects/**").hasAnyRole("ADMIN", "NODAL_OFFICER", "FACULTY")
                         .requestMatchers(HttpMethod.PUT, "/api/projects/**").hasAnyRole("ADMIN", "NODAL_OFFICER", "FACULTY")
