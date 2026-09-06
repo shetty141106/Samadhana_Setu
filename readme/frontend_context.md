@@ -1,25 +1,45 @@
-# SAMADHANSETU — FRONTEND LAYER CONTEXT (IMPLEMENTATION + CONTINUATION SOURCE OF TRUTH)
+# SAMADHANSETU — FRONTEND LAYER CONTEXT
 
-> Authoritative frontend build context for continuing SamadhanSetu. Reconciled against the frontend code currently present on `main`, not only the original prototype proposal. Future frontend work must read this file, `readme/PROJECT_CONTEXT.md`, and `readme/samadhansetu_backend_context.md` before changing architecture.
+> **Frontend implementation source of truth.** Reconciled against the frontend code currently present on `main` as of 2026-09-06. Future frontend work must read this file, `readme/PROJECT_CONTEXT.md`, and `readme/samadhansetu_backend_context.md` before changing architecture.
 
-## 1. PROJECT / REPOSITORY
+## 1. Project / Stack
 
-- Project: SamadhanSetu — SIH 2026 PS26043, Government of Jharkhand.
-- Repository: `shetty141106/Samadhana_Setu`, branch `main`.
-- Frontend root: `frontend/`.
-- Runtime: React 18 + Vite 5.
-- Styling: Tailwind CSS 3 + custom Jharkhand design tokens.
-- Icons: lucide-react.
-- Maps: Leaflet + React Leaflet + OpenStreetMap tiles.
-- Charts: Recharts.
-- State: React Context + local component state.
-- Demo data: `frontend/src/data/mockData.js`.
-- Client API configuration: `import.meta.env.VITE_API_BASE_URL`.
-- AI rule: frontend never calls Gemini/Pinecone/AI service directly; AI remains backend-mediated.
+- Project: SamadhanSetu — SIH 2026 PS26043, Government of Jharkhand
+- Repository: `shetty141106/Samadhana_Setu`
+- Frontend root: `frontend/`
+- React 18 + Vite 5
+- Tailwind CSS 3 + custom Jharkhand design tokens
+- lucide-react
+- Leaflet + React Leaflet + OpenStreetMap
+- Recharts
+- React Context + local component state
+- API layer: `frontend/src/api/`
+- Client configuration: `VITE_API_BASE_URL`
+- Live-data switch: `VITE_ENABLE_LIVE_API=true`
+- Demo fallback: `frontend/src/data/mockData.js`
+- AI rule: browser never calls Gemini or the Python AI service directly; AI remains backend-mediated.
 
-**Current status:** the frontend is a high-fidelity, interactive prototype/demo shell with rich mock-data state. It is not yet equivalent to a fully live backend-integrated application. Preserve the current UI while replacing the data/auth plumbing incrementally.
+## 2. Current Status
 
-## 2. CURRENT FRONTEND STRUCTURE
+The frontend is **implemented and integrated at code level** with the Spring Boot backend. It is no longer only a mock-data shell.
+
+Implemented live integrations include:
+
+- authentication/JWT
+- citizen issues
+- backend-mediated AI result flow
+- nodal verification/status/priority updates
+- projects, teams, tasks and Kanban persistence
+- milestone persistence
+- Industry/CSR organizations and sponsorships
+- dashboard summary foundation
+- notifications/session handling
+- environment-driven API configuration
+- loading/error/empty-state handling
+
+Remaining frontend work is primarily **hosted runtime verification and replacing selected hard-coded presentation/demo values with live backend aggregates where backend data is available**.
+
+## 3. Frontend Structure
 
 ```text
 frontend/
@@ -34,402 +54,304 @@ frontend/
     ├── main.jsx
     ├── index.css
     ├── styles.css
+    ├── api/
+    │   ├── client.js
+    │   ├── auth.api.js
+    │   ├── issue.api.js
+    │   ├── project.api.js
+    │   ├── industry.api.js
+    │   ├── dashboard.api.js
+    │   └── notification.api.js
     ├── components/
-    │   ├── common/       Emblem.jsx, SohraiBorder.jsx
-    │   ├── issues/       IssueCard.jsx, IssueDetailModal.jsx, IssueForm.jsx
-    │   ├── layout/       AppShell.jsx, Footer.jsx, GovtBanner.jsx, Sidebar.jsx, Topbar.jsx
-    │   ├── maps/         IssueMap.jsx, LocationPicker.jsx
-    │   ├── notifications/NotificationDropdown.jsx
-    │   ├── projects/     KanbanBoard.jsx, ProjectCard.jsx
-    │   └── ui/            Badge.jsx, Button.jsx, Card.jsx, Modal.jsx, StatusBadge.jsx, Tabs.jsx
-    ├── context/           AuthContext.jsx, DataContext.jsx
-    ├── data/              mockData.js
+    │   ├── common/
+    │   ├── issues/
+    │   ├── layout/
+    │   ├── maps/
+    │   ├── notifications/
+    │   ├── projects/
+    │   └── ui/
+    ├── context/
+    ├── data/
     ├── pages/
-    │   ├── landing/       LandingPage.jsx
-    │   ├── auth/          Login.jsx
-    │   ├── citizen/       CitizenDashboard.jsx
-    │   ├── nodal/         NodalDashboard.jsx
-    │   ├── faculty/       FacultyDashboard.jsx
-    │   ├── student/       StudentDashboard.jsx
-    │   ├── industry/      IndustryDashboard.jsx
-    │   ├── admin/         AdminDashboard.jsx
-    │   └── shared/        ProfilePage.jsx
-    └── utils/             constants.js, geoData.js
+    │   ├── landing/
+    │   ├── auth/
+    │   ├── citizen/
+    │   ├── nodal/
+    │   ├── faculty/
+    │   ├── student/
+    │   ├── industry/
+    │   ├── admin/
+    │   └── shared/
+    └── utils/
 ```
 
-## 3. APP FLOW / ROUTING
+## 4. Six-Role Contract
 
-`App.jsx` currently uses `currentPath` local state rather than React Router:
+| Role | Portal |
+|---|---|
+| Citizen | Citizen Portal |
+| Nodal Officer | Field Verification Desk |
+| Faculty | Faculty R&D Workspace |
+| Student | Student Innovation Lab |
+| Industry | CSR Impact Marketplace |
+| Admin | State Command Center |
+
+Preserve all six roles unless product scope is deliberately changed.
+
+## 5. Authentication
+
+`auth.api.js` uses the Spring Boot authentication endpoints and stores the returned JWT through the centralized API client. Registration is also API-backed.
+
+The login screen retains six persona launchers for **explicit demo-mode navigation**. This should not be mistaken for production authentication.
+
+Rules:
+
+- bearer token belongs in the centralized API client;
+- handle 401/403 centrally;
+- do not expose JWT signing secrets;
+- do not expose Gemini/database/server credentials through `VITE_*` variables;
+- preserve demo fallback where required for presentation resilience.
+
+## 6. API / DTO Boundary
+
+The frontend now uses a dedicated API boundary:
 
 ```text
-App → AuthProvider → DataProvider → MainAppContent
-     ├─ landing → LandingPage
-     ├─ login → Login
-     ├─ profile → ProfilePage
-     └─ role-based dashboard → citizen / nodal / faculty / student / industry / admin
+Pages / Components
+       ↓
+API services + DTO adapters
+       ↓
+Spring Boot REST API
+       ↓
+MySQL/TiDB + backend AI service
 ```
 
-Navigation values include role dashboards, report issue, issue maps, verification, projects, Kanban, CSR, analytics, governance, and profile views. Do not add React Router solely by convention; introduce it only when deep links/history/protected-route requirements justify it.
+`client.js` owns base URL, bearer token, common request behavior and auth/error handling.
 
-## 4. ROLE MODEL — CURRENT IMPLEMENTATION
-
-Six explicit roles exist in `utils/constants.js`:
-
-| Key | Role | Portal |
-|---|---|---|
-| `citizen` | Citizen | Citizen Portal |
-| `nodal` | Nodal Officer | Field Verification Desk |
-| `faculty` | Academic Faculty | Faculty R&D Workspace |
-| `student` | Student Researcher | Student Innovation Lab |
-| `industry` | Industry / CSR Partner | CSR Impact Marketplace |
-| `admin` | System Admin | State Command Center |
-
-The original context had three major views, but the implementation expanded University and Industry experiences into explicit Faculty, Student, and Industry roles. This six-role model is now the working frontend contract.
-
-## 5. AUTH — CURRENT VS TARGET
-
-### Current
-`AuthContext.jsx` provides `currentRole`, `currentUser`, `roleConfig`, role switching, language toggle (`en`/`hi`), and notification read/unread state. Users come from `MOCK_USERS`. `Login.jsx` includes six one-click persona launchers plus a credentials-looking form; these are demo behavior, not production authentication.
-
-### Target
-Replace authentication plumbing with the exact Spring Boot auth routes and JWT contract while preserving the UI:
-- real login/register if supported by backend;
-- persist/restore authenticated session appropriately;
-- derive role and user identity from backend;
-- bearer token on authenticated calls;
-- centralized 401/403 handling;
-- retain one-click role launcher only as explicitly labeled demo mode if desired.
-
-Never put Gemini, Pinecone, DB credentials, JWT signing secrets, or other private server secrets in frontend-exposed variables.
-
-## 6. DATA STATE — CURRENT
-
-`DataContext.jsx` currently owns local mutable demo state:
-
-- `issues`, `projects`, `sponsors`, `stats`
-- `addIssue`, `upvoteIssue`, `verifyIssue`
-- `updateTaskStatus`, `addKanbanTask`, `sponsorProject`, `updateMilestone`
-
-Target architecture:
+`issue.api.js` normalizes backend issue statuses and evidence media. Backend status mapping:
 
 ```text
-Spring Boot REST API → frontend API/service boundary + DTO adapters → DataContext/hooks → existing pages/components
+REPORTED     → SUBMITTED
+VERIFIED     → VERIFIED
+ASSIGNED     → IN_RD
+IN_PROGRESS  → IN_RD
+RESOLVED     → RESOLVED
+REJECTED     → REJECTED
 ```
 
-Do not rewrite the presentation layer merely to connect APIs. Keep mock fallback until live integration is stable.
+`CSR_FUNDED` remains a UI/project/sponsorship concept rather than a backend IssueStatus unless backend support is explicitly added.
 
-## 7. CITIZEN EXPERIENCE — CURRENT
+## 7. DataContext / Live Mode
 
-`CitizenDashboard.jsx` includes welcome/action banner, KPI cards, active grievance cards with category filters, district mini-map/full GIS map, issue detail modal, escalation protocol, and navigation to new issue submission.
+`DataContext.jsx` now supports live API hydration when:
 
-`IssueForm.jsx` includes title, category/domain, Jharkhand district, landmark/block/village, urgency, exact map location, detailed description, evidence preview/sample photos, and submission state.
+```env
+VITE_ENABLE_LIVE_API=true
+```
 
-### Exact location is a confirmed current requirement
-Recent frontend commits `70fbbde...` and `d216d1a...` introduced an interactive Leaflet location picker and changed issue creation from approximate district coordinates to `selectedCoordinates`. Submission is blocked until an exact location is selected. `LocationPicker.jsx` supports map click and district-center fallback and displays exact latitude/longitude. Preserve this behavior.
+It loads live issues and projects and attempts dashboard/sponsorship data for authorized roles. Mutation methods use backend APIs in live mode and preserve local fallback otherwise.
 
-## 8. NODAL EXPERIENCE — CURRENT
+Implemented live mutations include:
 
-`NodalDashboard.jsx` includes district verification header, verification/critical/routed/resolved KPI cards, pending vs active/in-R&D tabs, case table with ID/date/title/location/category/priority/status, verification action affordance, district GIS map, and issue verification/detail modal.
+- issue creation
+- issue status update
+- issue priority update
+- task creation
+- task status update
+- milestone update
+- CSR sponsorship creation
 
-Current mutations are local via `DataContext.verifyIssue()`. Future live actions should use exact current backend controller contracts, not assumed paths.
+## 8. Citizen Experience
 
-## 9. FACULTY EXPERIENCE — CURRENT
+Implemented:
 
-`FacultyDashboard.jsx` includes academic mentor identity, mentored-project/student/CSR/patent KPI cards, project selector, project overview, milestone validation/tranche-clearance UI, approval feedback, and Kanban workspace. Milestone actions currently mutate local state.
+- dashboard KPIs
+- issue cards/detail modal
+- category filtering
+- exact GPS location capture
+- Leaflet map
+- evidence/image preview
+- issue submission API
+- citizen issue listing
+- AI-enriched issue data through backend response
+- issue timeline/status presentation
 
-## 10. STUDENT EXPERIENCE — CURRENT
+**Exact location is a non-regression requirement.** Submission must preserve selected latitude/longitude rather than silently reverting to approximate district coordinates.
 
-`StudentDashboard.jsx` includes innovation lab header, sprint-task KPIs, active research initiative, institution/CSR/grant information, team roster, and interactive Kanban.
+## 9. Nodal Experience
 
-`KanbanBoard.jsx` has four lanes:
+Implemented:
+
+- verification queue
+- critical priority count
+- GIS view
+- issue detail/verification modal
+- status update API
+- priority update API
+- university assignment presentation
+- nodal remarks presentation
+
+Backend authorization remains authoritative; UI controls do not replace server-side RBAC.
+
+## 10. Faculty Experience
+
+Implemented:
+
+- project selector
+- project details
+- milestone validation UI
+- persistent milestone status updates
+- Kanban review workspace
+
+Some KPI/presentation values remain demo-oriented and should be replaced with live aggregates where the backend exposes the required data.
+
+## 11. Student Experience
+
+Implemented:
+
+- assigned project view
+- team roster
+- task KPIs
+- four-lane Kanban
+- task creation
+- task status persistence
+- project progress presentation
+
+Backend task statuses:
 
 ```text
-To Do / Backlog
-In Lab / Prototyping
-Faculty & Lab Review
-Verified & Deployed
+TODO, IN_PROGRESS, REVIEW, DONE
 ```
 
-It supports adding tasks, assigning a name, moving tasks forward/backward, and recalculating project progress from completed tasks. Keep the four-lane UI and map it to backend `TaskStatus`: `TODO`, `IN_PROGRESS`, `REVIEW`, `DONE`.
-
-## 11. INDUSTRY / CSR EXPERIENCE — CURRENT
-
-`IndustryDashboard.jsx` includes corporate CSR header/budget panel, active pledge and ecological-impact KPIs, vetted R&D marketplace, domain filters, sponsorship modal, pledge amount input, and success state. Current sponsorship uses local `sponsorProject()`.
-
-The UI exists and should be preserved. Real money movement remains a backend/security concern and is not implied by this demo UI.
-
-## 12. ADMIN EXPERIENCE — CURRENT
-
-`AdminDashboard.jsx` includes State Command Center header, statewide KPI cards, Executive Analytics & Charts, State GIS Heatmap, User & Role Governance, Recharts bar chart, Recharts donut/pie lifecycle chart, Leaflet GIS map, and persona/RBAC table.
-
-Some chart values are currently hard-coded demo presentation values. Live backend aggregation must replace them when the `DashboardController` DTO contract is confirmed.
-
-## 13. PUBLIC LANDING + AUTH + PROFILE
-
-`LandingPage.jsx` is the public brand anchor: Jharkhand forest hero photography, “Report. Resolve. Rebuild Jharkhand.”, Report Issue / Explore Projects CTAs, Citizen/University/Industry persona cards, Sohrai-inspired treatment, four-stage How It Works, and impact statistics.
-
-`Login.jsx` provides six-role demo launching and credentials-looking sign-in surface.
-
-`ProfilePage.jsx` displays avatar, role access, name/title, email, phone, district, institution/department, and sign-out affordance.
-
-## 14. SHARED SHELL
-
-`AppShell.jsx` renders GovtBanner, Topbar, authenticated Sidebar + main workspace or full-width public content, and Footer. `Sidebar.jsx` is role-aware and contains navigation for all six roles plus public landing return. Reuse this shell instead of duplicating layout code.
-
-## 15. SHARED COMPONENTS
-
-Existing reusable primitives: `Button`, `Badge`, `StatusBadge`, `Card`/`StatCard`, `Modal`, `Tabs`.
-
-Existing domain components: `IssueCard`, `IssueDetailModal`, `IssueForm`, `IssueMap`, `LocationPicker`, `ProjectCard`, `KanbanBoard`, `NotificationDropdown`, `Emblem`, `SohraiBorder`.
-
-Future screens should reuse these before creating duplicates.
-
-## 16. VISUAL DESIGN SYSTEM — CURRENT SOURCE OF TRUTH
-
-The visual language is **Jharkhand civic/institutional**, not generic SaaS.
-
-Core Tailwind palette:
+Frontend presentation statuses:
 
 ```text
-jh-green:       #f0f8f4 → #051f17; primary #0B3D2E; lush forest #1B5E3B
-jh-terracotta:  #fdf4ee → #7e3415; primary #C45C26; saffron #E07A3D
-jh-earth:       #FDFBF7 → #28221C; warm cream #F8F5EE
-jh-gold:        #F2C94C / #D4AF37 / #B89324
-jh-charcoal:    #1C2826
-jh-indigo:      #2D4059
+todo, in_progress, review, done
 ```
 
-Fonts: Plus Jakarta Sans/Inter/system-ui for sans; Cormorant Garamond/Merriweather/serif for serif; Plus Jakarta Sans/Poppins for headings.
+## 12. Industry / CSR Experience
 
-Existing visual tokens include `jh-soft`, `jh-card`, `jh-glow`, forest/terracotta/green gradients, glass treatments, Sohrai patterns, live indicators, Leaflet styling, and custom scrollbars.
+Implemented:
 
-Design principles: civic trust over trendy startup styling; clarity over density; strong role identity; visible status; obvious primary actions; respectful, subtle Jharkhand cultural motifs.
+- organization discovery from backend
+- R&D marketplace
+- project filtering
+- sponsorship amount form
+- sponsorship API
+- sponsorship records in live mode
+- clear error when no verified organization is available
 
-## 17. MAP / LOCATION SOURCE OF TRUTH
+The UI records sponsorship intent/records. It does not imply real payment settlement.
 
-Current map stack is **Leaflet + React Leaflet + OpenStreetMap**, not Google Maps.
+## 13. Admin Experience
 
-`geoData.js` defines Jharkhand center/default zoom and coordinates for all 24 districts. `IssueMap.jsx` is the reusable visualization map; `LocationPicker.jsx` is the exact issue-location selector.
+Implemented:
 
-Do not switch back to Google Maps without a specific reason. Google Maps variables may remain in `.env.example` from the earlier design but are not the current primary map dependency.
+- state command center
+- dashboard summary integration foundation
+- GIS issue map
+- analytics charts
+- user/RBAC presentation
 
-## 18. ENVIRONMENT VARIABLES
+**Known remaining cleanup:** some chart datasets and user/persona rows are hard-coded demo presentation values. These should not be described as live telemetry. Replace them with backend values when the relevant aggregation endpoints/data are available.
 
-Current `frontend/.env.example`:
+## 14. Notifications / Session
+
+Implemented:
+
+- notification API integration
+- unread/read state
+- mark read/all read
+- session logout/JWT cleanup
+- fallback mock notifications when live mode is disabled
+
+External SMS/WhatsApp/email delivery is outside the current frontend prototype scope.
+
+## 15. Maps / Location
+
+Primary map stack:
+
+**Leaflet + React Leaflet + OpenStreetMap.**
+
+`geoData.js` contains Jharkhand's 24-district data. `IssueMap.jsx` visualizes issues and `LocationPicker.jsx` captures exact issue coordinates.
+
+Do not replace Leaflet with Google Maps without an explicit product decision.
+
+## 16. Visual System
+
+Preserve the existing Jharkhand civic/institutional identity:
+
+- forest green
+- terracotta
+- warm earth/cream
+- gold accents
+- Sohrai-inspired motifs
+- civic/government presentation rather than generic SaaS styling
+
+Preserve responsive layouts, mobile navigation, visible focus states, meaningful alt text and touch-friendly controls.
+
+## 17. Environment
+
+Frontend configuration is environment-driven:
 
 ```env
 VITE_API_BASE_URL=http://localhost:8080
-VITE_GOOGLE_MAPS_API_KEY=
+VITE_ENABLE_LIVE_API=true
 VITE_CLOUDINARY_CLOUD_NAME=
 VITE_CLOUDINARY_UPLOAD_PRESET=
 ```
 
-Rules: use `VITE_*`; `VITE_API_BASE_URL` is the main live integration variable; Leaflet means Google Maps key is not currently required; Cloudinary variables are available for media integration; never expose private server/AI secrets through `VITE_*`.
+`VITE_GOOGLE_MAPS_API_KEY` may exist in legacy configuration but is **not required by the current Leaflet/OpenStreetMap implementation**.
 
-## 19. BACKEND INTEGRATION TARGET
+Never place private Gemini, database, JWT signing, service-account or other server secrets in `VITE_*` variables.
 
-Backend context is authoritative for exact controllers/entities/enums. Relevant controllers include `AuthController`, `IssueController`, `AiIntegrationController`, `UniversityController`, `ProjectController`, `IndustryController`, `DashboardController`, and `NotificationController`.
+## 18. CI / Build
 
-Target architecture:
+A frontend GitHub Actions workflow exists at `.github/workflows/frontend-build.yml` using Node 20, `npm ci` and `npm run build`.
 
-```text
-Pages / Components → API service + DTO adapters → Spring Boot REST API → MySQL/TiDB + backend-mediated AI service
-```
+The workflow is the repeatable frontend build gate. A successful hosted run still needs to be observed/confirmed after deployment changes.
 
-Never access DB or AI service directly from browser code.
-
-## 20. API SERVICE LAYER — NEXT STEP
-
-There is currently no verified dedicated `src/api/` directory in the frontend tree. Add one when beginning live integration:
+## 19. Demo Walkthrough Contract
 
 ```text
-frontend/src/api/
-├── client.js
-├── auth.api.js
-├── issue.api.js
-├── university.api.js
-├── project.api.js
-├── industry.api.js
-├── dashboard.api.js
-└── notification.api.js
+Landing
+ → Citizen login/demo
+ → Report issue + exact GPS + evidence
+ → Spring Boot issue API
+ → backend AI processing
+ → Nodal verification
+ → university routing
+ → Faculty/Student R&D
+ → Kanban + milestones
+ → Industry CSR sponsorship
+ → Admin GIS + analytics
+ → notifications/profile/session
 ```
 
-`client.js` should own base URL, bearer token, common headers, and centralized auth/error handling. Controller-specific files should contain request methods. Add DTO adapters/normalizers at the API boundary.
+This is the primary SIH demonstration story.
 
-**Important:** confirm exact paths and DTO fields from current Spring Boot controllers before wiring. Do not treat old assumed paths as facts.
+## 20. Remaining Frontend Work
 
-## 21. DTO / UI ADAPTER RULE
+1. Verify the hosted frontend build/run.
+2. Verify frontend → deployed backend connectivity.
+3. Verify production CORS/JWT behavior.
+4. Verify live AI results through the complete user flow.
+5. Replace important hard-coded Admin/F​aculty/Student presentation values with live backend aggregates where supported.
+6. Confirm Cloudinary evidence upload configuration if used in the final demo.
+7. Execute the complete deployed SIH walkthrough.
 
-Use a boundary such as:
+## 21. Non-Regression Rules
 
-```text
-Backend Issue DTO → mapIssueToUiModel() → IssueCard / IssueDetailModal / IssueMap
-```
+- Preserve exact GPS capture.
+- Preserve Leaflet/OpenStreetMap.
+- Preserve all six roles.
+- Preserve Jharkhand/Sohrai identity.
+- Preserve four-stage Kanban.
+- Preserve reusable components.
+- Keep AI server-side/backend-mediated.
+- Keep mock fallback available for demo resilience.
+- Do not claim hosted production health until it has been manually verified.
 
-Preserve UI semantics for issue ID, title/description, district/exact coordinates, category/domain, priority, lifecycle status, university/project assignment, evidence/media, and timeline/status history.
+## 22. Source-of-Truth Rule
 
-## 22. ISSUE STATUS NORMALIZATION
-
-Backend `IssueStatus`:
-
-```text
-REPORTED, VERIFIED, ASSIGNED, IN_PROGRESS, RESOLVED, REJECTED
-```
-
-Current frontend demo statuses:
-
-```text
-SUBMITTED, VERIFIED, IN_RD, CSR_FUNDED, RESOLVED, REJECTED
-```
-
-Normalize at the API boundary:
-
-```text
-REPORTED → SUBMITTED
-VERIFIED → VERIFIED
-ASSIGNED → IN_RD
-IN_PROGRESS → IN_RD
-RESOLVED → RESOLVED
-REJECTED → REJECTED
-```
-
-Do not force `CSR_FUNDED` into the backend issue enum unless backend explicitly supports it; treat CSR funding as project/sponsorship state.
-
-## 23. TASK / PROJECT STATUS NORMALIZATION
-
-Backend `TaskStatus`: `TODO`, `IN_PROGRESS`, `REVIEW`, `DONE`.
-
-Frontend: `todo`, `in_progress`, `review`, `done`. This is a direct mapping.
-
-Backend `ProjectStatus`: `PLANNED`, `ACTIVE`, `ON_HOLD`, `COMPLETED`, `CANCELLED`. Normalize to current presentation labels at the API boundary.
-
-## 24. NOTIFICATIONS
-
-`NotificationDropdown.jsx` exists. Current notifications are mock data managed by `AuthContext`.
-
-Target live integration: backend `NotificationController` / `NotificationService` / `Notification` entity. Prototype remains in-app notifications; external SMS/WhatsApp/email delivery is not implied by the frontend.
-
-## 25. MEDIA / EVIDENCE
-
-Current evidence UI supports image previews and sample field photos. Cloudinary variables exist.
-
-Target flow:
-
-```text
-Browser evidence selection → Cloudinary or backend-approved upload → media URL/metadata → Spring Boot Issue API
-```
-
-AI analysis remains server-side/backend-mediated. Never expose private AI credentials in browser code.
-
-## 26. ACCESSIBILITY / RESPONSIVENESS
-
-Maintain responsive Tailwind behavior and mobile sidebar. Future changes must preserve keyboard accessibility, visible focus states, sufficient contrast, meaningful alt text, mobile/tablet/desktop layouts, no accidental horizontal overflow, touch-friendly citizen controls, and clear labels/errors.
-
-## 27. DEMO WALKTHROUGH CONTRACT
-
-```text
-Landing → Citizen → Report issue → exact map location → Submit → Nodal verification → University / Faculty / Student R&D → Kanban + milestones → Industry / CSR marketplace → Admin GIS + analytics
-```
-
-Keep this story coherent during backend integration.
-
-## 28. FRONTEND IMPLEMENTATION STATUS
-
-### Implemented
-- React/Vite scaffold
-- Tailwind/Jharkhand visual system
-- public landing page
-- government banner/topbar/sidebar/footer
-- six role personas
-- demo login/role launcher
-- citizen dashboard and issue submission
-- issue cards/detail modal
-- exact location picker
-- Leaflet issue maps
-- nodal verification workspace
-- faculty R&D workspace
-- student innovation workspace
-- four-lane Kanban
-- industry CSR marketplace demo
-- admin analytics/GIS dashboard
-- Recharts analytics
-- profile page
-- notification UI
-- mock state/data
-- 24-district geodata
-
-### Next required
-1. inspect exact current Spring Boot controllers/DTOs;
-2. add API client/service boundary;
-3. replace demo login with live JWT while retaining demo fallback;
-4. connect issue creation/list/detail and AI-enriched response;
-5. connect nodal verification/routing;
-6. connect project/team/milestone/task operations;
-7. connect Industry/CSR endpoints where backend supports them;
-8. connect dashboard aggregation/map data;
-9. connect notifications;
-10. add consistent loading/empty/error states;
-11. build and verify with `npm run build`.
-
-## 29. DO NOT REGRESS
-
-- exact map location capture;
-- Leaflet/OpenStreetMap implementation;
-- six-role model;
-- existing Jharkhand/Sohrai visual identity;
-- responsive shared shell;
-- four-stage Kanban;
-- reusable component system;
-- backend-mediated AI architecture;
-- secret separation;
-- demo fallback during live integration.
-
-## 30. FUTURE / DEFERRED UNLESS REQUESTED
-
-- native React Native/Flutter app;
-- full Next.js migration;
-- offline-first PWA synchronization;
-- Aadhaar OTP/DigiLocker;
-- voice-first reporting;
-- full multilingual localization beyond current language-demo capability;
-- client-side OCR/EXIF verification;
-- direct browser-to-AI calls;
-- production payment settlement infrastructure;
-- large-scale social/forum features.
-
-## 31. CONTINUATION RULES FOR FUTURE AGENTS
-
-1. Read `readme/PROJECT_CONTEXT.md` for product/problem authority.
-2. Read `readme/samadhansetu_backend_context.md` for backend authority.
-3. Read this file for frontend authority.
-4. Inspect actual code before proposing replacement architecture.
-5. Extend existing components/tokens before creating duplicates.
-6. Isolate API/backend concerns from presentation code.
-7. Use `import.meta.env.VITE_*` for client configuration.
-8. Never put private AI/database/server secrets in frontend.
-9. Confirm backend paths/DTOs from current code before API wiring.
-10. Preserve demo fallback until live integration is stable.
-11. Preserve Leaflet rather than silently returning to Google Maps.
-12. Preserve all six roles unless product scope is deliberately changed.
-13. Treat hard-coded dashboard numbers as demo data until replaced by live analytics.
-14. Run `npm run build` after substantive changes.
-
-## 32. VERIFIED RECENT FRONTEND COMMITS
-
-```text
-31b92ee  feat: add Samadhan Setu frontend
-70fbbde  feat(frontend): add interactive civic issue location picker
-d216d1a  feat(frontend): integrate exact map location into issue reporting
-```
-
-## 33. FINAL SOURCE-OF-TRUTH STATEMENT
-
-**From this point onward, this file is the frontend implementation-layer source of truth.** The frontend is an existing React/Vite/Tailwind product shell with six role-based experiences, reusable UI components, local demo state, Leaflet GIS, exact location capture, Kanban workflow, CSR UX, and admin analytics.
-
-Future work follows:
-
-```text
-Read context → inspect current frontend → inspect current backend controllers/DTOs → build API boundary + adapters → connect existing UI → preserve demo fallback → build + verify
-```
-
-Do not rebuild the frontend from scratch unless explicitly requested.
+**This file describes the frontend as it exists now, not the original planned frontend.** Future agents must inspect actual code and current backend controller/DTO contracts before changing architecture. Do not rebuild the frontend from scratch.
