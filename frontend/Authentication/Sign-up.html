@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Create Account | SamadhanSetu</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --jh-green-900: #0B3D2E;
+      --jh-green-700: #1B5E3B;
+      --jh-gold: #F2C94C;
+      --jh-gold-dark: #D4AF37;
+      --jh-charcoal: #1C2826;
+      --jh-earth-900: #28221C;
+      --jh-earth-800: #3D342B;
+      --jh-earth-700: #534739;
+      --jh-earth-400: #B4A28A;
+      --jh-earth-300: #D5C7B3;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      background: var(--jh-charcoal);
+    }
+
+    /* ===== LEFT PANEL ===== */
+    .left-panel {
+      width: 50%;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 3rem;
+      color: white;
+    }
+
+    .left-panel::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: url('https://images.unsplash.com/photo-1432405972618-c60b0225b8f9?w=1600&q=80') center/cover no-repeat;
+    }
+
+    .left-panel::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(11,61,46,0.78) 0%, rgba(11,61,46,0.6) 50%, rgba(11,61,46,0.92) 100%);
+    }
+
+    .left-content {
+      position: relative;
+      z-index: 2;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 1.6rem;
+      font-weight: 700;
+    }
+
+    .logo-icon {
+      width: 42px;
+      height: 42px;
+      background: var(--jh-gold);
+      color: var(--jh-green-900);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 1.4rem;
+    }
+
+    .hero-text h1 {
+      font-size: 3.2rem;
+      font-weight: 800;
+      line-height: 1.15;
+      margin-bottom: 1.2rem;
+    }
+
+    .hero-text h1 span {
+      color: var(--jh-gold);
+    }
+
+    .hero-text p {
+      font-size: 1.15rem;
+      opacity: 0.9;
+      max-width: 420px;
+      line-height: 1.6;
+    }
+
+    .stats {
+      display: flex;
+      gap: 2.5rem;
+    }
+
+    .stat-value {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--jh-gold);
+    }
+
+    .stat-label {
+      font-size: 0.9rem;
+      opacity: 0.8;
+    }
+
+    /* ===== RIGHT PANEL ===== */
+    .right-panel {
+      width: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      background: var(--jh-charcoal);
+    }
+
+    .form-container {
+      width: 100%;
+      max-width: 420px;
+    }
+
+    .form-container h2 {
+      font-size: 2rem;
+      font-weight: 700;
+      color: white;
+      margin-bottom: 0.5rem;
+    }
+
+    .form-container > p {
+      color: var(--jh-earth-400);
+      margin-bottom: 1.8rem;
+    }
+
+    /* ===== CUSTOM DROPDOWN ===== */
+    .role-selector {
+      margin-bottom: 1.5rem;
+    }
+
+    .role-label {
+      display: block;
+      color: var(--jh-earth-300);
+      font-size: 0.9rem;
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+
+    .custom-select {
+      position: relative;
+      user-select: none;
+    }
+
+    .select-trigger {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 18px;
+      background: var(--jh-earth-900);
+      border: 1px solid var(--jh-earth-700);
+      border-radius: 14px;
+      cursor: pointer;
+      transition: all 0.25s ease;
+    }
+
+    .select-trigger:hover {
+      border-color: var(--jh-green-700);
+    }
+
+    .custom-select.open .select-trigger {
+      border-color: var(--jh-green-700);
+      box-shadow: 0 0 0 3px rgba(27, 94, 59, 0.25);
+    }
+
+    .selected-content {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .role-icon {
+      font-size: 1.3rem;
+    }
+
+    .selected-text {
+      color: white;
+      font-weight: 500;
+      font-size: 1rem;
+    }
+
+    .arrow {
+      color: var(--jh-earth-400);
+      font-size: 0.75rem;
+      transition: transform 0.25s ease;
+    }
+
+    .custom-select.open .arrow {
+      transform: rotate(180deg);
+    }
+
+    .select-options {
+      position: absolute;
+      top: calc(100% + 8px);
+      left: 0;
+      right: 0;
+      background: #1C2826;
+      border: 1px solid var(--jh-earth-700);
+      border-radius: 16px;
+      padding: 8px;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-10px);
+      transition: all 0.25s ease;
+      z-index: 50;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+      max-height: 320px;
+      overflow-y: auto;
+    }
+
+    .custom-select.open .select-options {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+
+    .option {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 12px 14px;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .option:hover {
+      background: #2A3331;
+    }
+
+    .option.active {
+      background: rgba(27, 94, 59, 0.25);
+    }
+
+    .option-icon {
+      font-size: 1.4rem;
+      width: 36px;
+      height: 36px;
+      background: var(--jh-earth-900);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .option-title {
+      color: white;
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+
+    .option-desc {
+      color: var(--jh-earth-400);
+      font-size: 0.8rem;
+      margin-top: 2px;
+    }
+
+    /* ===== INPUTS ===== */
+    .input-group {
+      margin-bottom: 1rem;
+      position: relative;
+    }
+
+    .input-group input {
+      width: 100%;
+      padding: 15px 18px;
+      border-radius: 14px;
+      border: 1px solid var(--jh-earth-700);
+      background: var(--jh-earth-900);
+      color: white;
+      font-size: 1rem;
+      outline: none;
+      transition: all 0.25s;
+    }
+
+    .input-group input:focus {
+      border-color: var(--jh-green-700);
+      box-shadow: 0 0 0 3px rgba(27, 94, 59, 0.25);
+    }
+
+    .input-group input::placeholder {
+      color: var(--jh-earth-400);
+    }
+
+    .toggle-password {
+      position: absolute;
+      right: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: var(--jh-earth-400);
+      cursor: pointer;
+      font-size: 1.1rem;
+    }
+
+    .submit-btn {
+      width: 100%;
+      padding: 16px;
+      border-radius: 14px;
+      border: none;
+      background: linear-gradient(135deg, var(--jh-gold), var(--jh-gold-dark));
+      color: var(--jh-green-900);
+      font-size: 1.05rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s;
+      margin-top: 0.8rem;
+      box-shadow: 0 8px 25px rgba(242, 201, 76, 0.25);
+    }
+
+    .submit-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 30px rgba(242, 201, 76, 0.35);
+    }
+
+    .bottom-text {
+      text-align: center;
+      margin-top: 2rem;
+      color: var(--jh-earth-400);
+      font-size: 0.95rem;
+    }
+
+    .bottom-text a {
+      color: var(--jh-gold);
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 992px) {
+      .left-panel {
+        display: none;
+      }
+      .right-panel {
+        width: 100%;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .form-container h2 {
+        font-size: 1.7rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- LEFT PANEL -->
+  <div class="left-panel">
+    <div class="left-content">
+      <div class="logo">
+        <div class="logo-icon">S</div>
+        <span>SamadhanSetu</span>
+      </div>
+    </div>
+
+    <div class="left-content hero-text">
+      <h1>Join the movement.<br><span>Build Jharkhand.</span></h1>
+      <p>Whether you are a citizen, student, faculty or industry partner — your contribution matters.</p>
+    </div>
+
+    <div class="left-content stats">
+      <div>
+        <div class="stat-value">24+</div>
+        <div class="stat-label">Districts Covered</div>
+      </div>
+      <div>
+        <div class="stat-value">3.1k</div>
+        <div class="stat-label">Issues Resolved</div>
+      </div>
+      <div>
+        <div class="stat-value">180+</div>
+        <div class="stat-label">Live Projects</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="right-panel">
+    <div class="form-container">
+      <h2>Create your account</h2>
+      <p>Start making real impact in Jharkhand today.</p>
+
+      <!-- Beautiful Role Dropdown -->
+      <div class="role-selector">
+        <label class="role-label">I am a</label>
+
+        <div class="custom-select" id="roleSelect">
+          <div class="select-trigger" id="selectTrigger">
+            <div class="selected-content">
+              <span class="role-icon">👤</span>
+              <span class="selected-text">Citizen</span>
+            </div>
+            <span class="arrow">▼</span>
+          </div>
+
+          <div class="select-options" id="selectOptions">
+            <div class="option active" data-role="citizen" data-icon="👤">
+              <span class="option-icon">👤</span>
+              <div>
+                <div class="option-title">Citizen</div>
+                <div class="option-desc">Report issues & track progress</div>
+              </div>
+            </div>
+            <div class="option" data-role="student" data-icon="🎓">
+              <span class="option-icon">🎓</span>
+              <div>
+                <div class="option-title">Student</div>
+                <div class="option-desc">Build real solutions & prototypes</div>
+              </div>
+            </div>
+            <div class="option" data-role="faculty" data-icon="👨‍🏫">
+              <span class="option-icon">👨‍🏫</span>
+              <div>
+                <div class="option-title">Faculty</div>
+                <div class="option-desc">Mentor projects with impact</div>
+              </div>
+            </div>
+            <div class="option" data-role="nodal" data-icon="🛡️">
+              <span class="option-icon">🛡️</span>
+              <div>
+                <div class="option-title">Nodal Officer</div>
+                <div class="option-desc">Verify & prioritize issues</div>
+              </div>
+            </div>
+            <div class="option" data-role="industry" data-icon="🏢">
+              <span class="option-icon">🏢</span>
+              <div>
+                <div class="option-title">Industry / CSR</div>
+                <div class="option-desc">Fund high-impact projects</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Name -->
+      <div class="input-group">
+        <input type="text" placeholder="Full name" id="name">
+      </div>
+
+      <!-- Email -->
+      <div class="input-group">
+        <input type="email" placeholder="Email address" id="email">
+      </div>
+
+      <!-- Password -->
+      <div class="input-group">
+        <input type="password" placeholder="Create password" id="password">
+        <button type="button" class="toggle-password" onclick="togglePassword()">👁</button>
+      </div>
+
+      <button class="submit-btn" onclick="handleSignup()">Create Account</button>
+
+      <p class="bottom-text">
+        Already have an account? <a href="/frontend/Authentication/Sign-in.html">Sign in</a>
+      </p>
+    </div>
+  </div>
+
+  <script>
+    // Password Toggle
+    function togglePassword() {
+      const input = document.getElementById('password');
+      input.type = input.type === 'password' ? 'text' : 'password';
+    }
+
+    // Role Dropdown Logic
+    const roleSelect = document.getElementById('roleSelect');
+    const selectTrigger = document.getElementById('selectTrigger');
+    const selectedText = document.querySelector('.selected-text');
+    const roleIcon = document.querySelector('.role-icon');
+
+    let selectedRole = 'citizen';
+
+    // Toggle dropdown
+    selectTrigger.addEventListener('click', (e) => {
+      e.stopPropagation();
+      roleSelect.classList.toggle('open');
+    });
+
+    // Close when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!roleSelect.contains(e.target)) {
+        roleSelect.classList.remove('open');
+      }
+    });
+
+    // Select option
+    document.querySelectorAll('.option').forEach(option => {
+      option.addEventListener('click', () => {
+        document.querySelectorAll('.option').forEach(opt => opt.classList.remove('active'));
+        option.classList.add('active');
+
+        selectedRole = option.dataset.role;
+        selectedText.textContent = option.querySelector('.option-title').textContent;
+        roleIcon.textContent = option.dataset.icon;
+
+        roleSelect.classList.remove('open');
+      });
+    });
+
+    // Signup Handler
+    function handleSignup() {
+      const name = document.getElementById('name').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+
+      if (!name || !email || !password) {
+        alert('Please fill in all fields');
+        return;
+      }
+
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        alert('Please enter a valid email address');
+        return;
+      }
+
+      if (password.length < 6) {
+        alert('Password must be at least 6 characters');
+        return;
+      }
+
+      alert(`Account created successfully as ${selectedRole.toUpperCase()}!\n\nWelcome to SamadhanSetu 🌱`);
+    }
+  </script>
+</body>
+</html>
