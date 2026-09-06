@@ -1,245 +1,161 @@
-# SamadhanSetu Backend Progress
+# SamadhanSetu — Project Progress
+
+**Updated:** 2026-09-06  
+**Repository:** `shetty141106/Samadhana_Setu`  
+**Branch:** `main`
 
 ## Current Status
 
-**Phases 1–10 are implemented directly on `main`. Phase 11 testing is in progress.** The backend covers foundation, authentication, citizen issue management, the complete prototype AI/ML pipeline, university collaboration, project/team lifecycle, industry/CSR sponsorship, dashboard analytics, notifications, and security hardening.
+The SamadhanSetu SIH 2026 prototype is **substantially implemented across backend, AI/ML, frontend and integration layers**. The core prototype journey is present:
 
-The AI/ML prototype is implemented end-to-end according to `readme/ai_ml_context.md`: FastAPI orchestration, Gemini NLP for Hindi/English translation + summarization + canonical domain classification, rule-based prototype priority, Gemini embeddings with FAISS semantic deduplication, duplicate similarity/distance output, and Spring Boot category-based university routing. A deterministic fallback remains available when external AI credentials or the Python service are unavailable.
+```text
+Citizen → Issue + exact GPS → Spring Boot → AI processing → Nodal verification
+→ University routing → Faculty/Student R&D → Kanban + milestones
+→ Industry/CSR sponsorship → Admin GIS/analytics → Notifications
+```
 
-**AI/ML code scope is complete for the defined prototype. Live Gemini execution is intentionally deferred until a local `GEMINI_API_KEY` is configured; the real key must never be committed to GitHub.**
+### Overall assessment
 
-Automated unit tests cover core services, AI processing, university routing, notifications, JWT behavior, and FAISS deduplication. A full Maven build/runtime end-to-end verification still needs to be run in a local/CI environment before calling the entire backend production-ready.
+- **SIH prototype feature scope:** ~90–95% implemented.
+- **Fully live/production-verified system:** ~80–85% complete.
+- The remaining gap is primarily **real-environment verification, deployment configuration, live Gemini verification, removal/replacement of important demo-only dashboard values, and final end-to-end validation**.
 
----
-
-## Completed Phases
-
-### Phase 1 — Foundation ✅
-- [x] Spring Boot backend foundation
-- [x] Maven project configuration
-- [x] Base package structure
-- [x] MySQL/JPA configuration
-- [x] Lombok integration
-- [x] Controller → Service → Repository → Entity architecture
-- [x] Application configuration
-
-### Phase 2 — Authentication & RBAC ✅
-- [x] User and Role entities
-- [x] Authentication service/controller
-- [x] Password handling
-- [x] Spring Security configuration
-- [x] JWT authentication flow
-- [x] Custom `UserDetailsService`
-- [x] Citizen, Nodal Officer, Faculty, Student, Industry and Admin role authorities
-
-### Phase 3 — Citizen Issue Management ✅
-- [x] Issue entity and persistence
-- [x] Evidence/media entity and relationship
-- [x] Citizen-to-issue relationship
-- [x] Issue repository/service/controller
-- [x] Issue status and priority
-- [x] Issue CRUD/workflow foundation
-- [x] Evidence media handling foundation
-
-### Phase 4 — AI Problem Processing ✅ Prototype Scope Complete
-- [x] Standalone Python FastAPI AI microservice
-- [x] Spring Boot `AiIntegrationController` / `AiBridgeService` integration
-- [x] AI request/response DTO contract
-- [x] Gemini NLP integration
-- [x] Hindi/English language detection
-- [x] Hindi → English translation
-- [x] 1–2 sentence issue summarization
-- [x] Exact canonical 10-domain classification
-- [x] Confidence score generation
-- [x] Rule-based prototype priority/urgency scoring
-- [x] Gemini text embeddings
-- [x] FAISS vector similarity search
-- [x] Duplicate flag + similarity percentage + candidate issue id
-- [x] Optional geographic distance for duplicate matches using plain lat/long
-- [x] Spring Boot fallback duplicate matching when Python AI is unavailable
-- [x] Category-based rule routing to university/department
-- [x] AI category persistence on `Issue` for analytics
-- [x] Automatic AI invocation on every new citizen issue submission
-- [x] AI service tests and deterministic fallback tests
-- [x] AI CI test workflow
-- [x] `.env.example` configuration for Gemini credentials
-- [ ] Configure a real `GEMINI_API_KEY` locally for live Gemini execution
-- [ ] Live Gemini/FAISS runtime verification
-
-### Phase 5 — University Collaboration ✅
-- [x] University entity and repository
-- [x] Department entity and repository
-- [x] Faculty integration and repository
-- [x] Faculty profile entity and repository
-- [x] University service/controller
-- [x] Department service/controller
-- [x] Faculty profile service/controller
-- [x] University search by name/location
-- [x] Department listing by university
-- [x] Faculty profile lookup by faculty/university/department
-- [x] Faculty specialization search
-- [x] University routing service
-- [x] AI-category-based department/university routing
-- [x] University routing REST endpoint
-- [x] AI response enrichment with recommended university
-- [x] Faculty profile repository derived queries aligned with service layer
-
-### Phase 6 — Project & Team Management ✅
-- [x] Project CRUD
-- [x] Project lifecycle/status handling
-- [x] Project-to-university relationship
-- [x] Team member management
-- [x] Duplicate team-member prevention
-- [x] Milestone creation and listing
-- [x] Milestone status and dates
-- [x] Task creation/listing/update/deletion
-- [x] Task assignment to users
-- [x] Task-to-milestone relationship
-- [x] Kanban-compatible task statuses
-- [x] Project progress counters
-- [x] Project REST APIs
-
-### Phase 7 — Industry & CSR ✅
-- [x] Organization repository
-- [x] Organization CRUD
-- [x] Organization search
-- [x] Industry/startup/MSME/CSR organization data support
-- [x] Basic organization verification readiness checks
-- [x] Verification REST endpoint
-- [x] Sponsorship repository
-- [x] Sponsorship creation and management
-- [x] Sponsorship-to-project relationship
-- [x] Sponsorship lookup by organization/project
-- [x] Sponsorship status handling
-- [x] Industry/CSR REST APIs
-
-### Phase 8 — Dashboard & Analytics ✅
-- [x] Government dashboard service/controller
-- [x] Overall summary metrics
-- [x] Issue count/status analytics
-- [x] Issue priority analytics
-- [x] Issue category/domain analytics
-- [x] Project status analytics
-- [x] Task status analytics
-- [x] University participation metrics
-- [x] Geographic/location issue analytics
-- [x] Sponsorship count and total funding analytics
-- [x] Dashboard REST endpoints
-
-### Phase 9 — Notifications & Communication ✅
-- [x] Notification repository
-- [x] Notification service
-- [x] Notification request/response DTOs
-- [x] Notification REST controller
-- [x] Create notifications
-- [x] Get all notifications for a user
-- [x] Get unread notifications
-- [x] Unread count
-- [x] Mark notification as read
-- [x] Delete notifications
-
-### Phase 10 — Security Hardening ✅
-- [x] Role-based authorization for management APIs
-- [x] Protected university/department/faculty management endpoints
-- [x] Protected AI and dashboard endpoints
-- [x] Authenticated notification endpoints
-- [x] Citizen-only issue creation authorization
-- [x] JWT invalid/expired token handling
-- [x] Security context cleanup on invalid JWT
-- [x] Global exception handling
-- [x] Safe unexpected-error responses
-- [x] Request validation for issue creation/update
-- [x] Method-security support enabled
+> Do not describe the project as 100% production-complete until the final hosted frontend/backend/AI workflow has been manually verified.
 
 ---
 
-## Phase 11 — Testing 🚧 In Progress
-- [x] University service unit tests
-- [x] Notification service unit tests
-- [x] AI processing unit tests
-- [x] University routing unit tests
-- [x] JWT service tests
-- [x] FAISS semantic deduplication unit test
-- [x] Complete prototype AI fallback contract test
-- [ ] Repository tests
-- [ ] Controller/API tests
-- [ ] Project/team lifecycle tests
-- [ ] Industry/CSR tests
-- [ ] Dashboard analytics tests
-- [ ] Integration tests
-- [ ] End-to-end citizen → AI → university → project workflow test
-- [ ] Full Maven build verification in CI/local environment
-- [ ] Live AI service runtime verification with configured Gemini credentials
+## Completed Areas
+
+### Backend
+- [x] Spring Boot + Maven foundation
+- [x] MySQL/JPA persistence layer
+- [x] Layered Controller → Service → Repository → Entity architecture
+- [x] Authentication and JWT security
+- [x] Six stakeholder roles: Citizen, Nodal Officer, Faculty, Student, Industry, Admin
+- [x] Citizen issue CRUD/workflow
+- [x] Evidence/media support
+- [x] University/department/faculty management
+- [x] Project/team/milestone/task lifecycle
+- [x] Industry/CSR organization and sponsorship APIs
+- [x] Dashboard analytics APIs
+- [x] Notifications APIs
+- [x] Security hardening and validation
+
+### AI/ML — Prototype Scope
+- [x] Python FastAPI AI service
+- [x] Spring Boot ↔ AI service bridge
+- [x] Gemini-based translation/summarization/classification path
+- [x] Hindi/English handling
+- [x] Canonical 10-domain classification
+- [x] Prototype priority scoring
+- [x] Gemini embeddings + FAISS semantic deduplication
+- [x] Similarity/duplicate result handling
+- [x] Optional geographic distance calculation
+- [x] Rule-based university/department routing
+- [x] Deterministic fallback when external AI is unavailable
+- [x] AI tests and CI workflow
+- [ ] Real Gemini credential/runtime verification
+
+### Frontend
+- [x] React 18 + Vite 5
+- [x] Jharkhand/Sohrai civic design system
+- [x] Six role-based experiences
+- [x] JWT/API client integration
+- [x] Citizen issue submission with exact map location
+- [x] Issue evidence/media flow
+- [x] Nodal verification workspace
+- [x] University/faculty/student R&D workspace
+- [x] Four-stage Kanban workflow
+- [x] Milestone persistence integration
+- [x] Industry/CSR marketplace and sponsorship integration
+- [x] Admin analytics/GIS workspace
+- [x] Notifications/session integration
+- [x] Loading, error and empty-state foundation
+- [x] Environment-driven API configuration
+- [x] Frontend GitHub Actions build workflow
+- [ ] Hosted build/runtime observation
+- [ ] Replace remaining important hard-coded demo analytics/persona values with live backend data
 
 ---
 
-## Remaining Phases
-
-### Phase 12 — API Documentation
-- [ ] OpenAPI/Swagger configuration
-- [ ] Authentication API documentation
-- [ ] Issue API documentation
-- [ ] AI API documentation
-- [ ] University API documentation
-- [ ] Project API documentation
-- [ ] Industry/CSR API documentation
-- [ ] Dashboard API documentation
-- [ ] Notification API documentation
-
-### Phase 13 — Docker & Deployment
-- [ ] Production configuration
-- [ ] Dockerfile
-- [ ] Docker Compose/local infrastructure if required
-- [ ] Database deployment configuration
-- [ ] Environment variables/secrets
-- [ ] Backend cloud deployment
-- [ ] AI service cloud deployment
-- [ ] Production API verification
-
-### Phase 14 — Frontend Integration
-- [ ] Citizen issue submission integration
-- [ ] Authentication/JWT integration
-- [ ] AI result integration
-- [ ] University workspace integration
-- [ ] Project/team workspace integration
-- [ ] Industry/CSR integration
-- [ ] Government dashboard integration
-- [ ] Notification integration
-
-### Phase 15 — Final Integration & Demo
-- [ ] Complete citizen → AI → university → project → industry/CSR workflow
-- [ ] Validate all stakeholder roles
-- [ ] Seed/demo data
-- [ ] Full system integration test
-- [ ] Fix remaining integration bugs
-- [ ] Production/demo deployment verification
-- [ ] Final SIH demonstration flow
-- [ ] Final documentation
-
----
-
-## High-Level Progress
+## Phase Status
 
 | Phase | Area | Status |
 |---|---|---|
-| 1 | Foundation | ✅ Completed |
-| 2 | Authentication & RBAC | ✅ Completed |
-| 3 | Citizen Issue Management | ✅ Completed |
-| 4 | AI Problem Processing | ✅ Prototype scope complete; live key/runtime verification pending |
-| 5 | University Collaboration | ✅ Completed |
-| 6 | Project & Team Management | ✅ Completed |
-| 7 | Industry & CSR | ✅ Completed |
-| 8 | Dashboard & Analytics | ✅ Completed |
-| 9 | Notifications | ✅ Completed |
-| 10 | Security Hardening | ✅ Completed |
-| 11 | Testing | 🚧 In Progress |
-| 12 | API Documentation | ⬜ Remaining |
-| 13 | Docker & Deployment | ⬜ Remaining |
-| 14 | Frontend Integration | ⬜ Remaining |
-| 15 | Final Integration & Demo | ⬜ Remaining |
+| 1 | Foundation | ✅ Complete |
+| 2 | Authentication & RBAC | ✅ Complete |
+| 3 | Citizen Issue Management | ✅ Complete |
+| 4 | AI/ML Prototype Pipeline | ✅ Complete for prototype; live Gemini verification pending |
+| 5 | University Collaboration | ✅ Complete |
+| 6 | Project & Team Management | ✅ Complete |
+| 7 | Industry & CSR | ✅ Complete |
+| 8 | Dashboard & Analytics | ✅ Complete at API/prototype level |
+| 9 | Notifications | ✅ Complete |
+| 10 | Security Hardening | ✅ Complete |
+| 11 | Backend Testing | 🟡 Core tests complete; broader integration/E2E verification pending |
+| 12 | API Documentation | 🟢 Documentation exists; polish/verification optional |
+| 13 | Docker & Deployment | 🟡 Deployment configuration exists; hosted verification pending |
+| 14 | Frontend Integration | ✅ Complete at integration/code level |
+| 15 | Final Integration & Demo | 🟡 Final hosted E2E verification pending |
 
-## Current Next Step
+---
 
-**Phase 11 — Testing.**
+## Phase 11 — Remaining Verification
 
-Continue with repository/controller/integration tests, then run the complete Maven build and automated test suite in a local/CI environment. Live Gemini testing can be performed later by configuring `GEMINI_API_KEY`; the key must remain outside GitHub. After Phase 11 is verified, proceed to Phase 12 — API Documentation.
+- [x] Core service tests
+- [x] AI processing tests
+- [x] University routing tests
+- [x] JWT tests
+- [x] FAISS deduplication tests
+- [ ] Full repository tests
+- [ ] Full controller/API tests
+- [ ] Full project/team lifecycle tests
+- [ ] Full industry/CSR tests
+- [ ] Full dashboard analytics tests
+- [ ] Full integration tests
+- [ ] End-to-end citizen → AI → university → project workflow
+- [ ] Full Maven build/runtime verification in a clean environment
+- [ ] Live Gemini runtime verification
+
+These are **verification gaps**, not missing core architecture.
+
+---
+
+## Deployment / Environment Gaps
+
+The following values must remain outside source control and be supplied in the deployment environment:
+
+- `JWT_SECRET`
+- `CORS_ALLOWED_ORIGINS`
+- `SPRING_DATASOURCE_URL`
+- `SPRING_DATASOURCE_USERNAME`
+- `SPRING_DATASOURCE_PASSWORD`
+- `GEMINI_API_KEY`
+- `AI_SERVICE_URL`
+- frontend `VITE_API_BASE_URL`
+- Cloudinary frontend configuration where evidence uploads require it
+
+Never commit private credentials.
+
+---
+
+## Final SIH Demo Acceptance Criteria
+
+The prototype should be considered **SIH demo-complete** after these are verified in the real deployment:
+
+1. Citizen logs in/registers.
+2. Citizen submits an issue with exact GPS and evidence.
+3. Spring Boot persists the issue.
+4. AI translates/summarizes/classifies/prioritizes and checks duplicates.
+5. AI/backend recommends a university/department.
+6. Nodal Officer verifies and routes the issue.
+7. Faculty/Student workspace receives the project workflow.
+8. Student updates Kanban tasks and Faculty validates milestones.
+9. Industry creates a CSR sponsorship record.
+10. Admin sees updated analytics/GIS data.
+11. Notifications/session behavior works.
+12. The complete flow works against the deployed services without relying on mock fallback.
+
+## Next Action
+
+**Final integration verification:** configure/verify deployment variables, test live Gemini, execute the complete role-to-role demo workflow, identify and fix any runtime issues, then update this file to 100% only after the deployed flow passes.
