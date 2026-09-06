@@ -15,37 +15,58 @@ import { ProfilePage } from './pages/shared/ProfilePage';
 import { ROLES } from './utils/constants';
 
 const ROLE_PATHS = Object.values(ROLES);
+const PUBLIC_PATHS = ['landing', 'login', 'register', 'universities', 'how-it-works'];
+
+const readHashPath = () => {
+  const raw = window.location.hash.replace(/^#\/?/, '').trim();
+  return raw || 'landing';
+};
 
 function MainAppContent() {
   const { currentRole, isAuthenticated } = useAuth();
-  const [currentPath, setCurrentPath] = useState('landing');
+  const [currentPath, setCurrentPath] = useState(readHashPath);
+
+  useEffect(() => {
+    const handleHashChange = () => setCurrentPath(readHashPath());
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
 
   useEffect(() => {
     if (isAuthenticated) {
       if (currentPath === 'landing' || currentPath === 'login' || currentPath === 'register' || (ROLE_PATHS.includes(currentPath) && currentPath !== currentRole)) {
         setCurrentPath(currentRole);
+        window.history.replaceState(null, '', `#${currentRole}`);
       }
     } else if (currentPath === 'profile' || ROLE_PATHS.includes(currentPath)) {
       setCurrentPath('login');
+      window.history.replaceState(null, '', '#login');
     }
   }, [isAuthenticated, currentRole, currentPath]);
 
   const navigate = (path) => {
+    if (!path) return;
     if (isAuthenticated && ROLE_PATHS.includes(path) && path !== currentRole) {
       setCurrentPath(currentRole);
+      window.history.replaceState(null, '', `#${currentRole}`);
       return;
     }
     if (!isAuthenticated && (path === 'profile' || ROLE_PATHS.includes(path))) {
       setCurrentPath('login');
+      window.history.replaceState(null, '', '#login');
       return;
     }
     setCurrentPath(path);
+    window.history.pushState(null, '', `#${path}`);
+    window.dispatchEvent(new HashChangeEvent('hashchange'));
   };
 
   const renderCurrentView = () => {
-    if (currentPath === 'landing') return <LandingPage onNavigate={navigate} />;
-    if (currentPath === 'login') return <Login onNavigate={navigate} />;
-    if (currentPath === 'register') return <Register onNavigate={navigate} />;
+    if (PUBLIC_PATHS.includes(currentPath)) {
+      if (currentPath === 'login') return <Login onNavigate={navigate} />;
+      if (currentPath === 'register') return <Register onNavigate={navigate} />;
+      return <LandingPage onNavigate={navigate} initialSection={currentPath} />;
+    }
     if (currentPath === 'profile') return <ProfilePage onNavigate={navigate} />;
 
     switch (currentRole) {
@@ -59,7 +80,7 @@ function MainAppContent() {
     }
   };
 
-  const isLandingView = ['landing', 'login', 'register'].includes(currentPath) && !isAuthenticated;
+  const isLandingView = PUBLIC_PATHS.includes(currentPath) && !isAuthenticated;
 
   return (
     <AppShell currentPath={currentPath} onNavigate={navigate} isLanding={isLandingView}>
