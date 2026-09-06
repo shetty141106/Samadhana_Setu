@@ -16,8 +16,7 @@ export const IssueForm = ({ onSuccess, onCancel }) => {
   const fileInputRef = useRef(null);
   const [formData, setFormData] = useState({ title: '', category: 'water', district: currentUser.district || 'Ranchi', locationName: '', description: '', priority: 'High' });
   const [selectedCoordinates, setSelectedCoordinates] = useState(null);
-  const [selectedFiles, setSelectedFiles] = useState([]);
-  const [previewImages, setPreviewImages] = useState([]);
+  const [mediaItems, setMediaItems] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
   const [aiResult, setAiResult] = useState(null);
@@ -32,25 +31,19 @@ export const IssueForm = ({ onSuccess, onCancel }) => {
 
   const handleFiles = (event) => {
     const files = Array.from(event.target.files || []).filter(file => file.type.startsWith('image/'));
-    const available = Math.max(0, 4 - selectedFiles.length);
-    const nextFiles = files.slice(0, available);
-    setSelectedFiles(prev => [...prev, ...nextFiles]);
-    setPreviewImages(prev => [...prev, ...nextFiles.map(file => URL.createObjectURL(file))]);
+    const nextFiles = files.slice(0, Math.max(0, 4 - mediaItems.length));
+    setMediaItems(prev => [...prev, ...nextFiles.map(file => ({ file, previewUrl: URL.createObjectURL(file) }))]);
     event.target.value = '';
   };
 
   const handleRemovePhoto = (index) => {
-    if (index < selectedFiles.length) {
-      URL.revokeObjectURL(previewImages[index]);
-      setSelectedFiles(prev => prev.filter((_, i) => i !== index));
-      setPreviewImages(prev => prev.filter((_, i) => i !== index));
-    } else {
-      setPreviewImages(prev => prev.filter((_, i) => i !== index));
-    }
+    const item = mediaItems[index];
+    if (item?.file) URL.revokeObjectURL(item.previewUrl);
+    setMediaItems(prev => prev.filter((_, i) => i !== index));
   };
 
   const handleAddSamplePhoto = (url) => {
-    if (previewImages.length < 4 && !previewImages.includes(url)) setPreviewImages(prev => [...prev, url]);
+    if (mediaItems.length < 4 && !mediaItems.some(item => item.url === url)) setMediaItems(prev => [...prev, { url, previewUrl: url }]);
   };
 
   const handleDistrictChange = (district) => { setFormData(prev => ({ ...prev, district })); setSelectedCoordinates(null); };
@@ -60,11 +53,10 @@ export const IssueForm = ({ onSuccess, onCancel }) => {
     if (!formData.title || !formData.description || !formData.locationName || !selectedCoordinates) return;
     setIsSubmitting(true); setSubmitError('');
     try {
-      let evidenceMedia = previewImages.slice(selectedFiles.length).map(mediaUrl => ({ mediaUrl, mediaType: 'IMAGE' }));
-      if (selectedFiles.length > 0) {
-        const uploadedUrls = [];
-        for (const file of selectedFiles) uploadedUrls.push(await uploadImage(file));
-        evidenceMedia = [...uploadedUrls.map(mediaUrl => ({ mediaUrl, mediaType: 'IMAGE' })), ...evidenceMedia];
+      const evidenceMedia = [];
+      for (const item of mediaItems) {
+        const mediaUrl = item.file ? await uploadImage(item.file) : item.url;
+        if (mediaUrl) evidenceMedia.push({ mediaUrl, mediaType: 'IMAGE' });
       }
 
       const catObj = ISSUE_CATEGORIES.find(c => c.id === formData.category);
@@ -89,7 +81,7 @@ export const IssueForm = ({ onSuccess, onCancel }) => {
       }
       setShowSuccessModal(true);
     } catch (error) {
-      setSubmitError(error.message || 'Unable to submit the grievance. Please try again.');
+      setSubmitError(error.message || 'Unable to upload evidence or submit the grievance. Please try again.');
     } finally { setIsSubmitting(false); }
   };
 
@@ -107,9 +99,9 @@ export const IssueForm = ({ onSuccess, onCancel }) => {
       <label className="block text-xs font-bold uppercase tracking-wider text-jh-earth-800 mb-1.5">Photographic Evidence</label>
       <p className="text-[11px] text-jh-earth-600 mb-2">Upload up to 4 JPG, PNG or WEBP field photographs. Images are uploaded securely before the grievance is saved.</p>
       <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp" multiple onChange={handleFiles} className="hidden" />
-      <button type="button" onClick={() => fileInputRef.current?.click()} className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl border border-dashed border-jh-green-700 bg-jh-green-50 px-4 py-3 text-xs font-bold text-jh-green-900 hover:bg-jh-green-100 transition-colors"><Upload className="w-4 h-4" /> Choose Images from Device</button>
-      <div className="mt-3 flex flex-wrap gap-2"><span className="text-[11px] font-semibold text-jh-earth-600 self-center mr-1">Demo samples:</span>{sampleForestPhotos.map((photo, i) => <button key={i} type="button" onClick={() => handleAddSamplePhoto(photo.url)} disabled={previewImages.length >= 4} className="text-[11px] px-2.5 py-1 rounded-lg border border-jh-green-700/40 bg-jh-green-50 text-jh-green-900 hover:bg-jh-green-100 disabled:opacity-40 font-medium">+ {photo.label}</button>)}</div>
-      {previewImages.length > 0 && <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-3">{previewImages.map((imgUrl, index) => <div key={`${imgUrl}-${index}`} className="relative rounded-xl overflow-hidden border border-jh-earth-300 h-24"><img src={imgUrl} alt={`Evidence preview ${index + 1}`} className="w-full h-full object-cover" /><button type="button" aria-label={`Remove image ${index + 1}`} onClick={() => handleRemovePhoto(index)} className="absolute top-1 right-1 p-1 bg-black/70 text-white rounded-md"><X className="w-3.5 h-3.5" /></button>{index < selectedFiles.length && <span className="absolute bottom-1 left-1 inline-flex items-center gap-1 rounded-md bg-black/70 px-1.5 py-0.5 text-[9px] text-white"><ImageIcon className="w-3 h-3" /> Upload</span>}</div>)}</div>}
+      <button type="button" onClick={() => fileInputRef.current?.click()} disabled={mediaItems.length >= 4} className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl border border-dashed border-jh-green-700 bg-jh-green-50 px-4 py-3 text-xs font-bold text-jh-green-900 hover:bg-jh-green-100 disabled:opacity-40 transition-colors"><Upload className="w-4 h-4" /> Choose Images from Device</button>
+      <div className="mt-3 flex flex-wrap gap-2"><span className="text-[11px] font-semibold text-jh-earth-600 self-center mr-1">Demo samples:</span>{sampleForestPhotos.map((photo, i) => <button key={i} type="button" onClick={() => handleAddSamplePhoto(photo.url)} disabled={mediaItems.length >= 4} className="text-[11px] px-2.5 py-1 rounded-lg border border-jh-green-700/40 bg-jh-green-50 text-jh-green-900 hover:bg-jh-green-100 disabled:opacity-40 font-medium">+ {photo.label}</button>)}</div>
+      {mediaItems.length > 0 && <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-3">{mediaItems.map((item, index) => <div key={`${item.previewUrl}-${index}`} className="relative rounded-xl overflow-hidden border border-jh-earth-300 h-24"><img src={item.previewUrl} alt={`Evidence preview ${index + 1}`} className="w-full h-full object-cover" /><button type="button" aria-label={`Remove image ${index + 1}`} onClick={() => handleRemovePhoto(index)} className="absolute top-1 right-1 p-1 bg-black/70 text-white rounded-md"><X className="w-3.5 h-3.5" /></button>{item.file && <span className="absolute bottom-1 left-1 inline-flex items-center gap-1 rounded-md bg-black/70 px-1.5 py-0.5 text-[9px] text-white"><ImageIcon className="w-3 h-3" /> Device</span>}</div>)}</div>}
     </div>
     <div className="pt-4 border-t border-jh-earth-200 flex items-center justify-end gap-3">{onCancel && <Button variant="ghost" onClick={onCancel}>Cancel</Button>}<Button type="submit" variant="primary" size="lg" disabled={isSubmitting || !selectedCoordinates} icon={isSubmitting ? null : Camera}>{isSubmitting ? 'Uploading & Submitting...' : 'Submit Issue for Nodal Verification'}</Button></div>
   </form>;
