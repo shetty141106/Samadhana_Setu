@@ -3,7 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 import { ROLES, ROLE_CONFIGS } from '../../utils/constants';
 import { SamadhanLogo } from '../../components/common/Emblem';
 import { Button } from '../../components/ui/Button';
-import { UserCircle, ShieldCheck, GraduationCap, Layers, Building2, Briefcase, Lock, Mail, ArrowRight, Sparkles, AlertCircle } from 'lucide-react';
+import { UserCircle, ShieldCheck, GraduationCap, Layers, Building2, Briefcase, Lock, Mail, ArrowRight, Sparkles, AlertCircle, UserPlus } from 'lucide-react';
 
 export const Login = ({ onNavigate }) => {
   const { switchRole, login, authLoading, authError, isAuthenticated } = useAuth();
@@ -74,6 +74,7 @@ export const Login = ({ onNavigate }) => {
               <div><label className="block text-[11px] font-bold uppercase tracking-wider text-jh-earth-800 mb-1">Password</label><div className="relative"><Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-jh-earth-500" /><input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} className="w-full pl-9 pr-3 py-2 text-xs bg-jh-earth-50 border border-jh-earth-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-jh-green-700" /></div></div>
               <div className="pt-2"><Button type="submit" variant="primary" size="md" className="w-full" icon={ArrowRight} disabled={authLoading}>{authLoading ? 'Signing In...' : 'Sign In to Workspace'}</Button></div>
             </form>
+            <button type="button" onClick={() => onNavigate('register')} className="mt-4 w-full inline-flex items-center justify-center gap-2 rounded-xl border border-jh-green-700/30 bg-jh-green-50 px-4 py-2.5 text-xs font-bold text-jh-green-900 hover:bg-jh-green-100 transition-colors"><UserPlus className="w-4 h-4" /> Create a Citizen Account</button>
           </div>
           <div className="pt-4 text-center"><button onClick={() => onNavigate('landing')} className="text-xs text-jh-earth-600 hover:text-jh-green-900 hover:underline">← Return to Public Home</button></div>
         </div>
