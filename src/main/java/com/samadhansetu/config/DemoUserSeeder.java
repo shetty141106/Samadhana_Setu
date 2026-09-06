@@ -1,7 +1,9 @@
 package com.samadhansetu.config;
 
+import com.samadhansetu.Repository.AdminRepository;
 import com.samadhansetu.Repository.RoleRepository;
 import com.samadhansetu.Repository.UserRepository;
+import com.samadhansetu.model.entity.Admin;
 import com.samadhansetu.model.entity.Role;
 import com.samadhansetu.model.entity.User;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +25,7 @@ public class DemoUserSeeder {
 
     private final RoleRepository roleRepository;
     private final UserRepository userRepository;
+    private final AdminRepository adminRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Value("${SAMADHANSETU_DEMO_PASSWORD:}")
@@ -62,7 +65,12 @@ public class DemoUserSeeder {
 
         user.setRole(role);
         user.setPassword(passwordEncoder.encode(demoPassword));
-        userRepository.save(user);
+        User saved = userRepository.save(user);
+
+        // A privileged ADMIN account also needs its role-specific profile row.
+        if ("ADMIN".equals(roleName) && adminRepository.findByUserId(saved.getId()).isEmpty()) {
+            adminRepository.save(Admin.builder().user(saved).build());
+        }
     }
 
     private String displayName(String roleName) {
