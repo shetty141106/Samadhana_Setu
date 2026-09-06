@@ -41,9 +41,10 @@ export const DataProvider = ({ children }) => {
     (async () => {
       setDataLoading(true); setDataError('');
       try {
-        const isCitizen = currentUser?.role === 'citizen';
-        const canReadOperationalIssues = currentUser?.role === 'admin' || currentUser?.role === 'nodal';
-        const issuePromise = isCitizen
+        const role = String(currentUser?.role || '').trim().toLowerCase();
+        const isCitizen = role === 'citizen';
+        const canReadOperationalIssues = role === 'admin' || role === 'nodal';
+        const issuePromise = isCitizen && currentUser?.id
           ? issueApi.getCitizenIssues(currentUser.id)
           : canReadOperationalIssues
             ? issueApi.listIssues()
@@ -52,7 +53,7 @@ export const DataProvider = ({ children }) => {
         if (cancelled) return;
         setIssues(Array.isArray(loadedIssues) ? loadedIssues : []);
         setProjects(Array.isArray(loadedProjects) ? loadedProjects.map(projectToUi) : []);
-        if (currentUser?.role === 'admin' || currentUser?.role === 'nodal') {
+        if (role === 'admin' || role === 'nodal') {
           try { setDashboard(await dashboardApi.getSummary()); } catch { setDashboard(null); }
         }
         try { setSponsors(await industryApi.listSponsorships()); } catch {}
@@ -106,9 +107,10 @@ export const DataProvider = ({ children }) => {
   const updateMilestone = async (projectId, index, newStatus) => { const milestone = projects.find(p => p.id === projectId)?.milestones?.[index]; if (LIVE_API && isAuthenticated && milestone?.id) { const updated = await projectApi.updateMilestone(milestone.id, { title: milestone.title, startDate: milestone.startDate, endDate: milestone.endDate, status: newStatus.toUpperCase() }); setProjects(prev => prev.map(p => p.id === projectId ? { ...p, milestones: p.milestones.map((m, i) => i === index ? updated : m) } : p)); return updated; } setProjects(prev => prev.map(p => p.id === projectId ? { ...p, milestones: (p.milestones || []).map((m, i) => i === index ? { ...m, status: newStatus } : m) } : p)); };
   const refreshIssues = async () => {
     if (!LIVE_API || !isAuthenticated) return;
-    const loaded = currentUser?.role === 'citizen'
+    const role = String(currentUser?.role || '').trim().toLowerCase();
+    const loaded = role === 'citizen'
       ? await issueApi.getCitizenIssues(currentUser.id)
-      : currentUser?.role === 'admin' || currentUser?.role === 'nodal'
+      : role === 'admin' || role === 'nodal'
         ? await issueApi.listIssues()
         : [];
     setIssues(Array.isArray(loaded) ? loaded : []);
@@ -116,4 +118,4 @@ export const DataProvider = ({ children }) => {
 
   return <DataContext.Provider value={{ issues, projects, sponsors, stats, dashboard, dataLoading, dataError, liveApi: LIVE_API, addIssue, upvoteIssue, likedIssueIds, isIssueLiked: id => likedIssueIds.has(String(id)), verifyIssue, updateTaskStatus, addKanbanTask, sponsorProject, updateMilestone, refreshIssues }}>{children}</DataContext.Provider>;
 };
-export const useData = () => { const context = useContext(DataContext); if (!context) throw new Error('useData must be used within a DataProvider'); return context; };
+export const useData = () => { const context = useContext(DataContext); if (!context) throw new Error('useData must be used within DataProvider'); return context; };
