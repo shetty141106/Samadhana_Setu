@@ -8,9 +8,10 @@ import com.samadhansetu.model.entity.Notification;
 import com.samadhansetu.model.entity.User;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.core.Authentication;
 
 import java.util.List;
 import java.util.Optional;
@@ -27,6 +28,9 @@ class NotificationServiceTest {
 
     @Mock
     private UserRepository userRepository;
+
+    @Mock
+    private Authentication authentication;
 
     @InjectMocks
     private NotificationService notificationService;
@@ -53,10 +57,12 @@ class NotificationServiceTest {
         User user = User.builder().id(5L).build();
         Notification notification = Notification.builder().id(2L).user(user)
                 .title("New task").message("A task was assigned.").readStatus(false).build();
+        when(authentication.getName()).thenReturn("citizen@test.com");
+        when(userRepository.findByEmail("citizen@test.com")).thenReturn(Optional.of(user));
         when(notificationRepository.findByUserIdAndReadStatusOrderByCreatedAtDesc(5L, false))
                 .thenReturn(List.of(notification));
 
-        List<NotificationResponseDto> result = notificationService.getUnread(5L);
+        List<NotificationResponseDto> result = notificationService.getUnread(5L, authentication);
 
         assertEquals(1, result.size());
         assertFalse(result.get(0).isReadStatus());
@@ -67,10 +73,12 @@ class NotificationServiceTest {
         User user = User.builder().id(5L).build();
         Notification notification = Notification.builder().id(3L).user(user)
                 .title("Alert").message("Test").readStatus(false).build();
+        when(authentication.getName()).thenReturn("citizen@test.com");
+        when(userRepository.findByEmail("citizen@test.com")).thenReturn(Optional.of(user));
         when(notificationRepository.findById(3L)).thenReturn(Optional.of(notification));
         when(notificationRepository.save(notification)).thenReturn(notification);
 
-        NotificationResponseDto result = notificationService.markRead(3L);
+        NotificationResponseDto result = notificationService.markRead(3L, authentication);
 
         assertTrue(result.isReadStatus());
         verify(notificationRepository).save(notification);
