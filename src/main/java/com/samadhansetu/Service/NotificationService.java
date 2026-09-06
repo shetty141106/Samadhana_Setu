@@ -8,6 +8,7 @@ import com.samadhansetu.model.entity.Notification;
 import com.samadhansetu.model.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -28,58 +29,48 @@ public class NotificationService {
         return map(notificationRepository.save(notification));
     }
 
-    public List<NotificationResponseDto> getForUser(Long userId) {
+    public List<NotificationResponseDto> getForUser(Long userId, Authentication authentication) {
+        assertUserAccess(userId, authentication);
         return notificationRepository.findByUserIdOrderByCreatedAtDesc(userId).stream().map(this::map).toList();
     }
 
-    public List<NotificationResponseDto> getUnread(Long userId) {
+    public List<NotificationResponseDto> getUnread(Long userId, Authentication authentication) {
+        assertUserAccess(userId, authentication);
         return notificationRepository.findByUserIdAndReadStatusOrderByCreatedAtDesc(userId, false).stream().map(this::map).toList();
     }
 
-    public long unreadCount(Long userId) {
+    public long unreadCount(Long userId, Authentication authentication) {
+        assertUserAccess(userId, authentication);
         return notificationRepository.countByUserIdAndReadStatus(userId, false);
     }
 
-    public NotificationResponseDto markRead(Long id) {
-        Notification n = findOwnedNotification(id, currentUserEmail());
+    public NotificationResponseDto markRead(Long id, Authentication authentication) {
+        Notification n = findOwnedNotification(id, authentication);
         n.setReadStatus(true);
         return map(notificationRepository.save(n));
     }
 
-    public void delete(Long id) {
-        Notification n = findOwnedNotification(id, currentUserEmail());
+    public void delete(Long id, Authentication authentication) {
+        Notification n = findOwnedNotification(id, authentication);
         notificationRepository.delete(n);
     }
 
-    private Notification findOwnedNotification(Long id, String email) {
+    private Notification findOwnedNotification(Long id, Authentication authentication) {
         Notification n = notificationRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Notification not found: " + id));
-        if (!n.getUser().getEmail().equalsIgnoreCase(email)) {
-            throw new AccessDeniedException("You do not have access to this notification");
-        }
+        assertUserAccess(n.getUser().getId(), authentication);
         return n;
     }
 
-    private String currentUserEmail() {
-        var authentication = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+    private void assertUserAccess(Long userId, Authentication authentication) {
         if (authentication == null || authentication.getName() == null || authentication.getName().isBlank()) {
             throw new AccessDeniedException("Authentication required");
         }
-        return authentication.getName();
-    }
-
-    private void assertUserAccess(Long userId) {
-        if (!userRepository.findByEmail(currentUserEmail()).map(User::getId).filter(userId::equals).isPresent()) {
+        User currentUser = userRepository.findByEmail(authentication.getName())
+                .orElseThrow(() -> new AccessDeniedException("Authenticated user not found"));
+        if (!currentUser.getId().equals(userId)) {
             throw new AccessDeniedException("You do not have access to these notifications");
         }
-    }
-
-    private List<NotificationResponseDto> getOwnedForUser(Long userId, boolean unreadOnly) {
-        assertUserAccess(userId);
-        return (unreadOnly
-                ? notificationRepository.findByUserIdAndReadStatusOrderByCreatedAtDesc(userId, false)
-                : notificationRepository.findByUserIdOrderByCreatedAtDesc(userId))
-                .stream().map(this::map).toList();
     }
 
     private NotificationResponseDto map(Notification n) {
