@@ -1,44 +1,81 @@
-# Remaining Work
+# SamadhanSetu — Remaining Work
 
-This file contains only items that cannot be completed safely without deployment credentials or external configuration values.
+**Updated:** 2026-09-06
 
-## Production Backend Configuration
+This file now lists only work that remains before the SamadhanSetu SIH prototype can be declared fully verified. Core backend, AI/ML prototype, frontend and API integration work is already implemented.
 
-- **Variable:** `JWT_SECRET`
-- **Why it remains:** A production signing secret must be supplied through the Render environment. The code now reads it from environment configuration and no longer embeds the signing key in source code.
-- **What is already implemented:** JWT generation and validation remain unchanged apart from secret externalization.
+## 1. Live AI Verification
 
-- **Variable:** `CORS_ALLOWED_ORIGINS`
-- **Why it remains:** The final deployed frontend origin has not been provided in the repository configuration.
-- **What is already implemented:** Backend CORS is now environment-driven and supports local development origins.
+- [ ] Configure `GEMINI_API_KEY` in the AI service environment.
+- [ ] Verify live Gemini translation/summarization/classification.
+- [ ] Verify Gemini embeddings + FAISS duplicate detection against real issue data.
+- [ ] Confirm AI fallback still works when Gemini/service is unavailable.
 
-- **Variable:** `SPRING_DATASOURCE_URL`, `SPRING_DATASOURCE_USERNAME`, `SPRING_DATASOURCE_PASSWORD`
-- **Why it remains:** Production database values are deployment-specific and must remain outside source control.
-- **What is already implemented:** Spring Boot is configured to load these values from environment variables.
+## 2. Production/Hosted Configuration
 
-## AI Service Deployment Credentials
+Deployment-specific values must remain outside GitHub:
 
-- **Variable:** `GEMINI_API_KEY`
-- **Why it remains:** A live Gemini credential is external and was not committed to the repository.
-- **What is already implemented:** The FastAPI AI service integration and fallback handling are present; production use requires the credential in the AI service environment.
+- `JWT_SECRET`
+- `CORS_ALLOWED_ORIGINS`
+- `SPRING_DATASOURCE_URL`
+- `SPRING_DATASOURCE_USERNAME`
+- `SPRING_DATASOURCE_PASSWORD`
+- `GEMINI_API_KEY`
+- `AI_SERVICE_URL`
+- frontend `VITE_API_BASE_URL`
+- `VITE_CLOUDINARY_CLOUD_NAME`
+- `VITE_CLOUDINARY_UPLOAD_PRESET`
 
-- **Variable:** `AI_SERVICE_URL`
-- **Why it remains:** The deployed FastAPI service URL is deployment-specific.
-- **What is already implemented:** Spring Boot reads the AI service URL from environment configuration.
+Never commit private credentials or secrets.
 
-## Frontend Image Upload
+## 3. Hosted Runtime Verification
 
-- **Variables:** `VITE_CLOUDINARY_CLOUD_NAME`, `VITE_CLOUDINARY_UPLOAD_PRESET`
-- **Why it remains:** The Cloudinary account and unsigned upload preset must be created/configured externally.
-- **What is already implemented:** The frontend image picker, previews, validation, Cloudinary upload client, and issue `evidenceMedia` integration are implemented.
-- **Important:** Never put a Cloudinary API secret in the frontend environment.
+- [ ] Verify deployed Spring Boot health/API endpoints.
+- [ ] Verify deployed AI service connectivity from Spring Boot.
+- [ ] Verify frontend can reach the deployed backend.
+- [ ] Verify production CORS.
+- [ ] Verify JWT login/authenticated requests in the hosted environment.
+- [ ] Verify evidence/image upload configuration if Cloudinary is used.
+- [ ] Observe successful frontend build workflow in GitHub Actions.
 
-## Production Frontend API Configuration
+## 4. Final End-to-End Demo
 
-- **Variable:** `VITE_API_BASE_URL`
-- **Why it remains:** The final frontend deployment URL/environment must be configured per deployment target.
-- **What is already implemented:** The frontend API client uses environment configuration rather than hardcoding the backend URL.
+Run one complete real-data workflow without mock fallback:
 
-## Verification Limitation
+```text
+Citizen registration/login
+  → issue + exact GPS + evidence
+  → Spring Boot persistence
+  → AI translation/summarization/classification/priority/dedup
+  → university/department routing
+  → Nodal verification
+  → Faculty/Student R&D project
+  → Kanban task updates
+  → milestone validation
+  → Industry/CSR sponsorship record
+  → Admin analytics/GIS
+  → notification/session verification
+```
 
-- The current development environment cannot directly execute the deployed Render service from this session, so live production endpoint verification must be completed from the deployed frontend/browser or another network environment.
+## 5. Demo-Data / UI Cleanup
+
+The UI is intentionally capable of mock fallback, but important demo-only values should not be presented as live telemetry when live mode is enabled.
+
+- [ ] Replace hard-coded Admin chart datasets with live dashboard API values.
+- [ ] Replace hard-coded Admin user governance data with backend user data where supported.
+- [ ] Replace hard-coded Faculty KPI values with backend-derived values where supported.
+- [ ] Replace hard-coded Student mentor/KPI presentation values with backend-derived values where supported.
+- [ ] Ensure all live-mode success messages reflect actual backend persistence.
+
+## 6. Testing Completion
+
+- [ ] Run complete Maven build/test suite in a clean environment.
+- [ ] Add/execute missing controller/API tests where practical.
+- [ ] Execute integration tests for issue → AI → routing.
+- [ ] Execute project/team/task/milestone integration tests.
+- [ ] Execute Industry/CSR integration tests.
+- [ ] Execute dashboard/notification integration tests.
+
+## Completion Rule
+
+Do **not** mark the project 100% complete merely because code exists. Mark the final prototype complete only after the deployed end-to-end workflow passes with live configuration and the remaining demo-only values are either connected to backend data or explicitly labeled as demo data.
