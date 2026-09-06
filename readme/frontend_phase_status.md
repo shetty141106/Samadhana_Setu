@@ -4,7 +4,7 @@
 
 ## Final Status
 
-Frontend integration is **complete at code level across Phases 1–15**. The remaining work is hosted runtime observation and final end-to-end verification, not creation of the core integration architecture.
+Frontend integration is complete at code level across Phases 1–15. The recent live-debugging pass resolved the main authentication, role-routing, map, dashboard, session, CSR and UX defects found during browser testing. Remaining work is hosted runtime verification and any defects discovered only through real six-role E2E execution.
 
 | Phase | Scope | Status |
 |---|---|---|
@@ -22,14 +22,34 @@ Frontend integration is **complete at code level across Phases 1–15**. The rem
 | 12 | Notifications + profile/session integration | ✅ COMPLETE |
 | 13 | Loading / error / empty-state foundation | ✅ COMPLETE |
 | 14 | Production API / CORS / environment configuration | ✅ COMPLETE |
-| 15 | End-to-end build verification workflow | 🟡 COMPLETE AS CODE; hosted run/runtime observation pending |
+| 15 | End-to-end build verification workflow | 🟡 COMPLETE AS CODE; hosted six-role E2E verification pending |
+
+## Recently Resolved Frontend Defects
+
+- [x] Removed misleading authenticated role-switcher/dropdown.
+- [x] Normalized all six backend role names to the frontend role model.
+- [x] Fixed hash routing and role-specific dashboard redirects.
+- [x] Prevented authenticated users from navigating to another role's dashboard by URL manipulation.
+- [x] Added session invalidation handling for API 401 responses.
+- [x] Fixed profile logout to clear the real JWT/session.
+- [x] Limited issue upvotes to one per user/browser storage key.
+- [x] Fixed `IssueMap` crashes caused by undefined district/category/priority fields.
+- [x] Expanded AI analysis presentation so it is not unnecessarily cramped.
+- [x] Added Student empty-project protection.
+- [x] Fixed Faculty project loading/KPI synchronization.
+- [x] Fixed Nodal critical-priority casing and empty-state behavior.
+- [x] Fixed Industry filtered-project empty state.
+- [x] Aligned registration password validation with the backend.
+- [x] Fixed CSR sponsorship organization resolution in Issue Detail.
+- [x] Connected Admin category/status charts to live dashboard APIs with explicit demo fallback.
 
 ## Implemented Integration
 
 ### Authentication
 - Spring Boot login/register APIs are wired through `auth.api.js`.
 - JWT is stored/attached through the centralized API client.
-- Demo persona launchers remain available for presentation resilience and must be treated as demo navigation, not production authentication.
+- Role selection is presentation-only; the server-returned role is authoritative.
+- Demo persona launchers remain available only for presentation fallback when live mode is disabled.
 
 ### Citizen + AI
 - Issue API is connected.
@@ -55,13 +75,14 @@ Frontend integration is **complete at code level across Phases 1–15**. The rem
 - Missing organization data produces an explicit error rather than inventing an ID.
 
 ### Admin
-- Dashboard summary integration exists.
+- Dashboard summary, category and status analytics use backend APIs.
 - GIS issue map is connected to the shared issue data model.
-- Some chart/user/persona values remain hard-coded demo presentation values and must not be represented as live telemetry until replaced.
+- User/persona governance remains explicitly marked as demo metadata because no production user-directory API is currently exposed.
 
 ### Notifications / Session
 - Notification loading/read-state actions use backend APIs in live mode.
 - Logout clears JWT/session state.
+- 401 responses invalidate the local session.
 - Mock notification fallback remains available when live mode is disabled.
 
 ## Phase 13 — UX Resilience
@@ -93,12 +114,13 @@ Current map stack is Leaflet + React Leaflet + OpenStreetMap; Google Maps is not
 - [x] `npm ci` + `npm run build` gate defined.
 - [x] Final frontend API/service architecture present.
 - [x] Demo fallback preserved.
+- [x] Major browser-discovered frontend defects resolved.
 
 ### Still required outside code
-- [ ] Confirm successful GitHub Actions run after latest changes.
+- [ ] Confirm successful GitHub Actions run after latest frontend changes.
 - [ ] Verify deployed frontend runtime.
 - [ ] Verify frontend → backend connectivity.
-- [ ] Verify production CORS and JWT behavior.
+- [ ] Verify production CORS and JWT behavior for all six roles.
 - [ ] Verify live Gemini flow through backend.
 - [ ] Execute complete citizen → AI → nodal → university → project → CSR → admin flow.
 
