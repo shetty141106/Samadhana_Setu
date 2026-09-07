@@ -38,10 +38,205 @@ export const IndustryDashboard = ({ currentPath, onNavigate }) => {
     } catch (err) { setError(err.message || 'Unable to create CSR sponsorship.'); }
   };
 
-  return <div className="space-y-8">
-    <div className="bg-white rounded-3xl p-6 sm:p-8 border border-jh-earth-200 shadow-jh-soft flex flex-col md:flex-row items-start md:items-center justify-between gap-4"><div className="space-y-1.5"><div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange-100 text-orange-900 text-xs font-semibold"><Building2 className="w-3.5 h-3.5" />Corporate CSR & ESG Command Desk • {currentUser.organization || 'Industry Workspace'}</div><h1 className="text-2xl sm:text-3xl font-bold text-jh-green-950">{currentUser.name}</h1><p className="text-xs text-jh-earth-600 max-w-xl">{currentUser.title || 'Chief CSR & Sustainability Officer'} — Direct corporate capital toward vetted university R&D solutions that deliver high-impact ESG compliance across Jharkhand.</p></div><div className="bg-jh-earth-50 p-3.5 rounded-2xl border border-jh-earth-200 text-right"><span className="text-[10px] uppercase font-bold text-jh-earth-600 block">Total CSR Budget</span><span className="text-xl font-extrabold text-jh-terracotta-700">₹ 15.00 Cr</span></div></div>
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"><StatCard title="Active Pledges" value={`₹ ${(sponsors.reduce((sum, s) => sum + Number(s.amount || 0), 0) / 10000000).toFixed(2)} Cr`} subtitle="Live sponsorship records" icon={Coins} color="terracotta" /><StatCard title="Water Cleaned" value="4.2M Litres" subtitle="Subarnarekha & Ghatshila" icon={Droplets} color="blue" /><StatCard title="Mine Land Restored" value="84 Hectares" subtitle="Vetiver phytoremediation" icon={TreeDeciduous} color="forest" /><StatCard title="ESG Audit Rating" value="A+ Compliant" subtitle="Govt. of Jharkhand verified" icon={Award} color="gold" /></div>
-    <div className="space-y-4"><div className="flex flex-wrap items-center justify-between gap-3 pb-2 border-b border-jh-earth-200"><div><h3 className="text-base font-bold text-jh-green-950">Vetted University R&D Marketplace</h3><p className="text-xs text-jh-earth-600">Browse scientifically validated prototypes awaiting corporate funding tranches</p></div><div className="flex items-center gap-1 bg-white p-1 rounded-xl border border-jh-earth-200 text-xs">{['all','water','mining','renewable'].map(filter => <button key={filter} onClick={() => setDomainFilter(filter)} className={`px-3 py-1 rounded-lg font-bold transition-all ${domainFilter === filter ? 'bg-jh-green-900 text-white' : 'text-jh-earth-700 hover:bg-jh-earth-100'}`}>{filter === 'all' ? 'All Domains' : filter}</button>)}</div></div>{projects.length === 0 ? <div className="p-10 text-center bg-white rounded-2xl border border-dashed border-jh-earth-300 text-sm text-jh-earth-600">No R&D projects are available for CSR sponsorship yet.</div> : filteredProjects.length === 0 ? <div className="p-10 text-center bg-white rounded-2xl border border-dashed border-jh-earth-300 text-sm text-jh-earth-600">No projects match the <strong>{domainFilter}</strong> domain.</div> : <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">{filteredProjects.map(project => <ProjectCard key={project.id} project={project} onSponsorClick={setSelectedProjectToFund} />)}</div>}</div>
-    {selectedProjectToFund && <Modal isOpen onClose={() => setSelectedProjectToFund(null)} title="Pledge CSR Sponsorship" subtitle={selectedProjectToFund.title}>{pledgeSuccess ? <div className="text-center py-6 space-y-3"><div className="w-14 h-14 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center mx-auto"><CheckCircle className="w-8 h-8" /></div><h3 className="text-lg font-bold text-jh-green-950">CSR Grant Submitted</h3><p className="text-xs text-jh-earth-700">The sponsorship has been recorded and mapped to the selected project.</p></div> : <form onSubmit={handlePledgeSubmit} className="space-y-4 text-xs">{error && <div role="alert" className="p-3 rounded-xl border border-red-200 bg-red-50 text-red-800">{error}</div>}<div className="p-3 bg-jh-earth-50 rounded-xl border border-jh-earth-200"><span className="text-[10px] uppercase font-bold text-jh-earth-500">Academic Host:</span><p className="font-bold text-jh-green-950">{selectedProjectToFund.university || 'Not specified'}</p><p className="text-jh-earth-600">Total Budget: ₹ {((Number(selectedProjectToFund.budgetTotal) || 0) / 100000).toFixed(2)} Lakh</p></div><div><label className="block font-bold text-jh-charcoal mb-1">Pledge Grant Amount (in INR) *</label><input type="number" required min="50000" step="50000" value={pledgeAmount} onChange={e => setPledgeAmount(e.target.value)} className="w-full p-2.5 bg-jh-earth-50 border border-jh-earth-300 rounded-xl font-mono text-sm font-bold text-jh-green-950" /></div><div className="p-3 bg-orange-50 border border-orange-200 rounded-xl text-orange-950"><span className="font-bold flex items-center gap-1.5"><Award className="w-3.5 h-3.5 text-orange-700" />Section 135 CSR Compliance</span><p className="text-[11px] mt-1">Contribution records remain subject to backend approval and applicable CSR compliance.</p></div><div className="flex justify-end gap-2 pt-2"><Button variant="ghost" size="sm" type="button" onClick={() => setSelectedProjectToFund(null)}>Cancel</Button><Button variant="secondary" size="sm" type="submit" icon={Coins}>Confirm CSR Grant</Button></div></form>}</Modal>}
-  </div>;
+  // Sub-view: Active CSR Grants / My Sponsorships
+  if (currentPath === 'my-sponsorships') {
+    return (
+      <div className="space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h2 className="text-xl font-bold text-jh-green-950">Active CSR Sponsorships & Tranche Release</h2>
+            <p className="text-xs text-jh-earth-600">Track company grants, Schedule VII tax receipts, and field milestones</p>
+          </div>
+          <Button variant="primary" size="sm" icon={Coins} onClick={() => onNavigate('browse-projects')}>
+            Pledge New Project
+          </Button>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          {projects.filter(p => p.sponsor && p.sponsor.includes('Tata')).concat(projects.slice(0, 1)).map((prj) => (
+            <div key={prj.id} className="bg-white rounded-2xl border border-jh-earth-200 p-6 shadow-jh-soft space-y-4">
+              <div className="flex items-start justify-between">
+                <div>
+                  <span className="text-[10px] font-bold uppercase text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                    {prj.domain}
+                  </span>
+                  <h3 className="text-base font-bold text-jh-green-950 mt-1">{prj.title}</h3>
+                  <p className="text-xs text-jh-earth-600">{prj.university} • Lead: {prj.studentLead}</p>
+                </div>
+                <span className="text-sm font-bold text-emerald-700 bg-emerald-100 px-3 py-1 rounded-full">
+                  Active Grant
+                </span>
+              </div>
+
+              <div className="space-y-1.5 text-xs text-jh-earth-700 pt-2 border-t border-jh-earth-100">
+                <div className="flex justify-between">
+                  <span>Sanctioned Capital:</span>
+                  <strong className="font-mono text-jh-green-900">₹ {((Number(prj.budgetFunded) || 0) / 100000).toFixed(2)} Lakh</strong>
+                </div>
+                <div className="flex justify-between">
+                  <span>Milestone Velocity:</span>
+                  <strong>{prj.progressPercentage}% Completed</strong>
+                </div>
+                <div className="flex justify-between">
+                  <span>Compliance Status:</span>
+                  <span className="text-emerald-700 font-bold">✓ Section 135 Compliant</span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // Sub-view: ESG Impact Analytics
+  if (currentPath === 'csr-impact') {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-xl font-bold text-jh-green-950">Corporate ESG Impact Scorecard</h2>
+          <p className="text-xs text-jh-earth-600">Audited environmental indicators backed by university satellite and IoT telemetry</p>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+          <div className="bg-white rounded-2xl border border-jh-earth-200 p-6 shadow-jh-soft text-center space-y-2">
+            <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-800 flex items-center justify-center mx-auto">
+              <Droplets className="w-6 h-6" />
+            </div>
+            <span className="text-2xl font-extrabold text-blue-900 font-mono block">4.2M Litres</span>
+            <h4 className="text-xs font-bold text-jh-green-950">Water Catchment Treated</h4>
+            <p className="text-[11px] text-jh-earth-600">Constructed wetland biofiltration at Ghatshila & Jamshedpur</p>
+          </div>
+
+          <div className="bg-white rounded-2xl border border-jh-earth-200 p-6 shadow-jh-soft text-center space-y-2">
+            <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-800 flex items-center justify-center mx-auto">
+              <TreeDeciduous className="w-6 h-6" />
+            </div>
+            <span className="text-2xl font-extrabold text-emerald-900 font-mono block">84 Hectares</span>
+            <h4 className="text-xs font-bold text-jh-green-950">Mine Overburden Reclaimed</h4>
+            <p className="text-[11px] text-jh-earth-600">Deep-root vetiver phytoremediation and biochar soil stabilization</p>
+          </div>
+
+          <div className="bg-white rounded-2xl border border-jh-earth-200 p-6 shadow-jh-soft text-center space-y-2">
+            <div className="w-12 h-12 rounded-xl bg-amber-50 text-amber-800 flex items-center justify-center mx-auto">
+              <Award className="w-6 h-6" />
+            </div>
+            <span className="text-2xl font-extrabold text-amber-900 font-mono block">94.8%</span>
+            <h4 className="text-xs font-bold text-jh-green-950">ESG Transparency Rating</h4>
+            <p className="text-[11px] text-jh-earth-600">State Principal Secretary audited CSR tranche deployment</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-8">
+      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-jh-earth-200 shadow-jh-soft flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div className="space-y-1.5">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange-100 text-orange-900 text-xs font-semibold">
+            <Building2 className="w-3.5 h-3.5" />
+            <span>Corporate CSR & ESG Command Desk • {currentUser.organization || 'Tata Steel Foundation'}</span>
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-jh-green-950">{currentUser.name}</h1>
+          <p className="text-xs text-jh-earth-600 max-w-xl">
+            {currentUser.title || 'Chief CSR & Sustainability Officer'} — Direct corporate capital toward vetted university R&D solutions that deliver high-impact ESG compliance across Jharkhand.
+          </p>
+        </div>
+        <div className="bg-jh-earth-50 p-3.5 rounded-2xl border border-jh-earth-200 text-right">
+          <span className="text-[10px] uppercase font-bold text-jh-earth-600 block">Total CSR Budget</span>
+          <span className="text-xl font-extrabold text-jh-terracotta-700">₹ 15.00 Cr</span>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatCard title="Active Pledges" value={`₹ ${(sponsors.reduce((sum, s) => sum + Number(s.amount || 0), 0) / 10000000).toFixed(2)} Cr`} subtitle="Live sponsorship records" icon={Coins} color="terracotta" />
+        <StatCard title="Water Cleaned" value="4.2M Litres" subtitle="Subarnarekha & Ghatshila" icon={Droplets} color="blue" />
+        <StatCard title="Mine Land Restored" value="84 Hectares" subtitle="Vetiver phytoremediation" icon={TreeDeciduous} color="forest" />
+        <StatCard title="ESG Audit Rating" value="A+ Compliant" subtitle="Govt. of Jharkhand verified" icon={Award} color="gold" />
+      </div>
+
+      <div className="space-y-4">
+        <div className="flex flex-wrap items-center justify-between gap-3 pb-2 border-b border-jh-earth-200">
+          <div>
+            <h3 className="text-base font-bold text-jh-green-950">Vetted University R&D Marketplace</h3>
+            <p className="text-xs text-jh-earth-600">Browse scientifically validated prototypes awaiting corporate funding tranches</p>
+          </div>
+          <div className="flex items-center gap-1 bg-white p-1 rounded-xl border border-jh-earth-200 text-xs">
+            {['all', 'water', 'mining', 'renewable'].map(filter => (
+              <button
+                key={filter}
+                onClick={() => setDomainFilter(filter)}
+                className={`px-3 py-1 rounded-lg font-bold transition-all ${domainFilter === filter ? 'bg-jh-green-900 text-white' : 'text-jh-earth-700 hover:bg-jh-earth-100'}`}
+              >
+                {filter === 'all' ? 'All Domains' : filter}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {projects.length === 0 ? (
+          <div className="p-10 text-center bg-white rounded-2xl border border-dashed border-jh-earth-300 text-sm text-jh-earth-600">
+            No R&D projects are available for CSR sponsorship yet.
+          </div>
+        ) : filteredProjects.length === 0 ? (
+          <div className="p-10 text-center bg-white rounded-2xl border border-dashed border-jh-earth-300 text-sm text-jh-earth-600">
+            No projects match the <strong>{domainFilter}</strong> domain.
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {filteredProjects.map(project => (
+              <ProjectCard key={project.id} project={project} onSponsorClick={setSelectedProjectToFund} />
+            ))}
+          </div>
+        )}
+      </div>
+
+      {selectedProjectToFund && (
+        <Modal isOpen onClose={() => setSelectedProjectToFund(null)} title="Pledge CSR Sponsorship" subtitle={selectedProjectToFund.title}>
+          {pledgeSuccess ? (
+            <div className="text-center py-6 space-y-3">
+              <div className="w-14 h-14 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center mx-auto">
+                <CheckCircle className="w-8 h-8" />
+              </div>
+              <h3 className="text-lg font-bold text-jh-green-950">CSR Grant Submitted</h3>
+              <p className="text-xs text-jh-earth-700">The sponsorship has been recorded and mapped to the selected project.</p>
+            </div>
+          ) : (
+            <form onSubmit={handlePledgeSubmit} className="space-y-4 text-xs">
+              {error && <div role="alert" className="p-3 rounded-xl border border-red-200 bg-red-50 text-red-800">{error}</div>}
+              <div className="p-3 bg-jh-earth-50 rounded-xl border border-jh-earth-200">
+                <span className="text-[10px] uppercase font-bold text-jh-earth-500">Academic Host:</span>
+                <p className="font-bold text-jh-green-950">{selectedProjectToFund.university || 'Not specified'}</p>
+                <p className="text-jh-earth-600">Total Budget: ₹ {((Number(selectedProjectToFund.budgetTotal) || 0) / 100000).toFixed(2)} Lakh</p>
+              </div>
+              <div>
+                <label className="block font-bold text-jh-charcoal mb-1">Pledge Grant Amount (in INR) *</label>
+                <input
+                  type="number"
+                  required
+                  min="50000"
+                  step="50000"
+                  value={pledgeAmount}
+                  onChange={e => setPledgeAmount(e.target.value)}
+                  className="w-full p-2.5 bg-jh-earth-50 border border-jh-earth-300 rounded-xl font-mono text-sm font-bold text-jh-green-950"
+                />
+              </div>
+              <div className="p-3 bg-orange-50 border border-orange-200 rounded-xl text-orange-950">
+                <span className="font-bold flex items-center gap-1.5">
+                  <Award className="w-3.5 h-3.5 text-orange-700" />
+                  Section 135 CSR Compliance
+                </span>
+                <p className="text-[11px] mt-1">Contribution records remain subject to backend approval and applicable CSR compliance.</p>
+              </div>
+              <div className="flex justify-end gap-2 pt-2">
+                <Button variant="ghost" size="sm" type="button" onClick={() => setSelectedProjectToFund(null)}>Cancel</Button>
+                <Button variant="secondary" size="sm" type="submit" icon={Coins}>Confirm CSR Grant</Button>
+              </div>
+            </form>
+          )}
+        </Modal>
+      )}
+    </div>
+  );
 };

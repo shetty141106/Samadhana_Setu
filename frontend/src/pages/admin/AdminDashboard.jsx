@@ -48,9 +48,17 @@ const formatLabel = value => String(value || '')
 export const AdminDashboard = ({ currentPath, onNavigate }) => {
   const { currentUser } = useAuth();
   const { issues, stats, dashboard, liveApi } = useData();
-  const [activeAdminTab, setActiveAdminTab] = useState('overview');
+  const [activeAdminTab, setActiveAdminTab] = useState(
+    currentPath === 'heatmaps' ? 'heatmaps' : currentPath === 'user-management' ? 'users' : 'overview'
+  );
   const [analytics, setAnalytics] = useState({ categories: null, statuses: null });
   const [analyticsLoading, setAnalyticsLoading] = useState(false);
+
+  useEffect(() => {
+    if (currentPath === 'heatmaps') setActiveAdminTab('heatmaps');
+    else if (currentPath === 'user-management') setActiveAdminTab('users');
+    else if (currentPath === 'system-metrics' || currentPath === 'admin') setActiveAdminTab('overview');
+  }, [currentPath]);
 
   useEffect(() => {
     if (!liveApi) return;

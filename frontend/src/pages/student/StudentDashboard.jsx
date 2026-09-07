@@ -19,6 +19,55 @@ export const StudentDashboard = ({ currentPath, onNavigate }) => {
   const doneTasks = activeProject.kanbanTasks?.filter(t => String(t.status).toLowerCase() === 'done').length || 0;
   const inProgressTasks = activeProject.kanbanTasks?.filter(t => String(t.status).toLowerCase() === 'in_progress').length || 0;
 
+  // Sub-view: No Project Assigned (Awaiting Assignment)
+  if (currentPath === 'no-project') {
+    return (
+      <div className="max-w-2xl mx-auto py-12 text-center bg-white rounded-3xl border border-jh-earth-200 p-8 shadow-jh-soft space-y-4">
+        <div className="w-16 h-16 rounded-2xl bg-amber-50 text-amber-800 border border-amber-200 flex items-center justify-center mx-auto">
+          <Clock className="w-8 h-8" />
+        </div>
+        <h2 className="text-xl font-bold text-jh-green-950">Awaiting University Lab Project Assignment</h2>
+        <p className="text-xs text-jh-earth-600 max-w-md mx-auto leading-relaxed">
+          Your profile is currently active in the {currentUser.university || 'IIT (ISM) Dhanbad'} student researcher pool. Once your department faculty mentor assigns an active grievance solution, your sprint Kanban will unlock here.
+        </p>
+        <div className="pt-4 flex justify-center gap-3">
+          <Button variant="primary" size="sm" onClick={() => onNavigate('student')}>
+            Return to Active Project
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // Sub-view: Team Roster
+  if (currentPath === 'team-roster') {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-xl font-bold text-jh-green-950">Research Lab Team Roster</h2>
+          <p className="text-xs text-jh-earth-600">Active scholars collaborating on project {activeProject.id}</p>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          {activeProject.teamMembers?.map((member, idx) => (
+            <div key={idx} className="bg-white rounded-2xl border border-jh-earth-200 p-5 shadow-jh-soft flex items-center gap-3.5">
+              <div className="w-11 h-11 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 font-bold flex items-center justify-center flex-shrink-0">
+                {member.name.split(' ').map(n => n[0]).join('')}
+              </div>
+              <div className="min-w-0">
+                <h4 className="text-sm font-bold text-jh-green-950 truncate">{member.name}</h4>
+                <p className="text-xs text-jh-earth-600 truncate">{member.role}</p>
+                <span className="text-[10px] font-semibold text-emerald-800 bg-emerald-50 px-2 py-0.2 rounded-md inline-block mt-1">
+                  Active Scholar
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-8">
       <div className="bg-white rounded-3xl p-6 sm:p-8 border border-jh-earth-200 shadow-jh-soft flex flex-col md:flex-row items-start md:items-center justify-between gap-4"><div className="space-y-1.5"><div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 text-amber-900 text-xs font-semibold"><Sparkles className="w-3.5 h-3.5" />Student Innovation Lab • {currentUser.university || 'IIT (ISM) Dhanbad'}</div><h1 className="text-2xl sm:text-3xl font-bold text-jh-green-950">{currentUser.name}</h1><p className="text-xs text-jh-earth-600 max-w-xl">Lead Student Researcher for project <strong className="text-jh-green-900">{activeProject.id}</strong> — Developing sustainable bio-technological solutions for Jharkhand's river catchments.</p></div><div className="flex items-center gap-2"><Button variant="secondary" size="md" icon={KanbanSquare} onClick={() => onNavigate('kanban')}>Open Sprint Kanban</Button></div></div>

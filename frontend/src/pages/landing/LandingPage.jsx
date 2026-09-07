@@ -37,45 +37,47 @@ export const LandingPage = ({ onNavigate }) => {
     <div className="w-full flex flex-col bg-jh-earth-50 text-jh-charcoal selection:bg-jh-green-100 selection:text-jh-green-900 overflow-x-hidden">
       
       {/* ========================================================================= */}
-      {/* 1. HERO SECTION WITH REAL LUSH FOREST PHOTOGRAPHY & 3 CARDS              */}
+      {/* 1. HERO SECTION WITH REAL LUSH FOREST PHOTOGRAPHY & 3 FULLY VISIBLE CARDS  */}
       {/* ========================================================================= */}
-      <section className="relative w-full min-h-[620px] lg:min-h-[680px] flex flex-col justify-between overflow-hidden">
+      <section className="relative w-full bg-[#0E3523] text-white">
         
         {/* Real Lush Forest Canopy Background */}
-        <div className="absolute inset-0 z-0">
+        <div className="absolute inset-0 z-0 overflow-hidden">
           <img
             src="https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=2000&q=85"
             alt="Jharkhand Lush Forest Canopy"
-            className="w-full h-full object-cover object-center transform scale-105 filter brightness-[0.82] contrast-[1.05]"
+            className="w-full h-full object-cover object-center transform scale-105 filter brightness-[0.78] contrast-[1.08]"
           />
-          {/* Subtle Jharkhand Forest Green Gradient Overlay */}
-          <div className="absolute inset-0 bg-forest-overlay-light mix-blend-multiply"></div>
-          <div className="absolute inset-0 bg-gradient-to-t from-jh-earth-50 via-transparent to-black/40"></div>
+          {/* Subtle Jharkhand Forest Green & Dark Gradient Overlays */}
+          <div className="absolute inset-0 bg-[#082819]/65 mix-blend-multiply"></div>
+          <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-[#082819]/90"></div>
         </div>
 
-        {/* Hero Top Content */}
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 md:pt-20 pb-8 text-white">
-          <div className="max-w-3xl space-y-4">
+        {/* Hero Content Container */}
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 sm:pt-14 md:pt-16 pb-12 sm:pb-16 flex flex-col justify-between">
+          
+          {/* Hero Top Content */}
+          <div className="max-w-3xl space-y-4 mb-8 sm:mb-12">
             
             {/* Stately Hero Headline */}
-            <h1 className="font-serif text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.1] text-white drop-shadow-md">
+            <h1 className="font-serif text-3xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.15] text-white drop-shadow-md">
               Report. Resolve.<br />
               Rebuild Jharkhand.
             </h1>
 
             {/* Subheadline */}
-            <p className="text-base sm:text-lg lg:text-xl text-jh-earth-100/90 font-sans font-normal leading-relaxed drop-shadow-sm max-w-2xl">
+            <p className="text-sm sm:text-lg lg:text-xl text-[#E8E2D6] font-sans font-normal leading-relaxed drop-shadow-sm max-w-2xl">
               A citizen–university–industry collaboration for a greener, stronger and sustainable Jharkhand.
             </p>
 
             {/* CTAs */}
-            <div className="pt-4 flex flex-wrap items-center gap-3.5">
+            <div className="pt-2 sm:pt-4 flex flex-wrap items-center gap-3">
               <Button
                 variant="primary"
                 size="lg"
                 icon={Camera}
                 onClick={() => handleLaunchRole(ROLES.CITIZEN, 'report-issue')}
-                className="bg-jh-green-900 hover:bg-jh-green-950 text-jh-earth-50 border border-jh-green-700 shadow-md font-semibold text-sm sm:text-base px-6 py-3"
+                className="bg-[#0B3D2E] hover:bg-[#072B20] text-[#FAF8F5] border border-emerald-700/60 shadow-lg font-semibold text-sm sm:text-base px-6 py-3"
               >
                 Report an Issue
               </Button>
@@ -85,98 +87,96 @@ export const LandingPage = ({ onNavigate }) => {
                 size="lg"
                 icon={Search}
                 onClick={() => handleLaunchRole(ROLES.INDUSTRY, 'browse-projects')}
-                className="text-white hover:bg-white/20 border-white/40 shadow-sm font-semibold text-sm sm:text-base px-6 py-3"
+                className="text-white bg-white/15 hover:bg-white/25 border-white/40 shadow-md font-semibold text-sm sm:text-base px-6 py-3 backdrop-blur-sm"
               >
                 Explore Projects
               </Button>
             </div>
 
           </div>
-        </div>
 
-        {/* 3 Persona Feature Cards Overlaying the Bottom of Hero (Exact Mockup Match) */}
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mb-10 w-full">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 lg:gap-6">
-            
-            {/* Card 1: Citizen Reporting */}
-            <div
-              onClick={() => handleLaunchRole(ROLES.CITIZEN, 'citizen')}
-              className="bg-white rounded-2xl p-6 shadow-jh-card border border-jh-earth-200/80 hover:-translate-y-1 hover:border-jh-green-700/50 transition-all duration-300 cursor-pointer flex flex-col justify-between group"
-            >
-              <div>
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-12 h-12 rounded-xl bg-jh-green-50 border border-jh-green-200 text-jh-green-900 flex items-center justify-center group-hover:bg-jh-green-900 group-hover:text-white transition-colors shadow-2xs">
-                    <Camera className="w-6 h-6" />
+          {/* 3 Persona Feature Cards (Exact Match to Picture - 100% Fully Visible) */}
+          <div className="w-full pt-2">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5 lg:gap-6">
+              
+              {/* Card 1: Citizen Reporting */}
+              <div
+                onClick={() => handleLaunchRole(ROLES.CITIZEN, 'citizen')}
+                className="bg-white rounded-2xl p-6 sm:p-7 shadow-xl border border-jh-earth-200/90 hover:-translate-y-1.5 hover:shadow-2xl hover:border-emerald-700/60 transition-all duration-300 cursor-pointer flex flex-col justify-between group"
+              >
+                <div>
+                  <div className="flex items-center gap-3.5 mb-3.5">
+                    <div className="w-12 h-12 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 flex items-center justify-center group-hover:bg-[#0B3D2E] group-hover:text-white transition-colors shadow-xs flex-shrink-0">
+                      <Camera className="w-6 h-6" />
+                    </div>
+                    <h3 className="text-base sm:text-lg font-bold text-jh-green-950 group-hover:text-jh-terracotta-700 transition-colors">
+                      Citizen Reporting
+                    </h3>
                   </div>
-                  <h3 className="text-base sm:text-lg font-bold text-jh-green-950 group-hover:text-jh-terracotta-700 transition-colors">
-                    Citizen Reporting
-                  </h3>
+                  <p className="text-xs sm:text-sm text-[#5C5449] leading-relaxed">
+                    Report local environmental and civic issues with photos, location and details. Your voice drives change.
+                  </p>
                 </div>
-                <p className="text-xs sm:text-sm text-jh-earth-700 leading-relaxed">
-                  Report local environmental and civic issues with photos, location and details. Your voice drives change.
-                </p>
+                <div className="mt-5 pt-3.5 border-t border-jh-earth-100 flex items-center gap-1.5 text-xs font-bold text-[#0B3D2E] group-hover:text-jh-terracotta-700">
+                  <span>Enter Citizen Portal</span>
+                  <ArrowRight className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" />
+                </div>
               </div>
-              <div className="mt-4 pt-3 border-t border-jh-earth-100 flex items-center gap-1 text-xs font-bold text-jh-green-900 group-hover:text-jh-terracotta-700">
-                <span>Enter Citizen Portal</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </div>
-            </div>
 
-            {/* Card 2: University R&D Workspace */}
-            <div
-              onClick={() => handleLaunchRole(ROLES.STUDENT, 'student')}
-              className="bg-white rounded-2xl p-6 shadow-jh-card border border-jh-earth-200/80 hover:-translate-y-1 hover:border-jh-green-700/50 transition-all duration-300 cursor-pointer flex flex-col justify-between group"
-            >
-              <div>
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-12 h-12 rounded-xl bg-jh-green-50 border border-jh-green-200 text-jh-green-900 flex items-center justify-center group-hover:bg-jh-green-900 group-hover:text-white transition-colors shadow-2xs">
-                    <GraduationCap className="w-6 h-6" />
+              {/* Card 2: University R&D Workspace */}
+              <div
+                onClick={() => handleLaunchRole(ROLES.STUDENT, 'student')}
+                className="bg-white rounded-2xl p-6 sm:p-7 shadow-xl border border-jh-earth-200/90 hover:-translate-y-1.5 hover:shadow-2xl hover:border-emerald-700/60 transition-all duration-300 cursor-pointer flex flex-col justify-between group"
+              >
+                <div>
+                  <div className="flex items-center gap-3.5 mb-3.5">
+                    <div className="w-12 h-12 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 flex items-center justify-center group-hover:bg-[#0B3D2E] group-hover:text-white transition-colors shadow-xs flex-shrink-0">
+                      <GraduationCap className="w-6 h-6" />
+                    </div>
+                    <h3 className="text-base sm:text-lg font-bold text-jh-green-950 group-hover:text-jh-terracotta-700 transition-colors">
+                      University R&D Workspace
+                    </h3>
                   </div>
-                  <h3 className="text-base sm:text-lg font-bold text-jh-green-950 group-hover:text-jh-terracotta-700 transition-colors">
-                    University R&D Workspace
-                  </h3>
+                  <p className="text-xs sm:text-sm text-[#5C5449] leading-relaxed">
+                    Access verified issues, conduct research, propose solutions and develop sustainable interventions.
+                  </p>
                 </div>
-                <p className="text-xs sm:text-sm text-jh-earth-700 leading-relaxed">
-                  Access verified issues, conduct research, propose solutions and develop sustainable interventions.
-                </p>
+                <div className="mt-5 pt-3.5 border-t border-jh-earth-100 flex items-center gap-1.5 text-xs font-bold text-[#0B3D2E] group-hover:text-jh-terracotta-700">
+                  <span>Open Student/Faculty Lab</span>
+                  <ArrowRight className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" />
+                </div>
               </div>
-              <div className="mt-4 pt-3 border-t border-jh-earth-100 flex items-center gap-1 text-xs font-bold text-jh-green-900 group-hover:text-jh-terracotta-700">
-                <span>Open Student/Faculty Lab</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </div>
-            </div>
 
-            {/* Card 3: Industry CSR Impact */}
-            <div
-              onClick={() => handleLaunchRole(ROLES.INDUSTRY, 'industry')}
-              className="bg-white rounded-2xl p-6 shadow-jh-card border border-jh-earth-200/80 hover:-translate-y-1 hover:border-jh-green-700/50 transition-all duration-300 cursor-pointer flex flex-col justify-between group"
-            >
-              <div>
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-12 h-12 rounded-xl bg-jh-green-50 border border-jh-green-200 text-jh-green-900 flex items-center justify-center group-hover:bg-jh-green-900 group-hover:text-white transition-colors shadow-2xs">
-                    <Handshake className="w-6 h-6" />
+              {/* Card 3: Industry CSR Impact */}
+              <div
+                onClick={() => handleLaunchRole(ROLES.INDUSTRY, 'industry')}
+                className="bg-white rounded-2xl p-6 sm:p-7 shadow-xl border border-jh-earth-200/90 hover:-translate-y-1.5 hover:shadow-2xl hover:border-emerald-700/60 transition-all duration-300 cursor-pointer flex flex-col justify-between group"
+              >
+                <div>
+                  <div className="flex items-center gap-3.5 mb-3.5">
+                    <div className="w-12 h-12 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 flex items-center justify-center group-hover:bg-[#0B3D2E] group-hover:text-white transition-colors shadow-xs flex-shrink-0">
+                      <Handshake className="w-6 h-6" />
+                    </div>
+                    <h3 className="text-base sm:text-lg font-bold text-jh-green-950 group-hover:text-jh-terracotta-700 transition-colors">
+                      Industry CSR Impact
+                    </h3>
                   </div>
-                  <h3 className="text-base sm:text-lg font-bold text-jh-green-950 group-hover:text-jh-terracotta-700 transition-colors">
-                    Industry CSR Impact
-                  </h3>
+                  <p className="text-xs sm:text-sm text-[#5C5449] leading-relaxed">
+                    Discover projects, partner with institutions and implement CSR initiatives with measurable impact.
+                  </p>
                 </div>
-                <p className="text-xs sm:text-sm text-jh-earth-700 leading-relaxed">
-                  Discover projects, partner with institutions and implement CSR initiatives with measurable impact.
-                </p>
+                <div className="mt-5 pt-3.5 border-t border-jh-earth-100 flex items-center gap-1.5 text-xs font-bold text-[#0B3D2E] group-hover:text-jh-terracotta-700">
+                  <span>Access CSR Marketplace</span>
+                  <ArrowRight className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" />
+                </div>
               </div>
-              <div className="mt-4 pt-3 border-t border-jh-earth-100 flex items-center gap-1 text-xs font-bold text-jh-green-900 group-hover:text-jh-terracotta-700">
-                <span>Access CSR Marketplace</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </div>
-            </div>
 
+            </div>
           </div>
+
         </div>
 
       </section>
-
-      {/* Spacing below overlapping hero cards */}
-      <div className="h-16 md:h-20"></div>
 
       {/* ========================================================================= */}
       {/* 2. HOW IT WORKS SECTION (WITH SOHRAI TRIBAL FLANK BORDERS)                */}
