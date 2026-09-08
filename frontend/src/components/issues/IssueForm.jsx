@@ -1,7 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
-import { aiApi } from '../../api/ai.api';
 import { ISSUE_CATEGORIES, JHARKHAND_DISTRICTS } from '../../utils/constants';
 import { Button } from '../ui/Button';
 import { LocationPicker } from '../maps/LocationPicker';
@@ -76,9 +75,7 @@ export const IssueForm = ({ onSuccess, onCancel }) => {
         submitterPhone: currentUser.phone || '',
         evidenceMedia
       });
-      if (LIVE_API && created?.id) {
-        try { setAiResult(await aiApi.processIssueById(created.id)); } catch { setAiResult(null); }
-      }
+      if (LIVE_API) setAiResult(created?.aiAnalysis || null);
       setShowSuccessModal(true);
     } catch (error) {
       setSubmitError(error.message || 'Unable to upload evidence or submit the grievance. Please try again.');
