@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { INITIAL_ISSUES, INITIAL_PROJECTS, PLATFORM_STATS, MOCK_CSR_SPONSORS } from '../data/mockData';
 import { useAuth } from './AuthContext';
 import { issueApi } from '../api/issue.api';
 import { projectApi } from '../api/project.api';
@@ -12,10 +11,10 @@ const projectToUi = project => ({ ...project, status: String(project.status || '
 
 export const DataProvider = ({ children }) => {
   const { currentUser, isAuthenticated } = useAuth();
-  const [issues, setIssues] = useState(INITIAL_ISSUES);
-  const [projects, setProjects] = useState(INITIAL_PROJECTS);
-  const [sponsors, setSponsors] = useState(MOCK_CSR_SPONSORS);
-  const [stats, setStats] = useState(PLATFORM_STATS);
+  const [issues, setIssues] = useState([]);
+  const [projects, setProjects] = useState([]);
+  const [sponsors, setSponsors] = useState([]);
+  const [stats, setStats] = useState({});
   const [dashboard, setDashboard] = useState(null);
   const [likedIssueIds, setLikedIssueIds] = useState(new Set());
   const [dataLoading, setDataLoading] = useState(false);
@@ -24,18 +23,12 @@ export const DataProvider = ({ children }) => {
   useEffect(() => {
     const storageKey = currentUser?.id ? `samadhansetu_upvotes_${currentUser.id}` : null;
     if (!storageKey) { setLikedIssueIds(new Set()); return; }
-    try {
-      const saved = JSON.parse(localStorage.getItem(storageKey) || '[]');
-      setLikedIssueIds(new Set(Array.isArray(saved) ? saved.map(String) : []));
-    } catch { setLikedIssueIds(new Set()); }
+    try { const saved = JSON.parse(localStorage.getItem(storageKey) || '[]'); setLikedIssueIds(new Set(Array.isArray(saved) ? saved.map(String) : [])); } catch { setLikedIssueIds(new Set()); }
   }, [currentUser?.id]);
 
   useEffect(() => {
     if (!LIVE_API || !isAuthenticated) {
-      setDataLoading(false);
-      setDataError('');
-      setDashboard(null);
-      return;
+      setIssues([]); setProjects([]); setSponsors([]); setDashboard(null); setStats({}); setDataLoading(false); setDataError(''); return;
     }
     let cancelled = false;
     (async () => {
@@ -44,77 +37,46 @@ export const DataProvider = ({ children }) => {
         const role = String(currentUser?.role || '').trim().toLowerCase();
         const isCitizen = role === 'citizen';
         const canReadOperationalIssues = role === 'admin' || role === 'nodal';
-        const issuePromise = isCitizen && currentUser?.id
-          ? issueApi.getCitizenIssues(currentUser.id)
-          : canReadOperationalIssues
-            ? issueApi.listIssues()
-            : Promise.resolve([]);
+        const issuePromise = isCitizen && currentUser?.id ? issueApi.getCitizenIssues(currentUser.id) : canReadOperationalIssues ? issueApi.listIssues() : Promise.resolve([]);
         const [loadedIssues, loadedProjects] = await Promise.all([issuePromise, projectApi.listProjectsWithDetails()]);
         if (cancelled) return;
         setIssues(Array.isArray(loadedIssues) ? loadedIssues : []);
         setProjects(Array.isArray(loadedProjects) ? loadedProjects.map(projectToUi) : []);
-        if (role === 'admin' || role === 'nodal') {
-          try { setDashboard(await dashboardApi.getSummary()); } catch { setDashboard(null); }
-        }
-        try { setSponsors(await industryApi.listSponsorships()); } catch {}
-      } catch (error) {
-        if (!cancelled) setDataError(error.message || 'Unable to load live platform data.');
-      } finally {
-        if (!cancelled) setDataLoading(false);
-      }
+        if (role === 'admin' || role === 'nodal') { try { setDashboard(await dashboardApi.getSummary()); } catch { setDashboard(null); } }
+        try { setSponsors(await industryApi.listSponsorships()); } catch { setSponsors([]); }
+      } catch (error) { if (!cancelled) setDataError(error.message || 'Unable to load live platform data.'); }
+      finally { if (!cancelled) setDataLoading(false); }
     })();
     return () => { cancelled = true; };
   }, [isAuthenticated, currentUser?.id, currentUser?.role]);
 
   const addIssue = async newIssue => {
-    if (LIVE_API && isAuthenticated) {
-      const created = await issueApi.createIssue(newIssue);
-      const uiIssue = { ...created, category: newIssue.category, categoryLabel: newIssue.categoryLabel, district: newIssue.district, submittedBy: `${currentUser.name} (Citizen)`, images: created.images?.length ? created.images : (newIssue.images || []) };
-      setIssues(prev => [uiIssue, ...prev]); return uiIssue;
-    }
-    const issue = { id: `JH-ISSUE-2025-${String(issues.length + 120).padStart(3, '0')}`, reportedDate: new Date().toISOString().split('T')[0], status: 'SUBMITTED', upvotes: 1, timeline: [{ status: 'SUBMITTED', date: new Date().toISOString().split('T')[0], remark: 'Grievance registered with evidence by citizen' }], ...newIssue };
-    setIssues(prev => [issue, ...prev]); setStats(prev => ({ ...prev, totalIssuesReported: prev.totalIssuesReported + 1 })); return issue;
+    if (!LIVE_API || !isAuthenticated) throw new Error('Live API authentication is required to create an issue.');
+    const created = await issueApi.createIssue(newIssue);
+    const uiIssue = { ...created, category: newIssue.category, categoryLabel: newIssue.categoryLabel, district: newIssue.district, submittedBy: `${currentUser.name} (Citizen)`, images: created.images?.length ? created.images : (newIssue.images || []) };
+    setIssues(prev => [uiIssue, ...prev]); return uiIssue;
   };
 
   const upvoteIssue = id => {
-    const issueKey = String(id);
-    const storageKey = currentUser?.id ? `samadhansetu_upvotes_${currentUser.id}` : 'samadhansetu_upvotes_guest';
-    try {
-      const saved = JSON.parse(localStorage.getItem(storageKey) || '[]');
-      const savedIds = Array.isArray(saved) ? saved.map(String) : [];
-      if (savedIds.includes(issueKey)) return false;
-      const nextIds = [...savedIds, issueKey];
-      localStorage.setItem(storageKey, JSON.stringify(nextIds));
-      setLikedIssueIds(new Set(nextIds));
-    } catch { return false; }
-    setIssues(prev => prev.map(i => i.id === id ? { ...i, upvotes: Number(i.upvotes || 0) + 1 } : i));
-    return true;
+    const issueKey = String(id); const storageKey = currentUser?.id ? `samadhansetu_upvotes_${currentUser.id}` : null;
+    if (!storageKey) return false;
+    try { const saved = JSON.parse(localStorage.getItem(storageKey) || '[]'); const savedIds = Array.isArray(saved) ? saved.map(String) : []; if (savedIds.includes(issueKey)) return false; const nextIds = [...savedIds, issueKey]; localStorage.setItem(storageKey, JSON.stringify(nextIds)); setLikedIssueIds(new Set(nextIds)); } catch { return false; }
+    setIssues(prev => prev.map(i => i.id === id ? { ...i, upvotes: Number(i.upvotes || 0) + 1 } : i)); return true;
   };
 
   const verifyIssue = async (id, { status, priority, nodalRemarks, assignedUniversity }) => {
-    if (LIVE_API && isAuthenticated) {
-      let updated = null;
-      if (status) { updated = await issueApi.updateIssueStatus(id, status); setIssues(prev => prev.map(i => i.id === id ? { ...i, ...updated, nodalRemarks: nodalRemarks || i.nodalRemarks, assignedUniversity: assignedUniversity || i.assignedUniversity } : i)); }
-      if (priority) { updated = await issueApi.updateIssuePriority(id, priority); setIssues(prev => prev.map(i => i.id === id ? { ...i, ...updated, nodalRemarks: nodalRemarks || i.nodalRemarks, assignedUniversity: assignedUniversity || i.assignedUniversity } : i)); }
-      return updated;
-    }
-    setIssues(prev => prev.map(i => i.id === id ? { ...i, status, priority: priority || i.priority, nodalRemarks: nodalRemarks || i.nodalRemarks, assignedUniversity: assignedUniversity || i.assignedUniversity, timeline: [...(i.timeline || []), { status, date: new Date().toISOString().split('T')[0], remark: nodalRemarks || `Status updated to ${status} by Nodal Officer` }] } : i));
+    if (!LIVE_API || !isAuthenticated) throw new Error('Live API authentication is required.');
+    let updated = null;
+    if (status) { updated = await issueApi.updateIssueStatus(id, status); setIssues(prev => prev.map(i => i.id === id ? { ...i, ...updated, nodalRemarks: nodalRemarks || i.nodalRemarks, assignedUniversity: assignedUniversity || i.assignedUniversity } : i)); }
+    if (priority) { updated = await issueApi.updateIssuePriority(id, priority); setIssues(prev => prev.map(i => i.id === id ? { ...i, ...updated, nodalRemarks: nodalRemarks || i.nodalRemarks, assignedUniversity: assignedUniversity || i.assignedUniversity } : i)); }
+    return updated;
   };
 
-  const updateTaskStatus = async (projectId, taskId, newStatus) => { const project = projects.find(p => p.id === projectId); const task = project?.kanbanTasks?.find(t => t.id === taskId); if (LIVE_API && isAuthenticated && task) { const updated = await projectApi.updateTask(taskId, { title: task.title, description: task.description || '', dueDate: task.dueDate, status: newStatus.toUpperCase(), milestoneId: task.milestoneId, assignedToId: task.assignedToId }); setProjects(prev => prev.map(p => p.id === projectId ? { ...p, kanbanTasks: p.kanbanTasks.map(t => t.id === taskId ? { ...t, ...updated } : t) } : p)); return updated; } setProjects(prev => prev.map(p => p.id === projectId ? { ...p, kanbanTasks: p.kanbanTasks.map(t => t.id === taskId ? { ...t, status: newStatus } : t) } : p)); };
-  const addKanbanTask = async (projectId, taskData) => { if (LIVE_API && isAuthenticated) { const created = await projectApi.createTask(projectId, { title: taskData.title, description: taskData.description || '', dueDate: taskData.dueDate, status: 'TODO', milestoneId: taskData.milestoneId, assignedToId: taskData.assignedToId }); setProjects(prev => prev.map(p => p.id === projectId ? { ...p, kanbanTasks: [...(p.kanbanTasks || []), created] } : p)); return created; } const created = { id: `TSK-${Math.floor(100 + Math.random() * 900)}`, status: 'todo', ...taskData }; setProjects(prev => prev.map(p => p.id === projectId ? { ...p, kanbanTasks: [...(p.kanbanTasks || []), created] } : p)); return created; };
-  const sponsorProject = async (projectId, amount, sponsorName, organizationId) => { if (LIVE_API && isAuthenticated) { if (!organizationId) throw new Error('No verified industry organization is available for this account.'); const created = await industryApi.createSponsorship({ organizationId, projectId, amount: Number(amount), status: 'PENDING' }); setSponsors(prev => [created, ...prev]); return created; } setProjects(prev => prev.map(p => p.id === projectId ? { ...p, budgetFunded: Number(p.budgetFunded || 0) + Number(amount), sponsor: sponsorName || p.sponsor, stage: Number(p.budgetFunded || 0) + Number(amount) >= Number(p.budgetTotal || 0) ? 'Fully Funded' : 'CSR Funded' } : p)); };
-  const updateMilestone = async (projectId, index, newStatus) => { const milestone = projects.find(p => p.id === projectId)?.milestones?.[index]; if (LIVE_API && isAuthenticated && milestone?.id) { const updated = await projectApi.updateMilestone(milestone.id, { title: milestone.title, startDate: milestone.startDate, endDate: milestone.endDate, status: newStatus.toUpperCase() }); setProjects(prev => prev.map(p => p.id === projectId ? { ...p, milestones: p.milestones.map((m, i) => i === index ? updated : m) } : p)); return updated; } setProjects(prev => prev.map(p => p.id === projectId ? { ...p, milestones: (p.milestones || []).map((m, i) => i === index ? { ...m, status: newStatus } : m) } : p)); };
-  const refreshIssues = async () => {
-    if (!LIVE_API || !isAuthenticated) return;
-    const role = String(currentUser?.role || '').trim().toLowerCase();
-    const loaded = role === 'citizen'
-      ? await issueApi.getCitizenIssues(currentUser.id)
-      : role === 'admin' || role === 'nodal'
-        ? await issueApi.listIssues()
-        : [];
-    setIssues(Array.isArray(loaded) ? loaded : []);
-  };
+  const updateTaskStatus = async (projectId, taskId, newStatus) => { const project = projects.find(p => p.id === projectId); const task = project?.kanbanTasks?.find(t => t.id === taskId); if (!task) return null; const updated = await projectApi.updateTask(taskId, { title: task.title, description: task.description || '', dueDate: task.dueDate, status: newStatus.toUpperCase(), milestoneId: task.milestoneId, assignedToId: task.assignedToId }); setProjects(prev => prev.map(p => p.id === projectId ? { ...p, kanbanTasks: p.kanbanTasks.map(t => t.id === taskId ? { ...t, ...updated } : t) } : p)); return updated; };
+  const addKanbanTask = async (projectId, taskData) => { const created = await projectApi.createTask(projectId, { title: taskData.title, description: taskData.description || '', dueDate: taskData.dueDate, status: 'TODO', milestoneId: taskData.milestoneId, assignedToId: taskData.assignedToId }); setProjects(prev => prev.map(p => p.id === projectId ? { ...p, kanbanTasks: [...(p.kanbanTasks || []), created] } : p)); return created; };
+  const sponsorProject = async (projectId, amount, sponsorName, organizationId) => { if (!organizationId) throw new Error('No verified industry organization is available for this account.'); const created = await industryApi.createSponsorship({ organizationId, projectId, amount: Number(amount), status: 'PENDING' }); setSponsors(prev => [created, ...prev]); return created; };
+  const updateMilestone = async (projectId, index, newStatus) => { const milestone = projects.find(p => p.id === projectId)?.milestones?.[index]; if (!milestone?.id) return null; const updated = await projectApi.updateMilestone(milestone.id, { title: milestone.title, startDate: milestone.startDate, endDate: milestone.endDate, status: newStatus.toUpperCase() }); setProjects(prev => prev.map(p => p.id === projectId ? { ...p, milestones: p.milestones.map((m, i) => i === index ? updated : m) } : p)); return updated; };
+  const refreshIssues = async () => { if (!LIVE_API || !isAuthenticated) return; const role = String(currentUser?.role || '').trim().toLowerCase(); const loaded = role === 'citizen' ? await issueApi.getCitizenIssues(currentUser.id) : role === 'admin' || role === 'nodal' ? await issueApi.listIssues() : []; setIssues(Array.isArray(loaded) ? loaded : []); };
 
   return <DataContext.Provider value={{ issues, projects, sponsors, stats, dashboard, dataLoading, dataError, liveApi: LIVE_API, addIssue, upvoteIssue, likedIssueIds, isIssueLiked: id => likedIssueIds.has(String(id)), verifyIssue, updateTaskStatus, addKanbanTask, sponsorProject, updateMilestone, refreshIssues }}>{children}</DataContext.Provider>;
 };
