@@ -1,6 +1,6 @@
 [build]
   base = "frontend"
-  command = "npm install --include=dev --prefer-online && node node_modules/vite/bin/vite.js build"
+  command = "rm -rf node_modules && npm install --include=dev --prefer-online --package-lock=false && node node_modules/vite/bin/vite.js build"
   publish = "dist"
 
 [build.environment]
