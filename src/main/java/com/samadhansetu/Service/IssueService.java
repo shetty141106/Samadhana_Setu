@@ -50,5 +50,5 @@ public class IssueService {
  private boolean isOwnedBy(Issue issue, String email) {
   return issue.getReportedBy() != null && issue.getReportedBy().getUser() != null && email.equalsIgnoreCase(issue.getReportedBy().getUser().getEmail());
  }
- private IssueResponseDto toDto(Issue i){ return IssueResponseDto.builder().id(i.getId()).title(i.getTitle()).description(i.getDescription()).location(i.getLocation()).latitude(i.getLatitude()).longitude(i.getLongitude()).status(i.getStatus()).priority(i.getPriority()).citizenId(i.getReportedBy()==null?null:i.getReportedBy().getId()).evidenceMedia(i.getEvidenceMedia()==null?List.of():i.getEvidenceMedia().stream().map(e->EvidenceMediaDto.builder().mediaUrl(e.getMediaUrl()).mediaType(e.getMediaType()).build()).toList()).build(); }
+ private IssueResponseDto toDto(Issue i){ return IssueResponseDto.builder().id(i.getId()).title(i.getTitle()).description(i.getDescription()).location(i.getLocation()).latitude(i.getLatitude()).longitude(i.getLongitude()).status(i.getStatus()).priority(i.getPriority()).citizenId(i.getReportedBy()==null?null:i.getReportedBy().getId()).evidenceMedia(i.getEvidenceMedia()==null?List.of():i.getEvidenceMedia().stream().map(e->EvidenceMediaDto.builder().mediaUrl(e.getMediaUrl()).mediaType(e.getMediaType()).build()).toList()).aiAnalysis(aiBridgeService.getLatestAnalysis(i.getId())).build(); }
 }
