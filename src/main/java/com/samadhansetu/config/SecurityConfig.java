@@ -31,6 +31,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                        .requestMatchers("/api/users/**").hasRole("ADMIN")
 
                         .requestMatchers(HttpMethod.GET, "/api/universities/**").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/universities/**").hasAnyRole("ADMIN", "NODAL_OFFICER")
@@ -41,14 +42,12 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/api/departments/**", "/api/faculty-profiles/**").hasAnyRole("ADMIN", "NODAL_OFFICER", "FACULTY")
                         .requestMatchers(HttpMethod.DELETE, "/api/departments/**", "/api/faculty-profiles/**").hasAnyRole("ADMIN", "NODAL_OFFICER")
 
-                        // Citizens can create issues and read their own records; staff can manage the platform.
                         .requestMatchers(HttpMethod.POST, "/api/issues").hasRole("CITIZEN")
                         .requestMatchers(HttpMethod.GET, "/api/issues").hasAnyRole("ADMIN", "NODAL_OFFICER")
                         .requestMatchers(HttpMethod.GET, "/api/issues/status/**", "/api/issues/priority/**").hasAnyRole("ADMIN", "NODAL_OFFICER")
                         .requestMatchers(HttpMethod.GET, "/api/issues/**").authenticated()
                         .requestMatchers(HttpMethod.PUT, "/api/issues/**").hasAnyRole("ADMIN", "NODAL_OFFICER")
                         .requestMatchers(HttpMethod.PATCH, "/api/issues/**").hasAnyRole("ADMIN", "NODAL_OFFICER")
-                        // Evidence is uploaded by the citizen as part of their grievance flow, or by staff during verification.
                         .requestMatchers(HttpMethod.POST, "/api/issues/*/evidence").hasAnyRole("CITIZEN", "ADMIN", "NODAL_OFFICER")
                         .requestMatchers(HttpMethod.DELETE, "/api/issues/**").hasAnyRole("ADMIN", "NODAL_OFFICER")
 
