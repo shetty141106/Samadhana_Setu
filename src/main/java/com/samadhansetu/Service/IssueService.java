@@ -2,6 +2,7 @@ package com.samadhansetu.Service;
 
 import com.samadhansetu.Repository.CitizenRepository;
 import com.samadhansetu.Repository.IssueRepository;
+import com.samadhansetu.Repository.UserRepository;
 import com.samadhansetu.dto.*;
 import com.samadhansetu.model.entity.*;
 import com.samadhansetu.model.enums.*;
@@ -15,11 +16,16 @@ import java.util.List;
 public class IssueService {
  private final IssueRepository issueRepository;
  private final CitizenRepository citizenRepository;
+ private final UserRepository userRepository;
  private final AiBridgeService aiBridgeService;
 
  @Transactional
  public IssueResponseDto create(IssueRequestDto request, String email) {
-  Citizen citizen = citizenRepository.findByUserEmail(email).orElseThrow(() -> new IllegalArgumentException("Citizen profile not found for authenticated user"));
+  User user = userRepository.findByEmail(email)
+      .orElseThrow(() -> new IllegalArgumentException("Authenticated user not found"));
+  Citizen citizen = citizenRepository.findByUserEmail(email).orElseGet(() ->
+      citizenRepository.save(Citizen.builder().user(user).build())
+  );
   Issue issue = Issue.builder().title(request.getTitle()).description(request.getDescription()).location(request.getLocation()).latitude(request.getLatitude()).longitude(request.getLongitude()).status(IssueStatus.REPORTED).priority(request.getPriority()==null?IssuePriority.MEDIUM:request.getPriority()).reportedBy(citizen).build();
   if(request.getEvidenceMedia()!=null) request.getEvidenceMedia().forEach(e -> issue.getEvidenceMedia().add(EvidenceMedia.builder().issue(issue).mediaUrl(e.getMediaUrl()).mediaType(e.getMediaType()).build()));
   Issue saved = issueRepository.save(issue);
