@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { StatusBadge } from '../ui/StatusBadge';
-import { AIIntelligencePanel } from './AIIntelligencePanel';
+import { IssueAIAnalysisModal } from './IssueAIAnalysisModal';
 import { MapPin, ThumbsUp, ArrowRight, Building, School, BrainCircuit, Check } from 'lucide-react';
 
 export const IssueCard = ({ issue, onSelect, onUpvote, isLiked = false }) => {
@@ -12,7 +12,7 @@ export const IssueCard = ({ issue, onSelect, onUpvote, isLiked = false }) => {
   };
 
   return (
-    <div className={`bg-white rounded-2xl border border-jh-earth-200/90 shadow-jh-soft overflow-hidden hover:shadow-jh-card transition-all duration-200 flex flex-col justify-between group ${showAI ? 'md:col-span-2' : ''}`}>
+    <div className="bg-white rounded-2xl border border-jh-earth-200/90 shadow-jh-soft overflow-hidden hover:shadow-jh-card transition-all duration-200 flex flex-col justify-between group">
       <div>
         <div className="relative h-44 w-full overflow-hidden bg-jh-earth-200">
           <img src={issue.images && issue.images[0] ? issue.images[0] : 'https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=800&q=80'} alt={issue.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
@@ -34,20 +34,20 @@ export const IssueCard = ({ issue, onSelect, onUpvote, isLiked = false }) => {
         </div>
       </div>
 
-      {showAI && <div className="px-5 sm:px-6 pb-5 w-full"><AIIntelligencePanel issue={issue} /></div>}
-
       <div className="px-5 py-3.5 bg-jh-earth-50/70 border-t border-jh-earth-100 flex items-center justify-between gap-3">
         <button onClick={handleUpvote} disabled={isLiked} className={`flex items-center gap-1.5 text-xs font-semibold transition-colors ${isLiked ? 'text-jh-green-900 cursor-default' : 'text-jh-earth-700 hover:text-jh-green-900'}`} title={isLiked ? 'You already supported this issue' : 'Support this civic issue'} aria-label={isLiked ? 'Issue already supported' : 'Support this civic issue'}>
           {isLiked ? <Check className="w-3.5 h-3.5 text-jh-green-700" /> : <ThumbsUp className="w-3.5 h-3.5 text-jh-green-700" />}
           <span>{issue.upvotes ?? 0}</span>
         </button>
         <div className="flex items-center gap-3">
-          <button onClick={(e) => { e.stopPropagation(); setShowAI(value => !value); }} className={`flex items-center gap-1 text-xs font-bold transition-colors ${showAI ? 'text-jh-terracotta-700' : 'text-jh-green-900 hover:text-jh-terracotta-700'}`} aria-expanded={showAI}>
-            <BrainCircuit className="w-3.5 h-3.5" /><span>{showAI ? 'Hide AI' : 'AI Analysis'}</span>
+          <button onClick={() => setShowAI(true)} className="flex items-center gap-1 text-xs font-bold text-jh-green-900 hover:text-jh-terracotta-700 transition-colors" aria-label="View AI analysis">
+            <BrainCircuit className="w-3.5 h-3.5" /><span>AI Analysis</span>
           </button>
           <button onClick={() => onSelect && onSelect(issue)} className="flex items-center gap-1 text-xs font-bold text-jh-green-900 hover:text-jh-terracotta-700 transition-colors"><span>View Progress</span><ArrowRight className="w-3.5 h-3.5" /></button>
         </div>
       </div>
+
+      <IssueAIAnalysisModal issue={issue} isOpen={showAI} onClose={() => setShowAI(false)} />
     </div>
   );
 };
