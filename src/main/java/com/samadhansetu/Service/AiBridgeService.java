@@ -1,11 +1,13 @@
 package com.samadhansetu.Service;
 
+import com.samadhansetu.Repository.AiAnalysisRepository;
 import com.samadhansetu.Repository.IssueRepository;
 import com.samadhansetu.dto.AiDuplicateMatch;
 import com.samadhansetu.dto.AiIssueCandidate;
 import com.samadhansetu.dto.AiProcessRequest;
 import com.samadhansetu.dto.AiProcessResponse;
 import com.samadhansetu.dto.UniversityRoutingResponseDto;
+import com.samadhansetu.model.entity.AiAnalysis;
 import com.samadhansetu.model.entity.Issue;
 import com.samadhansetu.model.enums.IssuePriority;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +23,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class AiBridgeService {
     private final IssueRepository issueRepository;
+    private final AiAnalysisRepository aiAnalysisRepository;
     private final UniversityRoutingService universityRoutingService;
     private final RestClient restClient = RestClient.builder().build();
 
@@ -43,6 +46,7 @@ public class AiBridgeService {
 
         AiProcessResponse response = process(request);
         applyResult(issue, response);
+        persistAnalysis(issue, response);
         return response;
     }
 
@@ -70,6 +74,12 @@ public class AiBridgeService {
         return response;
     }
 
+    public AiProcessResponse getLatestAnalysis(Long issueId) {
+        return aiAnalysisRepository.findFirstByIssueIdOrderByRanAtDesc(issueId)
+                .map(this::toResponse)
+                .orElse(null);
+    }
+
     private List<AiIssueCandidate> buildCandidates(Long currentIssueId) {
         return issueRepository.findAll().stream()
                 .filter(issue -> !Objects.equals(issue.getId(), currentIssueId))
@@ -95,17 +105,68 @@ public class AiBridgeService {
 
     private void applyResult(Issue issue, AiProcessResponse response) {
         if (response == null) return;
-        issue.setCategory(response.getCategoryTag());
+        if (response.getCategoryTag() != null && !response.getCategoryTag().isBlank()) {
+            issue.setCategory(response.getCategoryTag());
+        }
         try {
-            issue.setPriority(IssuePriority.valueOf(response.getPriority()));
+            if (response.getPriority() != null) {
+                issue.setPriority(IssuePriority.valueOf(response.getPriority()));
+            }
         } catch (Exception ignored) { }
         issueRepository.save(issue);
+    }
+
+    private void persistAnalysis(Issue issue, AiProcessResponse response) {
+        if (response == null) return;
+        AiDuplicateMatch duplicate = response.getDuplicateMatch();
+        AiAnalysis analysis = AiAnalysis.builder()
+                .issue(issue)
+                .source(response.getSource())
+                .language(response.getLanguage())
+                .translatedDescription(response.getTranslatedDescription())
+                .summary(response.getSummary())
+                .categoryTag(response.getCategoryTag())
+                .confidence(response.getConfidence())
+                .keywords(response.getKeywords() == null ? new ArrayList<>() : new ArrayList<>(Arrays.asList(response.getKeywords())))
+                .priority(response.getPriority())
+                .priorityScore(response.getPriorityScore())
+                .priorityReasons(response.getPriorityReasons() == null ? new ArrayList<>() : new ArrayList<>(Arrays.asList(response.getPriorityReasons())))
+                .duplicateFound(duplicate != null && duplicate.isFound())
+                .duplicateSimilarity(duplicate == null ? null : duplicate.getSimilarityPercentage())
+                .duplicateIssueId(duplicate == null ? null : duplicate.getCandidateIssueId())
+                .duplicateDistanceKm(duplicate == null ? null : duplicate.getDistanceKm())
+                .matchedUniversityId(response.getMatchedUniversityId())
+                .build();
+        aiAnalysisRepository.save(analysis);
     }
 
     private void enrichUniversityRecommendation(AiProcessResponse response) {
         if (response == null || response.getCategoryTag() == null) return;
         List<UniversityRoutingResponseDto> matches = universityRoutingService.route(response.getCategoryTag());
         if (!matches.isEmpty()) response.setMatchedUniversityId(matches.get(0).getUniversityId());
+    }
+
+    private AiProcessResponse toResponse(AiAnalysis analysis) {
+        return AiProcessResponse.builder()
+                .issueId(analysis.getIssue().getId())
+                .language(analysis.getLanguage())
+                .translatedDescription(analysis.getTranslatedDescription())
+                .summary(analysis.getSummary())
+                .categoryTag(analysis.getCategoryTag())
+                .confidence(analysis.getConfidence() == null ? 0.0 : analysis.getConfidence())
+                .keywords(analysis.getKeywords().toArray(String[]::new))
+                .priority(analysis.getPriority())
+                .priorityScore(analysis.getPriorityScore() == null ? 0.0 : analysis.getPriorityScore())
+                .priorityReasons(analysis.getPriorityReasons().toArray(String[]::new))
+                .duplicateMatch(AiDuplicateMatch.builder()
+                        .found(Boolean.TRUE.equals(analysis.getDuplicateFound()))
+                        .similarityPercentage(analysis.getDuplicateSimilarity() == null ? 0.0 : analysis.getDuplicateSimilarity())
+                        .candidateIssueId(analysis.getDuplicateIssueId())
+                        .distanceKm(analysis.getDuplicateDistanceKm())
+                        .build())
+                .matchedUniversityId(analysis.getMatchedUniversityId())
+                .source(analysis.getSource())
+                .build();
     }
 
     private AiProcessResponse fallback(AiProcessRequest r) {
