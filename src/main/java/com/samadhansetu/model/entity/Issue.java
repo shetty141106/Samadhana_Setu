@@ -20,4 +20,7 @@ public class Issue {
     @ManyToOne private Citizen reportedBy;
     @OneToMany(mappedBy="issue", cascade=CascadeType.ALL, orphanRemoval=true)
     @Builder.Default private List<EvidenceMedia> evidenceMedia = new ArrayList<>();
+    @OneToMany(mappedBy="issue", cascade=CascadeType.ALL, orphanRemoval=true)
+    @OrderBy("ranAt DESC")
+    @Builder.Default private List<AiAnalysis> aiAnalyses = new ArrayList<>();
 }
