@@ -25,13 +25,22 @@ import {
 } from 'lucide-react';
 
 export const LandingPage = ({ onNavigate }) => {
-  const { switchRole } = useAuth();
+  const { switchRole, isAuthenticated } = useAuth();
   const { stats, issues, projects } = useData();
 
   const handleLaunchRole = (roleKey, targetPath) => {
     switchRole(roleKey);
     onNavigate(targetPath || roleKey);
   };
+
+  const handleReportIssue = () => {
+  if (!isAuthenticated) {
+    onNavigate('login');
+    return;
+  }
+
+  onNavigate('report-issue');
+};
 
   return (
     <div className="w-full flex flex-col bg-jh-earth-50 text-jh-charcoal selection:bg-jh-green-100 selection:text-jh-green-900 overflow-x-hidden">
@@ -73,14 +82,14 @@ export const LandingPage = ({ onNavigate }) => {
             {/* CTAs */}
             <div className="pt-2 sm:pt-4 flex flex-wrap items-center gap-3">
               <Button
-                variant="primary"
-                size="lg"
-                icon={Camera}
-                onClick={() => handleLaunchRole(ROLES.CITIZEN, 'report-issue')}
-                className="bg-[#0B3D2E] hover:bg-[#072B20] text-[#FAF8F5] border border-emerald-700/60 shadow-lg font-semibold text-sm sm:text-base px-6 py-3"
-              >
-                Report an Issue
-              </Button>
+  variant="primary"
+  size="lg"
+  icon={Camera}
+  onClick={handleReportIssue}
+  className="bg-[#0B3D2E] hover:bg-[#072B20] text-[#FAF8F5] border border-emerald-700/60 shadow-lg font-semibold text-sm sm:text-base px-6 py-3"
+>
+  Report an Issue
+</Button>
 
               <Button
                 variant="glass"
