@@ -58,28 +58,44 @@ export const Login = ({ onNavigate }) => {
   };
 
   const handleStandardSubmit = async e => {
-    e.preventDefault();
-    setLocalError('');
-    const normalizedEmail = email.trim();
-    if (!normalizedEmail || !password) {
-      setLocalError('Enter your email / official ID and password.');
-      return;
-    }
-    try {
-      if (login) {
-        const authenticated = await login({ email: normalizedEmail, password });
-        const serverRole = String(authenticated?.role || '').toLowerCase();
-        if (serverRole) {
-          onNavigate(serverRole);
-          return;
-        }
+  e.preventDefault();
+  setLocalError('');
+
+  if (!selectedRole) {
+    setLocalError('Select a role before signing in.');
+    return;
+  }
+
+  const normalizedEmail = email.trim();
+
+  if (!normalizedEmail || !password) {
+    setLocalError('Enter your email / official ID and password.');
+    return;
+  }
+
+  try {
+    if (login) {
+      const authenticated = await login({
+        email: normalizedEmail,
+        password
+      });
+
+      const serverRole = String(authenticated?.role || '').toLowerCase();
+
+      if (serverRole) {
+        onNavigate(serverRole);
+        return;
       }
-      switchRole(selectedRole || ROLES.CITIZEN);
-      onNavigate(selectedRole || 'citizen');
-    } catch (error) {
-      setLocalError(error.message || 'Sign in failed. Please verify your email and password.');
     }
-  };
+
+    switchRole(selectedRole);
+    onNavigate(selectedRole);
+  } catch (error) {
+    setLocalError(
+      error.message || 'Sign in failed. Please verify your email and password.'
+    );
+  }
+};
 
   const handleRegisterSubmit = e => {
     e.preventDefault();
