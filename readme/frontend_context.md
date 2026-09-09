@@ -1,6 +1,6 @@
 # SAMADHANSETU — FRONTEND LAYER CONTEXT
 
-> **Frontend implementation source of truth.** Reconciled against the frontend code currently present on `main` as of 2026-09-06. Future frontend work must read this file, `readme/PROJECT_CONTEXT.md`, and `readme/samadhansetu_backend_context.md` before changing architecture.
+> **Frontend implementation source of truth.** Reconciled against the current repository implementation on `main`. `readme/PROJECT_CONTEXT.md` remains the product/problem source of truth and is intentionally not modified by this documentation update.
 
 ## 1. Project / Stack
 
@@ -9,37 +9,43 @@
 - Frontend root: `frontend/`
 - React 18 + Vite 5
 - Tailwind CSS 3 + custom Jharkhand design tokens
-- lucide-react
 - Leaflet + React Leaflet + OpenStreetMap
 - Recharts
 - React Context + local component state
 - API layer: `frontend/src/api/`
-- Client configuration: `VITE_API_BASE_URL`
+- Production API base: `VITE_API_BASE_URL`
 - Live-data switch: `VITE_ENABLE_LIVE_API=true`
-- Demo fallback: `frontend/src/data/mockData.js`
-- AI rule: browser never calls Gemini or the Python AI service directly; AI remains backend-mediated.
+- Optional demo/mock data remains in `frontend/src/data/mockData.js`
+- Browser never calls Gemini or the Python AI service directly; AI is backend-mediated.
 
 ## 2. Current Status
 
-The frontend is **implemented and integrated at code level** with the Spring Boot backend. It is no longer only a mock-data shell.
+The frontend is substantially implemented and connected to the Spring Boot API at code level. It is **not yet fully runtime-verified** against the deployed services.
 
-Implemented live integrations include:
+Implemented integrations include:
 
-- authentication/JWT
-- citizen issues
-- backend-mediated AI result flow
-- nodal verification/status/priority updates
+- JWT authentication and session handling
+- citizen registration/login flow
+- citizen issue creation/listing
+- backend-mediated AI result display
+- nodal verification/status/priority operations
 - projects, teams, tasks and Kanban persistence
 - milestone persistence
-- Industry/CSR organizations and sponsorships
-- dashboard summary and selected analytics endpoints
+- Industry/CSR organization and sponsorship flows
+- dashboard/analytics API integration where supported
 - notifications/session handling
-- environment-driven API configuration
-- loading/error/empty-state handling
 - authenticated role-aware hash routing
 - centralized 401 session invalidation
+- Admin user/role governance UI
+- Admin All Issues page backed by `/api/issues`
 
-Remaining frontend work is primarily **hosted runtime verification, seeded six-role account verification, and replacing selected hard-coded presentation/demo values with live backend aggregates where backend data is available**.
+Important known API-contract gaps remain in the issue flow and must be fixed before claiming the citizen → issue → admin workflow is fully correct:
+
+1. `IssueForm.jsx` currently sends priority values such as `High`, while the backend enum expects `HIGH`, `MEDIUM`, `LOW`, `CRITICAL`.
+2. The frontend sends `category` and `district`, but the current `IssueRequestDto` does not contain those fields.
+3. The backend `Issue` entity has `category`, but district is not currently modeled on the entity.
+4. `IssueResponseDto` currently does not expose category, district, or citizen name/email, so the Admin All Issues page cannot receive those values from the backend yet.
+5. Cloudinary evidence upload requires the production frontend variables to be configured separately.
 
 ## 3. Frontend Structure
 
@@ -57,13 +63,6 @@ frontend/
     ├── index.css
     ├── styles.css
     ├── api/
-    │   ├── client.js
-    │   ├── auth.api.js
-    │   ├── issue.api.js
-    │   ├── project.api.js
-    │   ├── industry.api.js
-    │   ├── dashboard.api.js
-    │   └── notification.api.js
     ├── components/
     │   ├── common/
     │   ├── issues/
@@ -98,76 +97,84 @@ frontend/
 | Industry | CSR Impact Marketplace |
 | Admin | State Command Center |
 
-Preserve all six roles unless product scope is deliberately changed.
+The frontend preserves all six roles. Live role identity comes from the backend JWT/session; the UI does not impersonate another role.
 
 ## 5. Authentication & Role Routing
 
-`auth.api.js` uses the Spring Boot authentication endpoints and stores the returned JWT through the centralized API client. Registration is also API-backed.
-
-The login screen retains six persona cards as **account-role selectors**. In live mode, these cards do not perform client-side role switching or impersonation. The backend JWT is authoritative.
+`auth.api.js` calls `/api/auth/login` and `/api/auth/register`. The API client stores the returned JWT and attaches it as a bearer token to subsequent requests. A 401 clears the token and dispatches the shared auth-invalidated event.
 
 Rules:
 
-- bearer token belongs in the centralized API client;
-- handle 401/403 centrally;
-- do not expose JWT signing secrets;
-- do not expose Gemini/database/server credentials through `VITE_*` variables;
-- preserve demo fallback where required for presentation resilience;
-- if the selected login role differs from the server-returned role, reject the mismatch instead of opening the wrong dashboard;
-- authenticated hash routes are constrained to the role returned by the backend;
-- logout clears the JWT and persisted session;
-- backend registration currently creates CITIZEN accounts, so NODAL_OFFICER/FACULTY/STUDENT/INDUSTRY/ADMIN verification requires corresponding backend users.
+- the backend JWT is authoritative;
+- login persona cards are role selectors, not role-switching controls;
+- if selected role and server-returned role do not match, the UI must not open the wrong dashboard;
+- authenticated hash routes are constrained by the authenticated role;
+- logout clears JWT and persisted session state;
+- citizen self-registration creates a citizen account; privileged roles must be provisioned by an authorized admin/backend mechanism;
+- never expose JWT signing secrets, Gemini credentials, database credentials or service-account credentials through `VITE_*` variables.
 
 ## 6. API / DTO Boundary
-
-The frontend now uses a dedicated API boundary:
 
 ```text
 Pages / Components
        ↓
-API services + DTO adapters
+frontend/src/api/*
        ↓
 Spring Boot REST API
        ↓
-MySQL/TiDB + backend AI service
+TiDB/MySQL + backend AI service
 ```
 
-`client.js` owns base URL, bearer token, common request behavior and auth/error handling. A 401 clears the client session and dispatches the shared authentication invalidation event.
+`client.js` owns base URL, bearer token, common request behavior and auth/error handling.
 
-`issue.api.js` normalizes backend issue statuses and evidence media. Backend status mapping:
+### Current issue contract warning
+
+The frontend issue form currently builds a richer UI payload than the backend DTO accepts. The following values are collected in the UI:
 
 ```text
-REPORTED     → SUBMITTED
-VERIFIED     → VERIFIED
-ASSIGNED     → IN_RD
-IN_PROGRESS  → IN_RD
-RESOLVED     → RESOLVED
-REJECTED     → REJECTED
+category
+categoryLabel
+district
+locationName
+latitude
+longitude
+priority
+evidenceMedia
 ```
 
-`CSR_FUNDED` remains a UI/project/sponsorship concept rather than a backend IssueStatus unless backend support is explicitly added.
+The current backend request DTO accepts only:
+
+```text
+title
+description
+location
+latitude
+longitude
+priority
+evidenceMedia
+```
+
+Therefore category/district persistence is not currently guaranteed, and priority must be normalized to backend enum values before submission.
 
 ## 7. DataContext / Live Mode
 
-`DataContext.jsx` supports live API hydration when:
+`DataContext.jsx` enables live hydration only when:
 
 ```env
 VITE_ENABLE_LIVE_API=true
 ```
 
-It loads live issues and projects and attempts dashboard/sponsorship data for authorized roles. Mutation methods use backend APIs in live mode and preserve local fallback otherwise.
+For live authenticated users:
 
-Implemented live mutations include:
+- Citizen → own issues
+- Admin/Nodal Officer → operational issue list
+- other roles → no unrestricted issue list
+- projects are hydrated through project, milestone, task and team APIs
+- dashboard and sponsorship data are attempted where authorized
 
-- issue creation
-- issue status update
-- issue priority update
-- task creation
-- task status update
-- milestone update
-- CSR sponsorship creation
+Live mutations include issue creation, issue status/priority updates, task creation/status updates, milestone updates and CSR sponsorship creation.
 
-Issue upvotes are limited to one per user in the current frontend interaction layer using user-scoped localStorage state. This is presentation protection; server-side enforcement should be added if persistent anti-abuse guarantees are required.
+Issue upvotes currently use user-scoped browser `localStorage`; they are not persistent server-side votes. This is presentation-level protection only.
 
 ## 8. Citizen Experience
 
@@ -176,22 +183,32 @@ Implemented:
 - dashboard KPIs
 - issue cards/detail modal
 - category filtering
-- exact GPS location capture
+- exact map location capture
 - Leaflet map
 - evidence/image preview
 - issue submission API
 - citizen issue listing
-- AI-enriched issue data through backend response
-- issue timeline/status presentation
+- AI-enriched issue response presentation
+- status/timeline presentation
 
-**Exact location is a non-regression requirement.** Submission must preserve selected latitude/longitude rather than silently reverting to approximate district coordinates.
+### Known submission blocker
+
+The form currently sends human-readable priority values (`Critical`, `High`, `Medium`, `Low`) while Spring's `IssuePriority` enum expects uppercase enum names. Unless the request is normalized, issue submission can fail with a request-deserialization error.
+
+### Known persistence gap
+
+The UI collects category and district, but the current backend request/entity/response contract does not persist/expose district and does not accept category in `IssueRequestDto`. These fields must be aligned before treating them as database-backed features.
+
+### Evidence
+
+Evidence upload is optional in the form, but selected files are uploaded before issue creation. The upload path requires valid Cloudinary frontend configuration when files are attached.
 
 ## 9. Nodal Experience
 
 Implemented:
 
 - verification queue
-- critical priority count
+- priority counts
 - GIS view
 - issue detail/verification modal
 - status update API
@@ -199,7 +216,7 @@ Implemented:
 - university assignment presentation
 - nodal remarks presentation
 
-Backend authorization remains authoritative; UI controls do not replace server-side RBAC.
+Backend authorization remains authoritative.
 
 ## 10. Faculty Experience
 
@@ -211,7 +228,7 @@ Implemented:
 - persistent milestone status updates
 - Kanban review workspace
 
-Some KPI/presentation values remain demo-oriented and should be replaced with live aggregates where the backend exposes the required data.
+Some presentation KPIs remain demo-oriented where the backend does not provide the exact aggregate required.
 
 ## 11. Student Experience
 
@@ -247,24 +264,29 @@ Implemented:
 - sponsorship amount form
 - sponsorship API
 - sponsorship records in live mode
-- clear error when no verified organization is available
-- issue-detail CSR sponsorship now resolves a verified backend organization before creating a live sponsorship
+- verified-organization validation
 
-The UI records sponsorship intent/records. It does not imply real payment settlement.
+The UI records sponsorship intent/records. It does not represent real payment settlement.
 
 ## 13. Admin Experience
 
 Implemented:
 
 - state command center
-- dashboard summary integration foundation
-- live issue-category analytics when the dashboard API is available
-- live issue-status analytics when the dashboard API is available
+- dashboard summary/analytics integration foundation
 - GIS issue map
-- analytics charts with explicit live/demo fallback labels
-- user/RBAC presentation
+- user & role governance UI
+- admin-only user creation API integration
+- dedicated **All Issues** page
+- issue search/filter/detail presentation
 
-The user/persona directory is still demo metadata because no dedicated live user-directory endpoint is currently consumed by the frontend. It is explicitly labelled as demo rather than live governance data.
+### All Issues data contract status
+
+The page calls the live operational issue API for Admin/Nodal users. However, the current backend `IssueResponseDto` returns only ID, title, description, location, coordinates, status, priority, citizen ID, evidence and AI analysis. It does not yet return district, category or citizen name/email. The page should therefore be considered **partially live until the backend DTO is aligned**.
+
+### Role governance
+
+The admin UI supports creation of privileged accounts. The backend `/api/users/**` endpoint is protected by `ADMIN` role. Current backend role set includes `NODAL_OFFICER`, `FACULTY`, `STUDENT`, `INDUSTRY`, and `ADMIN`; if product scope is tightened to only the four explicitly requested privileged roles, remove `STUDENT` from both UI and backend allowed-role lists.
 
 ## 14. Notifications / Session
 
@@ -272,12 +294,12 @@ Implemented:
 
 - notification API integration
 - unread/read state
-- mark read/all read
+- mark read/delete
 - session logout/JWT cleanup
 - centralized auth invalidation on 401
-- fallback mock notifications when live mode is disabled
+- mock notifications when live mode is disabled
 
-External SMS/WhatsApp/email delivery is outside the current frontend prototype scope.
+External SMS/WhatsApp/email delivery is outside current frontend scope.
 
 ## 15. Maps / Location
 
@@ -285,50 +307,35 @@ Primary map stack:
 
 **Leaflet + React Leaflet + OpenStreetMap.**
 
-`geoData.js` contains Jharkhand's 24-district data. `IssueMap.jsx` visualizes issues and `LocationPicker.jsx` captures exact issue coordinates.
+`LocationPicker.jsx` captures exact latitude/longitude. Preserve this behavior.
 
-Do not replace Leaflet with Google Maps without an explicit product decision.
+Legacy Google Maps variables may exist in configuration, but the current implementation does not require Google Maps for the primary issue map/location flow.
 
-## 16. Visual System
+## 16. Environment
 
-Preserve the existing Jharkhand civic/institutional identity:
-
-- forest green
-- terracotta
-- warm earth/cream
-- gold accents
-- Sohrai-inspired motifs
-- civic/government presentation rather than generic SaaS styling
-
-Preserve responsive layouts, mobile navigation, visible focus states, meaningful alt text and touch-friendly controls.
-
-## 17. Environment
-
-Frontend configuration is environment-driven:
+Production frontend configuration currently follows:
 
 ```env
-VITE_API_BASE_URL=http://localhost:8080
+VITE_API_BASE_URL=https://samadhana-setu.onrender.com
 VITE_ENABLE_LIVE_API=true
-VITE_CLOUDINARY_CLOUD_NAME=
-VITE_CLOUDINARY_UPLOAD_PRESET=
+VITE_CLOUDINARY_CLOUD_NAME=<required when uploading evidence>
+VITE_CLOUDINARY_UPLOAD_PRESET=<required when uploading evidence>
 ```
 
-`VITE_GOOGLE_MAPS_API_KEY` may exist in legacy configuration but is **not required by the current Leaflet/OpenStreetMap implementation**.
+Cloudinary is the only currently known external frontend configuration gap for evidence uploads. Never commit secrets.
 
-Never place private Gemini, database, JWT signing, service-account or other server secrets in `VITE_*` variables.
+## 17. CI / Build
 
-## 18. CI / Build
+A frontend GitHub Actions workflow exists at `.github/workflows/frontend-build.yml`. The workflow must match the actual dependency-lock situation in `frontend/`; if `frontend/package-lock.json` is absent, `npm ci` and npm cache configuration pointing to that file will fail. The current repository should use an install command consistent with the committed package metadata.
 
-A frontend GitHub Actions workflow exists at `.github/workflows/frontend-build.yml` using Node 20, `npm ci` and `npm run build`.
+Hosted CI success and Vercel runtime health are separate verification gates.
 
-The workflow is the repeatable frontend build gate. A successful hosted run still needs to be observed/confirmed after deployment changes.
-
-## 19. Demo Walkthrough Contract
+## 18. Demo Walkthrough Contract
 
 ```text
 Landing
- → Citizen login/demo
- → Report issue + exact GPS + evidence
+ → Citizen registration/login
+ → Report issue + exact GPS + optional evidence
  → Spring Boot issue API
  → backend AI processing
  → Nodal verification
@@ -336,37 +343,37 @@ Landing
  → Faculty/Student R&D
  → Kanban + milestones
  → Industry CSR sponsorship
- → Admin GIS + analytics
+ → Admin GIS + analytics + All Issues
  → notifications/profile/session
 ```
 
-This is the primary SIH demonstration story.
+The issue contract must be corrected before this walkthrough is considered fully verified.
 
-## 20. Remaining Frontend Work
+## 19. Remaining Frontend Work
 
-1. Verify the hosted frontend build/run after the latest commits.
-2. Verify frontend → deployed backend connectivity and the corrected login error handling.
-3. Seed/verify real accounts for all six backend roles and complete six-role login checks.
-4. Verify production CORS/JWT behavior.
-5. Verify live AI results through the complete user flow.
-6. Replace remaining important hard-coded Faculty/Student presentation values with live backend aggregates where supported.
-7. Replace demo Admin user governance rows when a live user-directory endpoint is available.
-8. Confirm Cloudinary evidence upload configuration if used in the final demo.
-9. Execute the complete deployed SIH walkthrough.
+1. Align issue priority/category/district payload with backend DTO/entity/response contracts.
+2. Verify citizen issue creation against the deployed backend.
+3. Add/verify live category and district fields in Admin All Issues after backend alignment.
+4. Verify six-role hosted login and protected routes.
+5. Verify production CORS/JWT behavior.
+6. Verify live AI results through issue creation.
+7. Replace important hard-coded Faculty/Student presentation values where live aggregates are available.
+8. Verify Cloudinary evidence upload configuration if evidence is used in the final demo.
+9. Fix/verify the frontend CI install strategy against the actual lockfile state.
+10. Execute the complete deployed SIH walkthrough.
 
-## 21. Non-Regression Rules
+## 20. Non-Regression Rules
 
 - Preserve exact GPS capture.
 - Preserve Leaflet/OpenStreetMap.
-- Preserve all six roles.
-- Preserve server-authoritative role assignment; never add client-side role impersonation to live mode.
+- Preserve all six roles unless product scope deliberately changes.
+- Preserve server-authoritative role assignment.
 - Preserve Jharkhand/Sohrai identity.
 - Preserve four-stage Kanban.
-- Preserve reusable components.
 - Keep AI server-side/backend-mediated.
-- Keep mock fallback available for demo resilience.
-- Do not claim hosted production health until it has been manually verified.
+- Keep mock fallback available for presentation resilience.
+- Do not claim hosted health or full live integration without runtime verification.
 
-## 22. Source-of-Truth Rule
+## 21. Source-of-Truth Rule
 
-**This file describes the frontend as it exists now, not the original planned frontend.** Future agents must inspect actual code and current backend controller/DTO contracts before changing architecture. Do not rebuild the frontend from scratch.
+**This file describes the frontend that actually exists in the repository, including known contract gaps.** Future work must inspect the current frontend code and current backend controllers/DTOs before changing architecture. Do not rebuild the frontend from scratch.
