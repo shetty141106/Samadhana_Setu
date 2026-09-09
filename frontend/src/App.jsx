@@ -11,6 +11,7 @@ import { FacultyDashboard } from './pages/faculty/FacultyDashboard';
 import { StudentDashboard } from './pages/student/StudentDashboard';
 import { IndustryDashboard } from './pages/industry/IndustryDashboard';
 import { AdminDashboard } from './pages/admin/AdminDashboard';
+import { AdminIssuesPage } from './pages/admin/AdminIssuesPage';
 import { ProfilePage } from './pages/shared/ProfilePage';
 import { ROLES } from './utils/constants';
 
@@ -38,7 +39,7 @@ function MainAppContent() {
         setCurrentPath(currentRole);
         window.history.replaceState(null, '', `#${currentRole}`);
       }
-    } else if (currentPath === 'profile' || ROLE_PATHS.includes(currentPath)) {
+    } else if (currentPath === 'profile' || currentPath === 'admin-issues' || ROLE_PATHS.includes(currentPath)) {
       setCurrentPath('login');
       window.history.replaceState(null, '', '#login');
     }
@@ -51,7 +52,7 @@ function MainAppContent() {
       window.history.replaceState(null, '', `#${currentRole}`);
       return;
     }
-    if (!isAuthenticated && (path === 'profile' || ROLE_PATHS.includes(path))) {
+    if (!isAuthenticated && (path === 'profile' || path === 'admin-issues' || ROLE_PATHS.includes(path))) {
       setCurrentPath('login');
       window.history.replaceState(null, '', '#login');
       return;
@@ -68,6 +69,7 @@ function MainAppContent() {
       return <LandingPage onNavigate={navigate} initialSection={currentPath} />;
     }
     if (currentPath === 'profile') return <ProfilePage onNavigate={navigate} />;
+    if (currentPath === 'admin-issues' && currentRole === ROLES.ADMIN) return <AdminIssuesPage />;
 
     switch (currentRole) {
       case ROLES.CITIZEN: return <CitizenDashboard currentPath={currentPath} onNavigate={navigate} />;
