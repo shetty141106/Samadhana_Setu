@@ -246,11 +246,22 @@ export const Login = ({ onNavigate }) => {
                   </div>
                 </div>
 
-                <div className="pt-2">
-                  <Button type="submit" variant="primary" size="md" className="w-full" icon={ArrowRight} disabled={authLoading}>
-                    {authLoading ? 'Signing In...' : selectedRole ? `Sign In as ${ROLE_CONFIGS[selectedRole]?.label || 'Selected Role'}` : 'Sign In to Workspace'}
-                  </Button>
-                </div>
+                {selectedRole && (
+  <div className="pt-2">
+    <Button
+      type="submit"
+      variant="primary"
+      size="md"
+      className="w-full"
+      icon={ArrowRight}
+      disabled={authLoading}
+    >
+      {authLoading
+        ? 'Signing In...'
+        : `Sign In as ${ROLE_CONFIGS[selectedRole]?.label || 'Selected Role'}`}
+    </Button>
+  </div>
+)}
               </form>
             ) : (
               <form onSubmit={handleRegisterSubmit} className="space-y-2.5">
