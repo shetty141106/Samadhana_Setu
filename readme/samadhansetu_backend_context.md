@@ -1,6 +1,6 @@
 # SAMADHANSETU — BACKEND IMPLEMENTATION CONTEXT
 
-> **Backend implementation source of truth.** Reconciled against the current project state on `main` as of 2026-09-06. `readme/PROJECT_CONTEXT.md` remains authoritative for the problem statement and product scope; this file is authoritative for backend implementation architecture and continuation.
+> **Backend implementation source of truth.** Reconciled against the current repository implementation on `main`. `readme/PROJECT_CONTEXT.md` remains authoritative for the problem statement and product scope and is intentionally not modified by this update.
 
 ## 1. Project Metadata
 
@@ -17,53 +17,67 @@
 
 ## 2. Current Backend Status
 
-The backend core implementation for the SIH prototype is **complete at code level** across authentication, citizen ingestion, AI orchestration, university collaboration, R&D lifecycle, Industry/CSR, analytics, notifications and security.
+The backend contains the major prototype modules, but it is **not yet safe to describe the issue-management contract as fully complete**. Static audit identified concrete API/model mismatches that must be resolved before final end-to-end verification.
 
-The remaining backend work is primarily:
+### Confirmed current implementation
 
-- broader automated test coverage;
-- clean-build/runtime verification;
-- live Gemini verification;
-- deployed service verification;
-- final end-to-end citizen → AI → university → project workflow verification.
+- JWT authentication/RBAC is implemented.
+- Citizen registration/login endpoints exist.
+- Citizen issue creation and operational issue retrieval exist.
+- AI bridge and deterministic fallback exist.
+- University/department/faculty APIs exist.
+- Project/team/milestone/task lifecycle exists.
+- Industry/CSR APIs exist.
+- Dashboard/notification APIs exist.
+- Admin user creation is restricted to Admin users.
+
+### Confirmed contract gaps
+
+1. `IssueRequestDto` does not contain `category` or `district`, although the frontend sends both.
+2. `Issue` contains `category` but does not contain a `district` field.
+3. `IssueResponseDto` does not expose `category`, `district`, or citizen name/email.
+4. The frontend currently sends `High`/`Medium`/`Low`/`Critical`, while `IssuePriority` expects uppercase enum names. This can cause request deserialization failure.
+5. Admin All Issues is therefore only partially populated from live backend data until the issue DTO/entity contract is aligned.
+
+These are implementation issues, not documentation-only concerns.
 
 ## 3. Module Architecture
 
 | # | Module | Controller | Service | Repository / Core |
 |---|---|---|---|---|
 | 1 | Authentication & RBAC | `AuthController` | `AuthService`, `UserService` | `UserRepository`, `RoleRepository` |
-| 2 | Citizen Ingestion | `IssueController` | `IssueService` | `IssueRepository` |
-| 3 | AI Orchestration | `AiIntegrationController` | `AiBridgeService` | `IssueRepository`, `UniversityRepository` |
-| 4 | Academic Workspace | `UniversityController` | `UniversityService` | `UniversityRepository` |
-| 5 | R&D & Kanban Lifecycle | `ProjectController` | `ProjectService` | `ProjectRepository`, `TaskRepository` |
-| 6 | Industry & CSR | `IndustryController` | `IndustryService`, `VerificationService` | `OrganizationRepository`, `SponsorshipRepository` |
+| 2 | Citizen Ingestion | `IssueController` | `IssueService` | `IssueRepository`, `CitizenRepository` |
+| 3 | AI Orchestration | `AiIntegrationController` | `AiBridgeService` | `IssueRepository`, `AiAnalysisRepository` |
+| 4 | Academic Workspace | `UniversityController`, `DepartmentController`, `FacultyProfileController` | corresponding services | University/Department/Faculty repositories |
+| 5 | R&D & Kanban Lifecycle | `ProjectController` | `ProjectService` | Project/Task/Milestone repositories |
+| 6 | Industry & CSR | `IndustryController` | `IndustryService`, `VerificationService` | Organization/Sponsorship repositories |
 | 7 | Analytics & Heatmaps | `DashboardController` | `DashboardService` | issue/project aggregations |
 | 8 | Notifications | `NotificationController` | `NotificationService` | `NotificationRepository` |
+| 9 | Admin User Governance | `UserAdminController` | `AdminUserService` | `UserRepository`, `RoleRepository` |
 
 ## 4. Entity Inventory
 
-The core JPA model contains 20 entities:
+The core JPA model includes the stakeholder/profile, civic issue, academic, project, Industry/CSR and notification entities documented by the repository.
 
-1. Role
-2. User
-3. Citizen
-4. NodalOfficer
-5. Faculty
-6. Student
-7. Industry
-8. Admin
-9. Issue
-10. EvidenceMedia
-11. University
-12. Department
-13. FacultyProfile
-14. Project
-15. TeamMember
-16. Milestone
-17. Task
-18. Organization
-19. Sponsorship
-20. Notification
+Important issue model fields currently include:
+
+```text
+Issue
+ ├─ id
+ ├─ title
+ ├─ description
+ ├─ location
+ ├─ latitude
+ ├─ longitude
+ ├─ category
+ ├─ status
+ ├─ priority
+ ├─ reportedBy
+ ├─ evidenceMedia
+ └─ aiAnalyses
+```
+
+**Current gap:** district is not an `Issue` entity field even though the frontend collects it.
 
 Enums include:
 
@@ -90,18 +104,15 @@ User
  └── Admin
 
 Citizen → Issue → EvidenceMedia
-University → Department → FacultyProfile → Faculty
+Issue → AiAnalysis
+University → Department → FacultyProfile
 University → Project
 Project → TeamMember
 Project → Milestone → Task
 Project → Task
-Industry → Organization → Sponsorship → Project
+Organization → Sponsorship → Project
 User → Notification
 ```
-
-CIN/GSTIN/Udyam remain fields on `Organization`; they are not separate entities.
-
-AI and dashboard analytics do not require dedicated JPA entities for the prototype.
 
 ## 6. Security / RBAC
 
@@ -109,30 +120,34 @@ Implemented:
 
 - JWT authentication
 - custom user-details handling
-- role authorities for all six stakeholder roles
-- protected management endpoints
-- authenticated notification APIs
-- citizen-only issue creation authorization
-- protected AI/dashboard endpoints
-- invalid/expired JWT handling
-- security-context cleanup
+- role authorities for six stakeholder roles
+- Admin-only `/api/users/**`
+- citizen-only issue creation
+- Admin/Nodal operational issue listing
+- Admin/Nodal issue mutation
+- authenticated AI APIs
+- Admin/Nodal dashboard APIs
+- authenticated notification access with user ownership checks
+- project-level mutation authorization
 - method security
-- global exception handling
+- invalid/expired JWT handling
 - request validation
 - environment-driven signing secret
 
-Production `JWT_SECRET` must remain outside source control.
+`JWT_SECRET` must remain outside source control.
 
-## 7. Citizen Issue Workflow
+## 7. Citizen Issue Workflow — Current Contract
 
 ```text
-Citizen creates Issue
- → validate request
- → persist Issue
- → invoke AI bridge
- → persist/enrich AI result
- → category-based university routing
- → expose result through REST APIs
+Citizen frontend
+ → POST /api/issues
+ → IssueController
+ → IssueService.create()
+ → IssueRepository
+ → AiBridgeService.processIssue()
+ → AI/fallback result
+ → Issue + AiAnalysis persistence
+ → REST response
 ```
 
 Issue statuses:
@@ -155,41 +170,94 @@ HIGH
 CRITICAL
 ```
 
-Evidence is represented through `EvidenceMedia` and associated media URLs/metadata.
+### Current request contract
 
-## 8. AI Integration
+`IssueRequestDto` currently accepts:
 
-Spring Boot delegates prototype AI processing to the Python FastAPI service through `AiBridgeService`.
+```text
+title
+description
+location
+latitude
+longitude
+priority
+evidenceMedia
+```
 
-Prototype AI responsibilities:
+It currently does **not** accept:
 
-- Hindi/English handling
-- translation
-- summarization
-- canonical domain classification
-- prototype priority scoring
-- Gemini embeddings
-- FAISS semantic deduplication
-- optional coordinate distance
-- rule-based university/department routing
+```text
+category
+district
+```
 
-The AI service has deterministic fallback behavior.
+### Required alignment before final verification
 
-Live Gemini execution requires `GEMINI_API_KEY` in the AI runtime environment. Never commit it.
+The frontend currently sends category and district and expects them to be retained. The backend contract must be extended consistently across request DTO, entity/database and response DTO before this can be considered complete.
 
-## 9. University / Academic Workspace
+Priority values must be normalized to enum values before Jackson deserialization, or the API contract must explicitly accept the frontend representation.
+
+## 8. Issue Response / Admin All Issues
+
+Current `IssueResponseDto` contains:
+
+```text
+id
+title
+description
+location
+latitude
+longitude
+status
+priority
+citizenId
+evidenceMedia
+aiAnalysis
+```
+
+It does not currently contain:
+
+```text
+category
+district
+citizenName
+citizenEmail
+```
+
+Therefore the Admin All Issues page can retrieve the live issue list but cannot currently populate all of its intended basic-info columns from the backend.
+
+## 9. AI Integration
+
+Spring Boot delegates processing to the configured FastAPI service through `AiBridgeService`.
+
+The bridge:
+
+- builds an AI request from the persisted issue;
+- calls the configured AI service;
+- falls back to deterministic local rules when the external call fails;
+- applies AI category/priority results to the issue;
+- enriches university recommendation through `UniversityRoutingService`;
+- persists an `AiAnalysis` record;
+- exposes the latest analysis through issue responses.
+
+### Transaction note
+
+Issue creation currently invokes AI processing from inside the issue creation transaction. This works with the existing exception fallback but couples issue persistence to downstream AI processing. A future hardening option is to persist/commit the issue first and process AI asynchronously. This is not required for the current prototype unless runtime failures demonstrate a need.
+
+## 10. University / Academic Workspace
 
 Implemented:
 
 - University CRUD/search
 - Department management/listing
-- Faculty integration
-- Faculty profile management/search
+- Faculty profile management
 - specialization lookup
 - category-based routing
 - recommended university enrichment
 
-## 10. Project / Team / Kanban
+The current routing implementation is a deterministic heuristic over department names/keywords. It is suitable for prototype demonstration, not a production institutional-ranking engine.
+
+## 11. Project / Team / Kanban
 
 Implemented:
 
@@ -201,8 +269,8 @@ Implemented:
 - task creation/listing/update/delete
 - task assignment
 - milestone linkage
-- Kanban statuses
 - project progress counters
+- project-level authorization
 
 Task statuses:
 
@@ -223,36 +291,26 @@ COMPLETED
 CANCELLED
 ```
 
-## 11. Industry / CSR
+## 12. Industry / CSR
 
 Implemented:
 
 - organization CRUD/search
 - organization verification readiness
-- verification endpoint
+- verification operations
 - sponsorship creation/management
 - sponsorship ↔ project relationship
-- sponsorship lookup/status handling
+- sponsorship status handling
 
-The prototype records sponsorship information; real payment settlement is outside the current scope.
+The prototype records sponsorship information; it does not implement real payment settlement.
 
-## 12. Dashboard / Analytics
+## 13. Dashboard / Analytics
 
-Implemented API-level aggregation for:
+Implemented API-level aggregation for issue status, priority/category, project/task status, university participation, geographic/location analytics and sponsorship metrics where exposed by the dashboard controller.
 
-- overall summary
-- issue status
-- issue priority
-- issue category/domain
-- project status
-- task status
-- university participation
-- geographic/location analytics
-- sponsorship counts and funding totals
+Frontend presentation must distinguish live aggregates from remaining demo-oriented values.
 
-Frontend may still contain demo presentation values; those must be clearly treated as demo values until replaced by live aggregates.
-
-## 13. Notifications
+## 14. Notifications
 
 Implemented:
 
@@ -261,9 +319,25 @@ Implemented:
 - unread listing/count
 - mark read
 - delete
-- REST controller/service/repository
+- authenticated ownership checks
 
-## 14. Environment / Deployment Contract
+## 15. Admin User Governance
+
+`/api/users/**` is protected by `ADMIN` role in `SecurityConfig`.
+
+`AdminUserService` currently permits:
+
+```text
+NODAL_OFFICER
+FACULTY
+STUDENT
+INDUSTRY
+ADMIN
+```
+
+The current product request mentioned four privileged roles: Nodal Officer, Academic Faculty, Industry/CSR Partner and System Admin. If the intended contract is strictly those four, the `STUDENT` option must be removed from both frontend and backend allowed-role lists. Until then, the repository technically supports five admin-created non-citizen roles.
+
+## 16. Environment / Deployment Contract
 
 Deployment values remain external:
 
@@ -276,7 +350,7 @@ SPRING_DATASOURCE_PASSWORD=<database-password>
 AI_SERVICE_URL=<fastapi-url>
 ```
 
-AI runtime additionally needs:
+AI runtime:
 
 ```env
 GEMINI_API_KEY=<secret>
@@ -284,36 +358,36 @@ GEMINI_API_KEY=<secret>
 
 Never commit secrets.
 
-## 15. Testing Status
+## 17. Testing / Verification Status
 
-### Implemented
+### Code-level capabilities present
 
-- [x] University service tests
-- [x] Notification service tests
-- [x] AI processing tests
-- [x] University routing tests
 - [x] JWT service tests
-- [x] FAISS semantic deduplication tests
-- [x] AI fallback contract tests
+- [x] AI processing/fallback tests
+- [x] university routing tests
+- [x] notification tests
+- [x] semantic deduplication tests
+- [x] service-level prototype coverage in existing test suite
 
-### Remaining verification
+### Still required
 
-- [ ] Repository tests
-- [ ] Controller/API tests
-- [ ] Project/team lifecycle tests
-- [ ] Industry/CSR tests
-- [ ] Dashboard analytics tests
-- [ ] Integration tests
-- [ ] End-to-end workflow test
-- [ ] Clean Maven build/runtime verification
-- [ ] Live Gemini runtime verification
+- [ ] clean Maven build/test verification
+- [ ] controller/API tests for the current DTO contracts
+- [ ] issue create request/response integration test
+- [ ] category/district persistence test after contract alignment
+- [ ] project/team/task integration test
+- [ ] Industry/CSR integration test
+- [ ] dashboard integration test
+- [ ] deployed TiDB/Render runtime verification
+- [ ] live FastAPI/Gemini verification
+- [ ] complete end-to-end workflow test
 
-## 16. API Documentation
+## 18. API Documentation
 
-`readme/API_DOCUMENTATION.md` is the current API reference for frontend/backend integration. Exact controller code remains authoritative if documentation and implementation diverge.
+`readme/API_DOCUMENTATION.md` describes the current endpoint groups. Exact controller and DTO code remains authoritative if documentation and implementation diverge.
 
-## 17. Final Backend Completion Rule
+## 19. Completion Rule
 
-Backend prototype implementation is **complete at architecture/code level**. It should be marked fully complete only after clean build, live AI, deployed service and end-to-end workflow verification pass.
+Backend prototype architecture is substantially implemented, but the **current issue API contract is not fully aligned with the frontend**. Do not claim backend 100% complete until the priority/category/district/response mismatches are corrected and the deployed workflow is verified.
 
-Do not expand into production-scale microservices, PostGIS, advanced ML ranking, or MLOps unless explicitly requested.
+Do not expand into production-scale microservices, PostGIS, advanced ML ranking or MLOps unless explicitly requested.
