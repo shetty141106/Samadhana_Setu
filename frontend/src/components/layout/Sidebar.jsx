@@ -1,7 +1,7 @@
 import React from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { ROLES } from '../../utils/constants';
-import { LayoutDashboard, FilePlus2, ListOrdered, Map, ShieldCheck, GraduationCap, KanbanSquare, CheckSquare, Users, Building2, Coins, BarChart3, UserCog, User, Home, Award, Globe2, FileCheck2 } from 'lucide-react';
+import { LayoutDashboard, FilePlus2, ListOrdered, Map, ShieldCheck, GraduationCap, KanbanSquare, CheckSquare, Users, Building2, Coins, BarChart3, UserCog, User, Home, Award, Globe2, FileCheck2, ClipboardList } from 'lucide-react';
 
 export const Sidebar = ({ currentPath, onNavigate, sidebarOpen, setSidebarOpen }) => {
   const { currentRole, currentUser, roleConfig } = useAuth();
@@ -12,7 +12,7 @@ export const Sidebar = ({ currentPath, onNavigate, sidebarOpen, setSidebarOpen }
       case ROLES.FACULTY: return [{ id:'faculty',label:'Faculty Dashboard',icon:LayoutDashboard },{ id:'mentored-projects',label:'Mentored Projects',icon:GraduationCap },{ id:'milestone-approvals',label:'Milestone Approvals',icon:Award },{ id:'csr-connect',label:'Industry & CSR Grants',icon:Coins },{ id:'profile',label:'Faculty Profile',icon:User }];
       case ROLES.STUDENT: return [{ id:'student',label:'Lab Dashboard',icon:LayoutDashboard },{ id:'kanban',label:'R&D Kanban Board',icon:KanbanSquare,highlight:true },{ id:'my-tasks',label:'My Sprint Tasks',icon:CheckSquare },{ id:'team-roster',label:'Research Team',icon:Users },{ id:'profile',label:'Student Profile',icon:User }];
       case ROLES.INDUSTRY: return [{ id:'industry',label:'CSR Command Desk',icon:LayoutDashboard },{ id:'browse-projects',label:'Browse R&D Projects',icon:Building2 },{ id:'my-sponsorships',label:'Active CSR Grants',icon:Coins },{ id:'csr-impact',label:'ESG Impact Analytics',icon:BarChart3 },{ id:'profile',label:'Corporate Profile',icon:User }];
-      case ROLES.ADMIN: return [{ id:'admin',label:'State Overview',icon:LayoutDashboard },{ id:'heatmaps',label:'GIS Heatmap Analytics',icon:Globe2 },{ id:'user-management',label:'User & Role Directory',icon:UserCog },{ id:'system-metrics',label:'Platform Performance',icon:BarChart3 },{ id:'profile',label:'Admin Profile',icon:User }];
+      case ROLES.ADMIN: return [{ id:'admin',label:'State Overview',icon:LayoutDashboard },{ id:'admin-issues',label:'All Issues',icon:ClipboardList },{ id:'heatmaps',label:'GIS Heatmap Analytics',icon:Globe2 },{ id:'user-management',label:'User & Role Directory',icon:UserCog },{ id:'system-metrics',label:'Platform Performance',icon:BarChart3 },{ id:'profile',label:'Admin Profile',icon:User }];
       default: return [];
     }
   };
