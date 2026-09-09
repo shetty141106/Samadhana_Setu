@@ -37,13 +37,15 @@ export const DataProvider = ({ children }) => {
         const role = String(currentUser?.role || '').trim().toLowerCase();
         const isCitizen = role === 'citizen';
         const canReadOperationalIssues = role === 'admin' || role === 'nodal';
+        const isIndustry = role === 'industry';
         const issuePromise = isCitizen && currentUser?.id ? issueApi.getCitizenIssues(currentUser.id) : canReadOperationalIssues ? issueApi.listIssues() : Promise.resolve([]);
         const [loadedIssues, loadedProjects] = await Promise.all([issuePromise, projectApi.listProjectsWithDetails()]);
         if (cancelled) return;
         setIssues(Array.isArray(loadedIssues) ? loadedIssues : []);
         setProjects(Array.isArray(loadedProjects) ? loadedProjects.map(projectToUi) : []);
         if (role === 'admin' || role === 'nodal') { try { setDashboard(await dashboardApi.getSummary()); } catch { setDashboard(null); } }
-        try { setSponsors(await industryApi.listSponsorships()); } catch { setSponsors([]); }
+        if (isIndustry || role === 'admin') { try { setSponsors(await industryApi.listSponsorships()); } catch { setSponsors([]); } }
+        else setSponsors([]);
       } catch (error) { if (!cancelled) setDataError(error.message || 'Unable to load live platform data.'); }
       finally { if (!cancelled) setDataLoading(false); }
     })();
@@ -51,7 +53,7 @@ export const DataProvider = ({ children }) => {
   }, [isAuthenticated, currentUser?.id, currentUser?.role]);
 
   const addIssue = async newIssue => {
-    if (!LIVE_API || !isAuthenticated) throw new Error('Live API authentication is required to create an issue.');
+    if (!isAuthenticated) throw new Error('Live API authentication is required to create an issue.');
     const created = await issueApi.createIssue(newIssue);
     const uiIssue = { ...created, category: newIssue.category, categoryLabel: newIssue.categoryLabel, district: newIssue.district, submittedBy: `${currentUser.name} (Citizen)`, images: created.images?.length ? created.images : (newIssue.images || []) };
     setIssues(prev => [uiIssue, ...prev]); return uiIssue;
