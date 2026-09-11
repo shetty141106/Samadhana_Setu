@@ -1,0 +1,21 @@
+id,text,language,category
+1,"हमारे गांव के स्कूल में शिक्षक नहीं आते",hi,Education
+2,"Farmers are not receiving fertilizer",en,Agriculture
+3,"hospital mein doctor available nahi hai",hinglish,Healthcare
+4,"गांव में पीने का पानी नहीं है",hi,Water Resources
+5,"There is too much garbage near our village",en,Environment
+6,"हमारे इलाके में रोज बिजली कट जाती है",hi,Energy
+7,"गांव की मुख्य सड़क पर बहुत बड़े गड्ढे हैं",hi,Urban Development
+8,"सरकारी भवन में wheelchair के लिए ramp नहीं है",hinglish,Accessibility
+9,"मेरा सरकारी प्रमाणपत्र कई दिनों से लंबित है",hi,Public Administration
+10,"गांव में रोजगार के अवसर नहीं हैं",hi,Rural Livelihoods
+11,"मेरे गांव की सड़क बारिश के बाद पूरी तरह खराब हो गई है",hi,Urban Development
+12,"hospital mein emergency ke time doctor available nahi tha",hinglish,Healthcare
+13,"Farmers in our area are facing problems getting seeds",en,Agriculture
+14,"हमारे स्कूल में पिछले तीन महीने से विज्ञान शिक्षक नहीं हैं",hi,Education
+15,"gaon mein transformer kharab hone ki wajah se light nahi hai",hinglish,Energy
+16,"सरकारी कार्यालय में मेरा जाति प्रमाणपत्र अभी तक नहीं बना",hi,Public Administration
+17,"There is no accessible entrance for wheelchair users",en,Accessibility
+18,"हमारे गांव के पास कचरा खुले में जलाया जा रहा है",hi,Environment
+19,"पानी की पाइपलाइन कई जगह से टूट गई है",hi,Water Resources
+20,"महिलाओं के लिए गांव में रोजगार के अवसर बहुत कम हैं",hi,Rural Livelihoods
