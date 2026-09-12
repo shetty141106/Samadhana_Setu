@@ -5,3 +5,4 @@ google-genai==2.22.0
 faiss-cpu==1.15.0
 numpy>=1.26,<3
 pytest==8.4.2
+# google-play-scraper
