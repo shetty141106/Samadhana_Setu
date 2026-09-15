@@ -181,7 +181,7 @@ export const DataProvider = ({ children }) => {
       throw new Error("Live API authentication is required.");
     let updated = null;
     if (status) {
-      updated = await issueApi.updateIssueStatus(id, status);
+      updated = await issueApi.updateIssueStatus(id, status, nodalRemarks);
       setIssues((prev) =>
         prev.map((i) =>
           i.id === id

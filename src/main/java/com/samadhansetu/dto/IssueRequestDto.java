@@ -23,6 +23,7 @@ public class IssueRequestDto {
     private String longitude;
     private String category;
     private String district;
+    private String remarks;
     private IssuePriority priority;
     private List<EvidenceMediaDto> evidenceMedia;
 }

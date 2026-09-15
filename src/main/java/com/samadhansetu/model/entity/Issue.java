@@ -24,6 +24,8 @@ public class Issue {
     private String longitude;
     private String category;
     private String district;
+    @Column(columnDefinition = "TEXT")
+    private String remarks;
     @Enumerated(EnumType.STRING)
     private IssueStatus status;
     @Enumerated(EnumType.STRING)

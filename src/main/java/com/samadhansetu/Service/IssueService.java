@@ -29,6 +29,7 @@ public class IssueService {
         Issue issue = Issue.builder().title(request.getTitle()).description(request.getDescription())
                 .location(request.getLocation()).latitude(request.getLatitude()).longitude(request.getLongitude())
                 .category(request.getCategory()).district(request.getDistrict()).status(IssueStatus.REPORTED)
+                .remarks(request.getRemarks())
                 .priority(request.getPriority() == null ? IssuePriority.MEDIUM : request.getPriority())
                 .reportedBy(citizen).build();
         if (request.getEvidenceMedia() != null)
@@ -78,15 +79,18 @@ public class IssueService {
         i.setLongitude(r.getLongitude());
         i.setCategory(r.getCategory());
         i.setDistrict(r.getDistrict());
+        i.setRemarks(r.getRemarks());
         if (r.getPriority() != null)
             i.setPriority(r.getPriority());
         return toDto(issueRepository.save(i));
     }
 
     @Transactional
-    public IssueResponseDto updateStatus(Long id, IssueStatus s) {
+    public IssueResponseDto updateStatus(Long id, IssueStatus s, String remarks) {
         Issue i = find(id);
         i.setStatus(s);
+        if (remarks != null)
+            i.setRemarks(remarks);
         return toDto(issueRepository.save(i));
     }
 
@@ -122,6 +126,7 @@ public class IssueService {
         return IssueResponseDto.builder().id(i.getId()).title(i.getTitle()).description(i.getDescription())
                 .location(i.getLocation()).latitude(i.getLatitude()).longitude(i.getLongitude())
                 .category(i.getCategory()).district(i.getDistrict()).status(i.getStatus()).priority(i.getPriority())
+                .remarks(i.getRemarks())
                 .citizenId(i.getReportedBy() == null ? null : i.getReportedBy().getId())
                 .evidenceMedia(i.getEvidenceMedia() == null ? List.of()
                         : i.getEvidenceMedia().stream()

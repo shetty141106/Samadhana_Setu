@@ -18,12 +18,15 @@ public class IssueController {
     private final IssueService service;
 
     @PostMapping
-    public ResponseEntity<IssueResponseDto> create(@Valid @RequestBody IssueRequestDto request, Authentication authentication) {
+    public ResponseEntity<IssueResponseDto> create(@Valid @RequestBody IssueRequestDto request,
+            Authentication authentication) {
         return ResponseEntity.ok(service.create(request, authentication.getName()));
     }
 
     @GetMapping
-    public List<IssueResponseDto> all() { return service.getAll(); }
+    public List<IssueResponseDto> all() {
+        return service.getAll();
+    }
 
     @GetMapping("/{id}")
     public IssueResponseDto one(@PathVariable Long id, Authentication authentication) {
@@ -36,22 +39,35 @@ public class IssueController {
     }
 
     @GetMapping("/status/{status}")
-    public List<IssueResponseDto> status(@PathVariable IssueStatus status) { return service.getByStatus(status); }
+    public List<IssueResponseDto> status(@PathVariable IssueStatus status) {
+        return service.getByStatus(status);
+    }
 
     @GetMapping("/priority/{priority}")
-    public List<IssueResponseDto> priority(@PathVariable IssuePriority priority) { return service.getByPriority(priority); }
+    public List<IssueResponseDto> priority(@PathVariable IssuePriority priority) {
+        return service.getByPriority(priority);
+    }
 
     @PutMapping("/{id}")
-    public IssueResponseDto update(@PathVariable Long id, @Valid @RequestBody IssueRequestDto request) { return service.update(id, request); }
+    public IssueResponseDto update(@PathVariable Long id, @Valid @RequestBody IssueRequestDto request) {
+        return service.update(id, request);
+    }
 
     @PatchMapping("/{id}/status")
-    public IssueResponseDto updateStatus(@PathVariable Long id, @RequestParam IssueStatus status) { return service.updateStatus(id, status); }
+    public IssueResponseDto updateStatus(@PathVariable Long id, @RequestParam IssueStatus status,
+            @RequestParam(required = false) String remarks) {
+        return service.updateStatus(id, status, remarks);
+    }
 
     @PatchMapping("/{id}/priority")
-    public IssueResponseDto updatePriority(@PathVariable Long id, @RequestParam IssuePriority priority) { return service.updatePriority(id, priority); }
+    public IssueResponseDto updatePriority(@PathVariable Long id, @RequestParam IssuePriority priority) {
+        return service.updatePriority(id, priority);
+    }
 
     @PostMapping("/{id}/evidence")
-    public IssueResponseDto evidence(@PathVariable Long id, @RequestBody EvidenceMediaDto data) { return service.addEvidence(id, data); }
+    public IssueResponseDto evidence(@PathVariable Long id, @RequestBody EvidenceMediaDto data) {
+        return service.addEvidence(id, data);
+    }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
@@ -60,7 +76,8 @@ public class IssueController {
     }
 
     private boolean isStaff(Authentication authentication) {
-        return authentication.getAuthorities().stream().anyMatch(authority ->
-                "ROLE_ADMIN".equals(authority.getAuthority()) || "ROLE_NODAL_OFFICER".equals(authority.getAuthority()));
+        return authentication.getAuthorities().stream()
+                .anyMatch(authority -> "ROLE_ADMIN".equals(authority.getAuthority())
+                        || "ROLE_NODAL_OFFICER".equals(authority.getAuthority()));
     }
 }

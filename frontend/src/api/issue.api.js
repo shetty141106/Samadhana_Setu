@@ -38,6 +38,7 @@ export const mapIssueToUiModel = (issue = {}) => {
     ...issue,
     category: issue.category || "",
     district: issue.district || "",
+    nodalRemarks: issue.remarks || issue.nodalRemarks || "",
     status: statusToUi[issue.status] || issue.status,
     uiStatus: statusToUi[issue.status] || issue.status,
     priority: priorityToUi(issue.priority),
@@ -74,6 +75,7 @@ export const mapIssueToApiModel = (issue = {}) => ({
         : undefined,
   category: issue.category,
   district: issue.district,
+  remarks: issue.remarks || issue.nodalRemarks,
   priority: priorityToBackend(issue.priority),
   evidenceMedia: issue.evidenceMedia || [],
 });
@@ -104,10 +106,10 @@ export const updateIssue = async (id, issue) =>
   mapIssueToUiModel(
     await apiClient.put(`/api/issues/${id}`, mapIssueToApiModel(issue)),
   );
-export const updateIssueStatus = async (id, status) =>
+export const updateIssueStatus = async (id, status, remarks) =>
   mapIssueToUiModel(
     await apiClient.patch(
-      `/api/issues/${id}/status?status=${encodeURIComponent(statusToBackend[status] || status)}`,
+      `/api/issues/${id}/status?status=${encodeURIComponent(statusToBackend[status] || status)}${remarks ? `&remarks=${encodeURIComponent(remarks)}` : ""}`,
     ),
   );
 export const updateIssuePriority = async (id, priority) =>
