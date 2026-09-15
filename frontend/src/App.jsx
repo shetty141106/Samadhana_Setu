@@ -3,6 +3,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { DataProvider } from './context/DataContext';
 import { AppShell } from './components/layout/AppShell';
 import { LandingPage } from './pages/landing/LandingPage';
+import { PublicProjectsPage } from './pages/public/PublicProjectsPage';
 import { Login } from './pages/auth/Login';
 import { Register } from './pages/auth/Register';
 import { CitizenDashboard } from './pages/citizen/CitizenDashboard';
@@ -16,7 +17,7 @@ import { ProfilePage } from './pages/shared/ProfilePage';
 import { ROLES } from './utils/constants';
 
 const ROLE_PATHS = Object.values(ROLES);
-const PUBLIC_PATHS = ['landing', 'login', 'register', 'universities', 'how-it-works'];
+const PUBLIC_PATHS = ['landing', 'login', 'register', 'universities', 'how-it-works', 'browse-projects'];
 
 const readHashPath = () => {
   const raw = window.location.hash.replace(/^#\/?/, '').trim();
@@ -66,6 +67,7 @@ function MainAppContent() {
     if (PUBLIC_PATHS.includes(currentPath)) {
       if (currentPath === 'login') return <Login onNavigate={navigate} />;
       if (currentPath === 'register') return <Register onNavigate={navigate} />;
+      if (currentPath === 'browse-projects') return <PublicProjectsPage onNavigate={navigate} />;
       return <LandingPage onNavigate={navigate} initialSection={currentPath} />;
     }
     if (currentPath === 'profile') return <ProfilePage onNavigate={navigate} />;
