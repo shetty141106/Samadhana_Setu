@@ -160,6 +160,16 @@ export const AuthProvider = ({ children }) => {
     setNotifications([]);
     setAuthError("");
   };
+  const updateProfile = async (payload) => {
+    const response = await authApi.updateProfile(payload);
+    if (!response?.token)
+      throw new Error("Profile update did not return a session token.");
+    const nextSession = { ...response, role: normalizeRole(response.role) };
+    setAuthToken(response.token);
+    localStorage.setItem(SESSION_KEY, JSON.stringify(nextSession));
+    setSession(nextSession);
+    return nextSession;
+  };
   const switchRole = () => {};
   const markNotificationAsRead = async (id) => {
     if (LIVE_AUTH && isAuthenticated)
@@ -193,6 +203,7 @@ export const AuthProvider = ({ children }) => {
       switchRole,
       login,
       register,
+      updateProfile,
       logout,
       isAuthenticated,
       authLoading,

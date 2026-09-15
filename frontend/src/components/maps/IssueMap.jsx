@@ -50,6 +50,22 @@ const createPinIcon = (category, priority) => {
   });
 };
 
+const createHeatmapDotIcon = (priority) => {
+  const color =
+    String(priority || "").toUpperCase() === "CRITICAL"
+      ? "#DC2626"
+      : String(priority || "").toUpperCase() === "HIGH"
+        ? "#EA580C"
+        : "#15803D";
+  return L.divIcon({
+    className: "custom-leaflet-dot",
+    html: `<div style="width:18px;height:18px;border-radius:50%;background:${color};opacity:.72;border:2px solid rgba(255,255,255,.9);box-shadow:0 0 0 6px ${color}33;"></div>`,
+    iconSize: [18, 18],
+    iconAnchor: [9, 9],
+    popupAnchor: [0, -9],
+  });
+};
+
 function ChangeMapView({ center, zoom }) {
   const map = useMap();
   map.setView(center, zoom);
@@ -62,6 +78,7 @@ export const IssueMap = ({
   height = "480px",
   selectedDistrict = "all",
   onDistrictChange,
+  displayMode = "pins",
 }) => {
   const [activeCategory, setActiveCategory] = useState("all");
   const [mapCenter, setMapCenter] = useState(JHARKHAND_MAP_CENTER);
@@ -180,7 +197,18 @@ export const IssueMap = ({
               <Marker
                 key={issue.id ?? `${lat}-${lng}-${issue.title ?? "issue"}`}
                 position={[lat, lng]}
-                icon={createPinIcon(issue.category, issue.priority)}
+                icon={
+                  displayMode === "heatmap"
+                    ? createHeatmapDotIcon(issue.priority)
+                    : createPinIcon(issue.category, issue.priority)
+                }
+                eventHandlers={
+                  displayMode === "pins"
+                    ? {
+                        mouseover: (event) => event.target.openPopup(),
+                      }
+                    : undefined
+                }
               >
                 <Popup>
                   <div className="w-64 p-3 font-sans">

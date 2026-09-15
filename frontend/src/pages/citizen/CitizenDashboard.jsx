@@ -18,9 +18,8 @@ import {
 
 export const CitizenDashboard = ({ currentPath, onNavigate }) => {
   const { currentUser } = useAuth();
-  const { issues, communityIssues, upvoteIssue, isIssueLiked } = useData();
+  const { issues, communityIssues } = useData();
   const [selectedIssue, setSelectedIssue] = useState(null);
-  const [filterCategory, setFilterCategory] = useState("all");
 
   const myIssues = issues.filter(
     (i) =>
@@ -33,13 +32,7 @@ export const CitizenDashboard = ({ currentPath, onNavigate }) => {
   const inRdCount = issues.filter((i) =>
     ["IN_RD", "CSR_FUNDED"].includes(String(i.status || "").toUpperCase()),
   ).length;
-  const filteredIssues = communityIssues.filter(
-    (i) =>
-      filterCategory === "all" ||
-      String(i.category || "")
-        .toLowerCase()
-        .includes(filterCategory),
-  );
+  const filteredIssues = communityIssues;
 
   if (currentPath === "report-issue") {
     return (
@@ -127,8 +120,6 @@ export const CitizenDashboard = ({ currentPath, onNavigate }) => {
               key={issue.id}
               issue={issue}
               onSelect={setSelectedIssue}
-              onUpvote={upvoteIssue}
-              isLiked={isIssueLiked ? isIssueLiked(issue.id) : false}
             />
           ))}
         </div>
@@ -168,8 +159,9 @@ export const CitizenDashboard = ({ currentPath, onNavigate }) => {
           </Button>
         </div>
         <IssueMap
-          issues={issues}
+          issues={communityIssues}
           onSelectIssue={setSelectedIssue}
+          displayMode="pins"
           height="600px"
         />
         {selectedIssue && (
@@ -249,32 +241,6 @@ export const CitizenDashboard = ({ currentPath, onNavigate }) => {
                 Track real-time progress across Jharkhand
               </p>
             </div>
-            <div className="flex items-center gap-1 bg-white p-1 rounded-xl border border-jh-earth-200 text-xs overflow-x-auto">
-              <button
-                onClick={() => setFilterCategory("all")}
-                className={`px-2.5 py-1 rounded-lg font-medium transition-colors ${filterCategory === "all" ? "bg-jh-green-900 text-white font-bold" : "text-jh-earth-700 hover:bg-jh-earth-100"}`}
-              >
-                All
-              </button>
-              <button
-                onClick={() => setFilterCategory("water")}
-                className={`px-2.5 py-1 rounded-lg font-medium transition-colors ${filterCategory === "water" ? "bg-jh-green-900 text-white font-bold" : "text-jh-earth-700 hover:bg-jh-earth-100"}`}
-              >
-                Water
-              </button>
-              <button
-                onClick={() => setFilterCategory("forest")}
-                className={`px-2.5 py-1 rounded-lg font-medium transition-colors ${filterCategory === "forest" ? "bg-jh-green-900 text-white font-bold" : "text-jh-earth-700 hover:bg-jh-earth-100"}`}
-              >
-                Forest
-              </button>
-              <button
-                onClick={() => setFilterCategory("mining")}
-                className={`px-2.5 py-1 rounded-lg font-medium transition-colors ${filterCategory === "mining" ? "bg-jh-green-900 text-white font-bold" : "text-jh-earth-700 hover:bg-jh-earth-100"}`}
-              >
-                Mining
-              </button>
-            </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {filteredIssues.slice(0, 4).map((issue) => (
@@ -282,8 +248,6 @@ export const CitizenDashboard = ({ currentPath, onNavigate }) => {
                 key={issue.id}
                 issue={issue}
                 onSelect={setSelectedIssue}
-                onUpvote={upvoteIssue}
-                isLiked={isIssueLiked ? isIssueLiked(issue.id) : false}
               />
             ))}
           </div>
@@ -308,8 +272,9 @@ export const CitizenDashboard = ({ currentPath, onNavigate }) => {
             </button>
           </div>
           <IssueMap
-            issues={issues}
+            issues={communityIssues}
             selectedDistrict={currentUser.district}
+            displayMode="heatmap"
             height="320px"
           />
           <div className="bg-jh-earth-100/70 rounded-2xl p-4 border border-jh-earth-200 text-xs space-y-2">

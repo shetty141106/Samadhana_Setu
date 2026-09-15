@@ -1,13 +1,35 @@
-import React from "react";
+import React, { useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { Button } from "../../components/ui/Button";
 import { Mail, Building, LogOut, UserRound } from "lucide-react";
 
 export const ProfilePage = ({ onNavigate }) => {
-  const { currentUser, roleConfig, logout } = useAuth();
+  const { currentUser, roleConfig, logout, updateProfile } = useAuth();
+  const [editing, setEditing] = useState(false);
+  const [name, setName] = useState(currentUser?.name || "");
+  const [email, setEmail] = useState(currentUser?.email || "");
+  const [error, setError] = useState("");
+  const [saving, setSaving] = useState(false);
   const handleSignOut = () => {
     logout();
     onNavigate("landing");
+  };
+  const handleSave = async (event) => {
+    event.preventDefault();
+    setError("");
+    setSaving(true);
+    try {
+      await updateProfile({ name, email });
+      setEditing(false);
+    } catch (saveError) {
+      setError(
+        saveError?.data?.message ||
+          saveError?.message ||
+          "Unable to update profile.",
+      );
+    } finally {
+      setSaving(false);
+    }
   };
   return (
     <div className="max-w-4xl mx-auto space-y-6">
@@ -45,33 +67,81 @@ export const ProfilePage = ({ onNavigate }) => {
               Sign Out
             </Button>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs pt-4 border-t border-jh-earth-200">
-            <div className="flex items-center gap-3 p-3 bg-jh-earth-50 rounded-xl">
-              <Mail className="w-4 h-4 text-jh-green-800" />
-              <div>
-                <span className="text-jh-earth-500 block text-[10px] uppercase font-bold">
-                  Email Address
-                </span>
-                <span className="font-bold text-jh-charcoal">
-                  {currentUser?.email || "Not provided"}
-                </span>
+          {editing ? (
+            <form
+              onSubmit={handleSave}
+              className="space-y-3 pt-4 border-t border-jh-earth-200"
+            >
+              {error && <p className="text-xs text-red-700">{error}</p>}
+              <input
+                value={name}
+                onChange={(event) => setName(event.target.value)}
+                required
+                className="w-full rounded-xl border border-jh-earth-300 px-3 py-2 text-sm"
+                placeholder="Name"
+              />
+              <input
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                required
+                type="email"
+                className="w-full rounded-xl border border-jh-earth-300 px-3 py-2 text-sm"
+                placeholder="Email"
+              />
+              <div className="flex gap-2">
+                <Button type="submit" size="sm" disabled={saving}>
+                  {saving ? "Saving..." : "Save Changes"}
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setEditing(false)}
+                >
+                  Cancel
+                </Button>
               </div>
-            </div>
-            <div className="flex items-center gap-3 p-3 bg-jh-earth-50 rounded-xl">
-              <Building className="w-4 h-4 text-jh-terracotta-600" />
-              <div>
-                <span className="text-jh-earth-500 block text-[10px] uppercase font-bold">
-                  Affiliation
-                </span>
-                <span className="font-bold text-jh-charcoal">
-                  {currentUser?.organization ||
-                    currentUser?.university ||
-                    currentUser?.department ||
-                    "Not provided"}
-                </span>
+            </form>
+          ) : (
+            <>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs pt-4 border-t border-jh-earth-200">
+                <div className="flex items-center gap-3 p-3 bg-jh-earth-50 rounded-xl">
+                  <Mail className="w-4 h-4 text-jh-green-800" />
+                  <div>
+                    <span className="text-jh-earth-500 block text-[10px] uppercase font-bold">
+                      Email Address
+                    </span>
+                    <span className="font-bold text-jh-charcoal">
+                      {currentUser?.email || "Not provided"}
+                    </span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 p-3 bg-jh-earth-50 rounded-xl">
+                  <Building className="w-4 h-4 text-jh-terracotta-600" />
+                  <div>
+                    <span className="text-jh-earth-500 block text-[10px] uppercase font-bold">
+                      Affiliation
+                    </span>
+                    <span className="font-bold text-jh-charcoal">
+                      {currentUser?.organization ||
+                        currentUser?.university ||
+                        currentUser?.department ||
+                        "Not provided"}
+                    </span>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
+              <div className="mt-4">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setEditing(true)}
+                >
+                  Edit Profile
+                </Button>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>

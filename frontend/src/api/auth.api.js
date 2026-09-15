@@ -8,6 +8,8 @@ export const login = async (credentials) => {
 
 export const register = (payload) =>
   apiClient.post("/api/auth/register", payload);
+export const updateProfile = (payload) =>
+  apiClient.put("/api/auth/profile", payload);
 export const logout = () => clearAuthToken();
 
-export const authApi = { login, register, logout };
+export const authApi = { login, register, updateProfile, logout };

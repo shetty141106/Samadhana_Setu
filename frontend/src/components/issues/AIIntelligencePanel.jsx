@@ -89,10 +89,6 @@ export const AIIntelligencePanel = ({ issue, initialAnalysis = null }) => {
             >
               AI Issue Intelligence
             </h5>
-            <p className="text-[11px] text-jh-earth-600 mt-0.5">
-              Persisted backend analysis for this issue. Re-analysis creates a
-              new analysis record.
-            </p>
           </div>
         </div>
         <Button
@@ -126,10 +122,6 @@ export const AIIntelligencePanel = ({ issue, initialAnalysis = null }) => {
             <BrainCircuit className="w-7 h-7 mx-auto text-jh-green-700 mb-2" />
             <p className="text-xs font-semibold text-jh-green-950">
               No AI analysis is stored yet
-            </p>
-            <p className="text-[11px] text-jh-earth-600 mt-1">
-              Create the issue through the live backend or run analysis to
-              generate a persisted result.
             </p>
           </div>
         )}

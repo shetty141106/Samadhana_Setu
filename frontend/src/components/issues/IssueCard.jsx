@@ -3,21 +3,14 @@ import { StatusBadge } from "../ui/StatusBadge";
 import { IssueAIAnalysisModal } from "./IssueAIAnalysisModal";
 import {
   MapPin,
-  ThumbsUp,
   ArrowRight,
   Building,
   School,
   BrainCircuit,
-  Check,
 } from "lucide-react";
 
-export const IssueCard = ({ issue, onSelect, onUpvote, isLiked = false }) => {
+export const IssueCard = ({ issue, onSelect }) => {
   const [showAI, setShowAI] = useState(false);
-
-  const handleUpvote = (event) => {
-    event.stopPropagation();
-    if (!isLiked && onUpvote) onUpvote(issue.id);
-  };
 
   return (
     <div className="bg-white rounded-2xl border border-jh-earth-200/90 shadow-jh-soft overflow-hidden hover:shadow-jh-card transition-all duration-200 flex flex-col justify-between group">
@@ -82,26 +75,7 @@ export const IssueCard = ({ issue, onSelect, onUpvote, isLiked = false }) => {
       </div>
 
       <div className="px-5 py-3.5 bg-jh-earth-50/70 border-t border-jh-earth-100 flex items-center justify-between gap-3">
-        <button
-          onClick={handleUpvote}
-          disabled={isLiked}
-          className={`flex items-center gap-1.5 text-xs font-semibold transition-colors ${isLiked ? "text-jh-green-900 cursor-default" : "text-jh-earth-700 hover:text-jh-green-900"}`}
-          title={
-            isLiked
-              ? "You already supported this issue"
-              : "Support this civic issue"
-          }
-          aria-label={
-            isLiked ? "Issue already supported" : "Support this civic issue"
-          }
-        >
-          {isLiked ? (
-            <Check className="w-3.5 h-3.5 text-jh-green-700" />
-          ) : (
-            <ThumbsUp className="w-3.5 h-3.5 text-jh-green-700" />
-          )}
-          <span>{issue.upvotes ?? 0}</span>
-        </button>
+        <span />
         <div className="flex items-center gap-3">
           <button
             onClick={() => setShowAI(true)}
