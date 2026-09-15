@@ -45,6 +45,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.DELETE, "/api/departments/**", "/api/faculty-profiles/**").hasAnyRole("ADMIN", "NODAL_OFFICER")
 
                         .requestMatchers(HttpMethod.POST, "/api/issues").hasRole("CITIZEN")
+                        .requestMatchers(HttpMethod.GET, "/api/issues/public").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/issues").hasAnyRole("ADMIN", "NODAL_OFFICER")
                         .requestMatchers(HttpMethod.GET, "/api/issues/status/**", "/api/issues/priority/**").hasAnyRole("ADMIN", "NODAL_OFFICER")
                         .requestMatchers(HttpMethod.GET, "/api/issues/**").authenticated()

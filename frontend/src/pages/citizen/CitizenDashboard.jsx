@@ -18,7 +18,7 @@ import {
 
 export const CitizenDashboard = ({ currentPath, onNavigate }) => {
   const { currentUser } = useAuth();
-  const { issues, upvoteIssue, isIssueLiked } = useData();
+  const { issues, communityIssues, upvoteIssue, isIssueLiked } = useData();
   const [selectedIssue, setSelectedIssue] = useState(null);
   const [filterCategory, setFilterCategory] = useState("all");
 
@@ -33,7 +33,7 @@ export const CitizenDashboard = ({ currentPath, onNavigate }) => {
   const inRdCount = issues.filter((i) =>
     ["IN_RD", "CSR_FUNDED"].includes(String(i.status || "").toUpperCase()),
   ).length;
-  const filteredIssues = issues.filter(
+  const filteredIssues = communityIssues.filter(
     (i) =>
       filterCategory === "all" ||
       String(i.category || "")

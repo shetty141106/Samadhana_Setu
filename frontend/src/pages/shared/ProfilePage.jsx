@@ -27,7 +27,7 @@ export const ProfilePage = ({ onNavigate }) => {
               <div className="w-24 h-24 rounded-2xl border-4 border-white shadow-md bg-jh-green-100 text-jh-green-900 grid place-items-center">
                 <UserRound className="w-10 h-10" />
               </div>
-              <div className="mb-2 mt-2">
+              <div className="mb-2 mt-2 pt-2">
                 <h2 className="text-xl sm:text-2xl font-bold text-jh-green-950">
                   {currentUser?.name || "User"}
                 </h2>

@@ -9,6 +9,7 @@ import java.util.List;
 public interface IssueRepository extends JpaRepository<Issue, Long> {
     List<Issue> findByReportedById(Long citizenId);
     List<Issue> findByStatus(IssueStatus status);
+    List<Issue> findByStatusIn(List<IssueStatus> statuses);
     List<Issue> findByPriority(IssuePriority priority);
     List<Issue> findByLocationContainingIgnoreCase(String location);
 }

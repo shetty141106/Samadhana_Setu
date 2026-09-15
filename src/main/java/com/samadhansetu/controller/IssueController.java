@@ -28,6 +28,11 @@ public class IssueController {
         return service.getAll();
     }
 
+    @GetMapping("/public")
+    public List<IssueResponseDto> community() {
+        return service.getCommunityIssues();
+    }
+
     @GetMapping("/{id}")
     public IssueResponseDto one(@PathVariable Long id, Authentication authentication) {
         return service.getById(id, authentication.getName(), isStaff(authentication));

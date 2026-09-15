@@ -125,11 +125,11 @@ export const IssueMap = ({
         </div>
 
         {/* Filters */}
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2 min-w-0 max-w-full">
           <select
             value={selectedDistrict}
             onChange={(e) => handleDistrictFilter(e.target.value)}
-            className="min-w-0 max-w-full text-xs bg-white border border-jh-earth-200 rounded-lg px-2.5 py-1.5 font-medium text-jh-charcoal focus:outline-none focus:ring-2 focus:ring-jh-green-700"
+            className="min-w-0 flex-1 max-w-full text-xs bg-white border border-jh-earth-200 rounded-lg px-2.5 py-1.5 font-medium text-jh-charcoal focus:outline-none focus:ring-2 focus:ring-jh-green-700"
           >
             <option value="all">All 24 Districts</option>
             {JHARKHAND_DISTRICTS.map((d) => (
@@ -142,7 +142,7 @@ export const IssueMap = ({
           <select
             value={activeCategory}
             onChange={(e) => setActiveCategory(e.target.value)}
-            className="min-w-0 max-w-full text-xs bg-white border border-jh-earth-200 rounded-lg px-2.5 py-1.5 font-medium text-jh-charcoal focus:outline-none focus:ring-2 focus:ring-jh-green-700"
+            className="min-w-0 flex-1 max-w-full text-xs bg-white border border-jh-earth-200 rounded-lg px-2.5 py-1.5 font-medium text-jh-charcoal focus:outline-none focus:ring-2 focus:ring-jh-green-700"
           >
             <option value="all">All Domains</option>
             <option value="water">Water & Rivers</option>

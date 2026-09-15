@@ -44,6 +44,15 @@ public class IssueService {
         return issueRepository.findAll().stream().map(this::toDto).toList();
     }
 
+    public List<IssueResponseDto> getCommunityIssues() {
+        return issueRepository.findByStatusIn(List.of(
+                IssueStatus.VERIFIED,
+                IssueStatus.ASSIGNED,
+                IssueStatus.IN_PROGRESS,
+                IssueStatus.RESOLVED
+        )).stream().map(this::toDto).toList();
+    }
+
     public IssueResponseDto getById(Long id, String email, boolean staff) {
         Issue issue = find(id);
         if (!staff && !isOwnedBy(issue, email))

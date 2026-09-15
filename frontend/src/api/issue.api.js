@@ -88,6 +88,8 @@ export const getCitizenIssues = async (citizenId) =>
   (await apiClient.get(`/api/issues/citizen/${citizenId}`)).map(
     mapIssueToUiModel,
   );
+export const getCommunityIssues = async () =>
+  (await apiClient.get("/api/issues/public")).map(mapIssueToUiModel);
 export const getIssuesByStatus = async (status) =>
   (
     await apiClient.get(
@@ -126,6 +128,7 @@ export const issueApi = {
   listIssues,
   getIssue,
   getCitizenIssues,
+  getCommunityIssues,
   getIssuesByStatus,
   getIssuesByPriority,
   createIssue,

@@ -25,6 +25,7 @@ const projectToUi = (project) => ({
 export const DataProvider = ({ children }) => {
   const { currentUser, isAuthenticated } = useAuth();
   const [issues, setIssues] = useState([]);
+  const [communityIssues, setCommunityIssues] = useState([]);
   const [projects, setProjects] = useState([]);
   const [sponsors, setSponsors] = useState([]);
   const [stats, setStats] = useState(EMPTY_STATS);
@@ -72,6 +73,7 @@ export const DataProvider = ({ children }) => {
   useEffect(() => {
     if (!LIVE_API || !isAuthenticated) {
       setIssues([]);
+      setCommunityIssues([]);
       setProjects([]);
       setSponsors([]);
       setDashboard(null);
@@ -96,12 +98,20 @@ export const DataProvider = ({ children }) => {
             : canReadOperationalIssues
               ? issueApi.listIssues()
               : Promise.resolve([]);
-        const [loadedIssues, loadedProjects] = await Promise.all([
+        const communityIssuePromise = isCitizen
+          ? issueApi.getCommunityIssues()
+          : Promise.resolve([]);
+        const [loadedIssues, loadedCommunityIssues, loadedProjects] =
+          await Promise.all([
           issuePromise,
+          communityIssuePromise,
           projectApi.listProjectsWithDetails(),
         ]);
         if (cancelled) return;
         setIssues(Array.isArray(loadedIssues) ? loadedIssues : []);
+        setCommunityIssues(
+          Array.isArray(loadedCommunityIssues) ? loadedCommunityIssues : [],
+        );
         setProjects(
           Array.isArray(loadedProjects) ? loadedProjects.map(projectToUi) : [],
         );
@@ -332,6 +342,7 @@ export const DataProvider = ({ children }) => {
     <DataContext.Provider
       value={{
         issues,
+        communityIssues,
         projects,
         sponsors,
         stats,
