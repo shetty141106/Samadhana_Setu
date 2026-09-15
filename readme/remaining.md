@@ -1,6 +1,6 @@
 # SamadhanSetu — Remaining Work
 
-**Updated:** 2026-09-09
+**Updated:** 2026-09-15
 
 This document lists work that remains after the latest cross-layer static audit. `readme/PROJECT_CONTEXT.md` is intentionally excluded from this update.
 
@@ -8,7 +8,7 @@ This document lists work that remains after the latest cross-layer static audit.
 
 These are confirmed implementation mismatches and should be fixed before final end-to-end testing.
 
-### 1.1 Priority enum alignment
+### 1.1 Priority enum alignment — Done
 
 Frontend currently sends:
 
@@ -28,9 +28,9 @@ MEDIUM
 LOW
 ```
 
-Normalize the frontend payload or explicitly change the backend contract. Do not rely on Jackson accepting the human-readable values.
+Frontend payloads now use the backend enum values at the API boundary.
 
-### 1.2 Category persistence
+### 1.2 Category persistence — Done
 
 Frontend collects/sends `category` and `categoryLabel`, but `IssueRequestDto` currently does not contain category. Align:
 
@@ -42,11 +42,11 @@ IssueForm
  → Admin/Nodal/Citizen UI
 ```
 
-### 1.3 District persistence
+### 1.3 District persistence — Done
 
 Frontend collects `district`, but the current backend request DTO, Issue entity and response DTO do not model it. Add the field consistently if district is part of the intended issue record.
 
-### 1.4 Admin All Issues response
+### 1.4 Admin All Issues response — Done
 
 The Admin All Issues page is connected to `/api/issues`, but the current response lacks:
 
@@ -57,6 +57,10 @@ citizen name/email
 ```
 
 Align the response DTO and frontend mapping so the page can show real database-backed basic information.
+
+### 1.5 Remarks persistence and Issue-to-Project linkage — Done
+
+Issue remarks persist through status updates, and verified issues can create one linked project through the Nodal "Create Project" action. Duplicate project creation is rejected by the backend.
 
 ## 2. P1 — Hosted Runtime Verification
 

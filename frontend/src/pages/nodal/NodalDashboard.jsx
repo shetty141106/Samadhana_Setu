@@ -19,8 +19,10 @@ import {
 
 export const NodalDashboard = ({ currentPath, onNavigate }) => {
   const { currentUser } = useAuth();
-  const { issues } = useData();
+  const { issues, projects, createProjectFromIssue } = useData();
   const [selectedIssue, setSelectedIssue] = useState(null);
+  const [projectError, setProjectError] = useState("");
+  const [creatingProjectId, setCreatingProjectId] = useState(null);
   const [activeTab, setActiveTab] = useState(
     currentPath === "assigned-issues" ? "verified" : "pending",
   );
@@ -73,6 +75,23 @@ export const NodalDashboard = ({ currentPath, onNavigate }) => {
 
   const visibleIssues =
     activeTab === "pending" ? pendingIssues : verifiedIssues;
+  const handleCreateProject = async (event, issue) => {
+    event.stopPropagation();
+    setProjectError("");
+    setCreatingProjectId(issue.id);
+    try {
+      await createProjectFromIssue(issue);
+      onNavigate("browse-projects");
+    } catch (error) {
+      setProjectError(
+        error?.data?.message ||
+          error?.message ||
+          "Unable to create a project from this issue.",
+      );
+    } finally {
+      setCreatingProjectId(null);
+    }
+  };
 
   return (
     <div className="space-y-8">
@@ -144,6 +163,11 @@ export const NodalDashboard = ({ currentPath, onNavigate }) => {
       </div>
 
       <div className="bg-white rounded-2xl border border-jh-earth-200 shadow-jh-soft overflow-hidden">
+        {projectError && (
+          <div className="m-4 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-800">
+            {projectError}
+          </div>
+        )}
         <div className="p-4 bg-jh-earth-50 border-b border-jh-earth-200 flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <button
@@ -240,9 +264,31 @@ export const NodalDashboard = ({ currentPath, onNavigate }) => {
                       <StatusBadge status={issue.status} />
                     </td>
                     <td className="px-4 py-3.5 whitespace-nowrap text-right">
-                      <Button variant="primary" size="sm" icon={Eye}>
-                        Verify Case
-                      </Button>
+                      <div className="flex justify-end gap-2">
+                        <Button variant="primary" size="sm" icon={Eye}>
+                          Verify Case
+                        </Button>
+                        {String(issue.status || "").toUpperCase() === "VERIFIED" &&
+                          !issue.sourceIssueId &&
+                          !projects.some(
+                            (project) =>
+                              String(project.sourceIssueId) === String(issue.id),
+                          ) && (
+                            <Button
+                              variant="secondary"
+                              size="sm"
+                              icon={School}
+                              disabled={creatingProjectId === issue.id}
+                              onClick={(event) =>
+                                handleCreateProject(event, issue)
+                              }
+                            >
+                              {creatingProjectId === issue.id
+                                ? "Creating..."
+                                : "Create Project"}
+                            </Button>
+                          )}
+                      </div>
                     </td>
                   </tr>
                 ))}

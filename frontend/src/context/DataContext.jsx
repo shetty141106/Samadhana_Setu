@@ -213,6 +213,19 @@ export const DataProvider = ({ children }) => {
     return updated;
   };
 
+  const createProjectFromIssue = async (issue) => {
+    if (!LIVE_API || !isAuthenticated)
+      throw new Error("Live API authentication is required.");
+    const created = await projectApi.createProject({
+      sourceIssueId: issue.id,
+      title: issue.title,
+      description: issue.description,
+      status: "PLANNED",
+    });
+    setProjects((prev) => [created, ...prev]);
+    return created;
+  };
+
   const updateTaskStatus = async (projectId, taskId, newStatus) => {
     const project = projects.find((p) => p.id === projectId);
     const task = project?.kanbanTasks?.find((t) => t.id === taskId);
@@ -331,6 +344,7 @@ export const DataProvider = ({ children }) => {
         likedIssueIds,
         isIssueLiked: (id) => likedIssueIds.has(String(id)),
         verifyIssue,
+        createProjectFromIssue,
         updateTaskStatus,
         addKanbanTask,
         sponsorProject,

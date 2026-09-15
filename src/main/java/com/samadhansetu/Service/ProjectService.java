@@ -25,6 +25,8 @@ public class ProjectService {
     @Transactional
     public ProjectResponseDto create(ProjectRequestDto r, Authentication authentication) {
         assertStaff(authentication);
+        if (r.getSourceIssueId() != null && projects.existsBySourceIssueId(r.getSourceIssueId()))
+            throw new IllegalArgumentException("A project already exists for this issue");
         Project p = Project.builder().title(r.getTitle()).description(r.getDescription())
                 .status(r.getStatus() == null ? ProjectStatus.PLANNED : r.getStatus()).build();
         if (r.getSourceIssueId() != null) {

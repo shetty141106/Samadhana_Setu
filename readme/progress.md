@@ -24,10 +24,9 @@ Citizen → Issue + exact GPS → Spring Boot → AI processing → Nodal verifi
 
 ### Newly confirmed blockers
 
-- [ ] Frontend issue priority values (`High`, `Medium`, etc.) must align with backend `IssuePriority` enum values (`HIGH`, `MEDIUM`, etc.).
-- [ ] Frontend sends `category`, but `IssueRequestDto` does not accept it.
-- [ ] Frontend sends `district`, but `IssueRequestDto` does not accept it and `Issue` has no district field.
-- [ ] `IssueResponseDto` does not expose category, district, or citizen name/email required by the Admin All Issues presentation.
+- [x] Frontend issue priority values align with backend `IssuePriority` enum values.
+- [x] Category, district, and remarks persist through the issue request, entity, response, and update flows.
+- [x] `IssueResponseDto` exposes category and district for the Admin All Issues presentation.
 - [ ] Cloudinary evidence configuration remains an external frontend deployment requirement when evidence files are uploaded.
 - [ ] Hosted runtime and full deployed end-to-end behavior still require verification.
 
@@ -58,6 +57,7 @@ Citizen → Issue + exact GPS → Spring Boot → AI processing → Nodal verifi
 - [x] Citizen registration UI converted to citizen-only self-registration.
 - [x] Admin All Issues page added and connected to operational issue listing API.
 - [x] Root Spring Boot path made publicly accessible for deployment sanity checking.
+- [x] Issue-to-project backend linkage, duplicate guard, and Nodal "Create Project" action implemented.
 
 ---
 
