@@ -16,7 +16,6 @@ import {
   BarChart3,
   UserCog,
   User,
-  Home,
   Award,
   Globe2,
   FileCheck2,
@@ -183,15 +182,6 @@ export const Sidebar = ({
               </button>
             );
           })}
-        </div>
-        <div className="p-3 border-t border-jh-earth-200 bg-white/50">
-          <button
-            onClick={() => handleNavClick("landing")}
-            className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold text-jh-green-900 bg-jh-green-100/60 hover:bg-jh-green-200"
-          >
-            <Home className="w-3.5 h-3.5" />
-            <span>Public Landing Page</span>
-          </button>
         </div>
       </aside>
     </>
