@@ -61,6 +61,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/notifications/**").authenticated()
                         .requestMatchers(HttpMethod.PUT, "/api/notifications/**").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/api/notifications/**").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/projects/public").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/projects/**").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/projects/**").hasAnyRole("ADMIN", "NODAL_OFFICER", "FACULTY")
                         .requestMatchers(HttpMethod.PUT, "/api/projects/**").hasAnyRole("ADMIN", "NODAL_OFFICER", "FACULTY")

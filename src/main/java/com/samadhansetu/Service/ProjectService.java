@@ -57,6 +57,10 @@ public class ProjectService {
         return projects.findAll().stream().map(this::map).toList();
     }
 
+    public List<ProjectResponseDto> publicAll() {
+        return projects.findAll().stream().map(this::mapPublic).toList();
+    }
+
     public List<ProjectResponseDto> byUniversity(Long id) {
         return projects.findByUniversityId(id).stream().map(this::map).toList();
     }
@@ -250,6 +254,16 @@ public class ProjectService {
                 .sourceIssueId(p.getSourceIssueId()).teamSize(members.findByProjectId(p.getId()).size())
                 .createdById(p.getCreatedBy() == null ? null : p.getCreatedBy().getId())
                 .createdByName(p.getCreatedBy() == null ? null : p.getCreatedBy().getName())
+                .milestoneCount(milestones.findByProjectId(p.getId()).size())
+                .taskCount(tasks.findByProjectId(p.getId()).size()).build();
+    }
+
+    private ProjectResponseDto mapPublic(Project p) {
+        return ProjectResponseDto.builder().id(p.getId()).title(p.getTitle())
+                .description(p.getDescription()).status(p.getStatus())
+                .universityId(p.getUniversity() == null ? null : p.getUniversity().getId())
+                .universityName(p.getUniversity() == null ? null : p.getUniversity().getName())
+                .teamSize(members.findByProjectId(p.getId()).size())
                 .milestoneCount(milestones.findByProjectId(p.getId()).size())
                 .taskCount(tasks.findByProjectId(p.getId()).size()).build();
     }

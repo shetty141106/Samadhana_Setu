@@ -20,6 +20,8 @@ const projectToUi = (p) => ({
 });
 export const listProjects = async () =>
   (await apiClient.get("/api/projects")).map(projectToUi);
+export const listPublicProjects = async () =>
+  (await apiClient.get("/api/projects/public")).map(projectToUi);
 export const getProject = async (id) =>
   projectToUi(await apiClient.get(`/api/projects/${id}`));
 export const listProjectsByUniversity = async (id) =>
@@ -78,6 +80,7 @@ export const listProjectsWithDetails = async () =>
   Promise.all((await listProjects()).map(hydrateProject));
 export const projectApi = {
   listProjects,
+  listPublicProjects,
   getProject,
   listProjectsByUniversity,
   listProjectsByStatus,

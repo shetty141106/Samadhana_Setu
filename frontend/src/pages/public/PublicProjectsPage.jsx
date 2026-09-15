@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { ArrowRight, Building2, GraduationCap, Target } from "lucide-react";
+import { ArrowRight, Building2, GraduationCap } from "lucide-react";
 import { projectApi } from "../../api/project.api";
 import { Button } from "../../components/ui/Button";
 
@@ -11,7 +11,7 @@ export const PublicProjectsPage = ({ onNavigate }) => {
   useEffect(() => {
     let cancelled = false;
     projectApi
-      .listProjects()
+      .listPublicProjects()
       .then((items) => {
         if (!cancelled) setProjects(Array.isArray(items) ? items : []);
       })
@@ -61,93 +61,49 @@ export const PublicProjectsPage = ({ onNavigate }) => {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {projects.map((project) => {
-              const total = Number(project.budgetTotal) || 0;
-              const funded = Number(project.budgetFunded) || 0;
-              const fundingPercent =
-                total > 0
-                  ? Math.min(100, Math.round((funded / total) * 100))
-                  : 0;
-              return (
+            {projects.map((project) => (
                 <article
                   key={project.id}
                   className="bg-white rounded-2xl border border-jh-earth-200 shadow-jh-soft p-5 flex flex-col"
                 >
                   <div className="flex items-center justify-between gap-2 mb-3">
                     <span className="text-[11px] font-bold uppercase tracking-wider text-jh-terracotta-700 bg-jh-terracotta-50 px-2 py-0.5 rounded-md border border-jh-terracotta-200">
-                      {project.domain || "General"}
+                      R&D Project
                     </span>
                     <span className="text-xs font-bold text-jh-green-900 bg-jh-green-100 px-2.5 py-0.5 rounded-full">
-                      {project.stage || project.status || "Planned"}
+                      {String(project.status || "PLANNED").replaceAll("_", " ")}
                     </span>
                   </div>
 
                   <h2 className="text-base font-bold text-jh-green-950 mb-2">
                     {project.title || "Untitled Project"}
                   </h2>
-
-                  {project.sdgGoal && (
-                    <div className="flex items-center gap-1.5 text-xs text-jh-earth-700 mb-3">
-                      <Target className="w-3.5 h-3.5 text-jh-green-700" />
-                      <span>{project.sdgGoal}</span>
-                    </div>
-                  )}
+                  <p className="text-xs text-jh-earth-700 line-clamp-3 mb-3">
+                    {project.description || "No project description provided."}
+                  </p>
 
                   <div className="space-y-2 text-xs text-jh-earth-800 bg-jh-earth-50 p-3 rounded-xl border border-jh-earth-200 mb-4">
                     <div className="flex items-center gap-2">
                       <GraduationCap className="w-4 h-4 text-jh-green-800" />
                       <span className="truncate">
-                        {project.university || "University not specified"}
+                        {project.universityName || "University not specified"}
                       </span>
                     </div>
-                    {project.facultyMentor && (
-                      <div className="flex items-center gap-2">
-                        <Building2 className="w-4 h-4 text-jh-terracotta-600" />
-                        <span className="truncate">
-                          Mentor: {project.facultyMentor}
-                        </span>
-                      </div>
-                    )}
+                    <div className="flex items-center gap-2">
+                      <Building2 className="w-4 h-4 text-jh-terracotta-600" />
+                      <span>
+                        {project.teamSize || 0} team members ·{" "}
+                        {project.milestoneCount || 0} milestones ·{" "}
+                        {project.taskCount || 0} tasks
+                      </span>
+                    </div>
                   </div>
 
-                  <div className="mt-auto space-y-2">
-                    <div className="flex justify-between text-xs">
-                      <span className="text-jh-earth-600">
-                        Research progress
-                      </span>
-                      <strong className="text-jh-green-900">
-                        {Number(project.progressPercentage) || 0}%
-                      </strong>
-                    </div>
-                    <div className="h-2 bg-jh-earth-200 rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-jh-green-700 rounded-full"
-                        style={{
-                          width: `${Math.min(100, Number(project.progressPercentage) || 0)}%`,
-                        }}
-                      />
-                    </div>
-                    <div className="pt-3 border-t border-jh-earth-200 grid grid-cols-2 gap-2 text-xs">
-                      <div>
-                        <span className="text-[10px] uppercase text-jh-earth-500 block">
-                          Budget
-                        </span>
-                        <strong>₹ {(total / 100000).toFixed(2)} Lakh</strong>
-                      </div>
-                      <div>
-                        <span className="text-[10px] uppercase text-jh-earth-500 block">
-                          CSR Backing
-                        </span>
-                        <strong className="text-jh-terracotta-700">
-                          ₹ {(funded / 100000).toFixed(2)} Lakh (
-                          {fundingPercent}%)
-                        </strong>
-                      </div>
-                    </div>
+                  <div className="mt-auto pt-3 border-t border-jh-earth-200 text-[11px] text-jh-earth-500">
+                    View-only project summary
                   </div>
                 </article>
-              );
-            })}
+            ))}
           </div>
         )}
 
