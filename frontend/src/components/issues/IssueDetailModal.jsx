@@ -3,6 +3,7 @@ import { useAuth } from "../../context/AuthContext";
 import { useData } from "../../context/DataContext";
 import { ROLES } from "../../utils/constants";
 import { industryApi } from "../../api/industry.api";
+import { universityApi } from "../../api/university.api";
 import { Modal } from "../ui/Modal";
 import { StatusBadge } from "../ui/StatusBadge";
 import { Button } from "../ui/Button";
@@ -33,7 +34,8 @@ export const IssueDetailModal = ({ issue, isOpen, onClose, onNavigate }) => {
   const [triagePriority, setTriagePriority] = useState(
     issue?.priority || "High",
   );
-  const [assignedUniv, setAssignedUniv] = useState("IIT (ISM) Dhanbad");
+  const [assignedUniv, setAssignedUniv] = useState("");
+  const [universities, setUniversities] = useState([]);
   const [nodalNote, setNodalNote] = useState("");
   const [isUpdating, setIsUpdating] = useState(false);
   const [sponsorAmount, setSponsorAmount] = useState("500000");
@@ -52,6 +54,22 @@ export const IssueDetailModal = ({ issue, isOpen, onClose, onNavigate }) => {
       })
       .catch(() => {
         if (!cancelled) setIndustryOrganizations([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [isOpen, currentRole, liveApi]);
+
+  useEffect(() => {
+    if (!isOpen || currentRole !== ROLES.NODAL || !liveApi) return;
+    let cancelled = false;
+    universityApi
+      .listUniversities()
+      .then((items) => {
+        if (!cancelled) setUniversities(Array.isArray(items) ? items : []);
+      })
+      .catch(() => {
+        if (!cancelled) setUniversities([]);
       });
     return () => {
       cancelled = true;
@@ -363,21 +381,13 @@ export const IssueDetailModal = ({ issue, isOpen, onClose, onNavigate }) => {
                     onChange={(e) => setAssignedUniv(e.target.value)}
                     className="w-full text-xs p-2 bg-white border border-jh-green-300 rounded-lg"
                   >
-                    <option value="IIT (ISM) Dhanbad">
-                      IIT (ISM) Dhanbad (Mining & Water)
-                    </option>
-                    <option value="BIT Mesra">
-                      BIT Mesra (Civil & Cleantech)
-                    </option>
-                    <option value="NIT Jamshedpur">
-                      NIT Jamshedpur (Solar & Microgrids)
-                    </option>
-                    <option value="Birsa Agricultural University">
-                      Birsa Agricultural University (Forest & Agri)
-                    </option>
-                    <option value="Ranchi University">
-                      Ranchi University (Tribal Tech)
-                    </option>
+                    <option value="">Select a university or center</option>
+                    {universities.map((university) => (
+                      <option key={university.id} value={university.name}>
+                        {university.name}
+                        {university.location ? ` (${university.location})` : ""}
+                      </option>
+                    ))}
                   </select>
                 </div>
               </div>

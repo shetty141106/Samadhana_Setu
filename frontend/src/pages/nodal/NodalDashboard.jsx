@@ -37,10 +37,15 @@ export const NodalDashboard = ({ currentPath, onNavigate }) => {
   );
   const verifiedIssues = issues.filter(
     (i) =>
-      !["SUBMITTED", "REJECTED"].includes(String(i.status || "").toUpperCase()),
+      ["IN_RD"].includes(String(i.status || "").toUpperCase()),
   );
   const criticalCount = issues.filter(
-    (i) => String(i.priority || "").toUpperCase() === "CRITICAL",
+    (i) =>
+      String(i.priority || "").toUpperCase() === "CRITICAL" &&
+      String(i.status || "").toUpperCase() !== "REJECTED",
+  ).length;
+  const rejectedCount = issues.filter(
+    (i) => String(i.status || "").toUpperCase() === "REJECTED",
   ).length;
 
   if (currentPath === "area-map") {
@@ -81,7 +86,7 @@ export const NodalDashboard = ({ currentPath, onNavigate }) => {
     setCreatingProjectId(issue.id);
     try {
       await createProjectFromIssue(issue);
-      onNavigate("browse-projects");
+      onNavigate("created-projects");
     } catch (error) {
       setProjectError(
         error?.data?.message ||
@@ -123,7 +128,7 @@ export const NodalDashboard = ({ currentPath, onNavigate }) => {
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         <StatCard
           title="Awaiting Verification"
           value={pendingIssues.length}
@@ -160,6 +165,13 @@ export const NodalDashboard = ({ currentPath, onNavigate }) => {
           icon={CheckCircle2}
           color="blue"
         />
+        <StatCard
+          title="Rejected Cases"
+          value={rejectedCount}
+          subtitle="Excluded from active metrics"
+          icon={AlertTriangle}
+          color="terracotta"
+        />
       </div>
 
       <div className="bg-white rounded-2xl border border-jh-earth-200 shadow-jh-soft overflow-hidden">
@@ -170,26 +182,41 @@ export const NodalDashboard = ({ currentPath, onNavigate }) => {
         )}
         <div className="p-4 bg-jh-earth-50 border-b border-jh-earth-200 flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <button
-              onClick={() => setActiveTab("pending")}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                activeTab === "pending"
-                  ? "bg-jh-green-900 text-white shadow-xs"
-                  : "text-jh-earth-700 hover:bg-jh-earth-200"
-              }`}
-            >
-              Pending Verification ({pendingIssues.length})
-            </button>
-            <button
-              onClick={() => setActiveTab("verified")}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                activeTab === "verified"
-                  ? "bg-jh-green-900 text-white shadow-xs"
-                  : "text-jh-earth-700 hover:bg-jh-earth-200"
-              }`}
-            >
-              Active / In R&D ({verifiedIssues.length})
-            </button>
+            {currentPath !== "verify-issues" &&
+              currentPath !== "assigned-issues" && (
+                <>
+                  <button
+                    onClick={() => setActiveTab("pending")}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                      activeTab === "pending"
+                        ? "bg-jh-green-900 text-white shadow-xs"
+                        : "text-jh-earth-700 hover:bg-jh-earth-200"
+                    }`}
+                  >
+                    Pending Verification ({pendingIssues.length})
+                  </button>
+                  <button
+                    onClick={() => setActiveTab("verified")}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                      activeTab === "verified"
+                        ? "bg-jh-green-900 text-white shadow-xs"
+                        : "text-jh-earth-700 hover:bg-jh-earth-200"
+                    }`}
+                  >
+                    Assigned to R&D ({verifiedIssues.length})
+                  </button>
+                </>
+              )}
+            {currentPath === "verify-issues" && (
+              <span className="px-3 py-1.5 rounded-xl text-xs font-bold bg-jh-green-900 text-white">
+                Pending Verification ({pendingIssues.length})
+              </span>
+            )}
+            {currentPath === "assigned-issues" && (
+              <span className="px-3 py-1.5 rounded-xl text-xs font-bold bg-jh-green-900 text-white">
+                Assigned to R&D ({verifiedIssues.length})
+              </span>
+            )}
           </div>
           <span className="text-xs text-jh-earth-600 font-medium">
             Click any row to open the verification and assignment modal

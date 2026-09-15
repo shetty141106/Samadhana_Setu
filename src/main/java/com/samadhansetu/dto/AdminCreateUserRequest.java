@@ -20,4 +20,6 @@ public class AdminCreateUserRequest {
 
     @NotBlank(message = "Role is required")
     private String role;
+
+    private String assignedArea;
 }

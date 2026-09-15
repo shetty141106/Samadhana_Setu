@@ -11,14 +11,23 @@ import { JHARKHAND_DISTRICTS } from "../../utils/constants";
 import { MapPin, Eye } from "lucide-react";
 
 // Custom Pin Icons for Leaflet
-const createPinIcon = (category, priority) => {
-  const normalizedPriority = String(priority ?? "")
+const createPinIcon = (status) => {
+  const normalizedStatus = String(status ?? "")
     .trim()
     .toLowerCase();
-  const isHigh =
-    normalizedPriority === "critical" || normalizedPriority === "high";
-  const color = isHigh ? "#C45C26" : "#0B3D2E";
-  const border = "#D4AF37";
+  const colorByStatus = {
+    submitted: "#D97706",
+    reported: "#D97706",
+    verified: "#2563EB",
+    assigned: "#7C3AED",
+    in_rd: "#7C3AED",
+    in_progress: "#7C3AED",
+    csr_funded: "#EA580C",
+    resolved: "#15803D",
+    rejected: "#6B7280",
+  };
+  const color = colorByStatus[normalizedStatus] || "#475569";
+  const border = normalizedStatus === "rejected" ? "#374151" : "#FFFFFF";
 
   return L.divIcon({
     className: "custom-leaflet-pin",
@@ -97,7 +106,6 @@ export const IssueMap = ({
   onDistrictChange,
   displayMode = "pins",
 }) => {
-  const [activeCategory, setActiveCategory] = useState("all");
   const [mapCenter, setMapCenter] = useState(JHARKHAND_MAP_CENTER);
   const [zoomLevel, setZoomLevel] = useState(JHARKHAND_DEFAULT_ZOOM);
 
@@ -105,26 +113,16 @@ export const IssueMap = ({
   const normalizedSelectedDistrict = String(selectedDistrict ?? "all")
     .trim()
     .toLowerCase();
-  const normalizedActiveCategory = String(activeCategory ?? "all")
-    .trim()
-    .toLowerCase();
-
   const filteredIssues = safeIssues.filter((issue) => {
     if (!issue || typeof issue !== "object") return false;
 
-    const issueCategory = String(issue.category ?? "")
-      .trim()
-      .toLowerCase();
     const issueDistrict = String(resolveDistrict(issue))
       .trim()
       .toLowerCase();
-    const matchCat =
-      normalizedActiveCategory === "all" ||
-      issueCategory === normalizedActiveCategory;
     const matchDist =
       normalizedSelectedDistrict === "all" ||
       issueDistrict.includes(normalizedSelectedDistrict);
-    return matchCat && matchDist;
+    return matchDist;
   });
 
   const handleDistrictFilter = (district) => {
@@ -173,19 +171,6 @@ export const IssueMap = ({
             ))}
           </select>
 
-          <select
-            value={activeCategory}
-            onChange={(e) => setActiveCategory(e.target.value)}
-            className="min-w-0 flex-1 max-w-full text-xs bg-white border border-jh-earth-200 rounded-lg px-2.5 py-1.5 font-medium text-jh-charcoal focus:outline-none focus:ring-2 focus:ring-jh-green-700"
-          >
-            <option value="all">All Domains</option>
-            <option value="water">Water & Rivers</option>
-            <option value="forest">Forestry & Ecology</option>
-            <option value="mining">Mining Reclamation</option>
-            <option value="solar">Solar Microgrids</option>
-            <option value="sanitation">Civic Sanitation</option>
-            <option value="agritech">Tribal AgriTech</option>
-          </select>
         </div>
       </div>
 
@@ -217,7 +202,7 @@ export const IssueMap = ({
                 icon={
                   displayMode === "heatmap"
                     ? createHeatmapDotIcon(issue.priority)
-                    : createPinIcon(issue.category, issue.priority)
+                    : createPinIcon(issue.status)
                 }
                 eventHandlers={
                   displayMode === "pins"

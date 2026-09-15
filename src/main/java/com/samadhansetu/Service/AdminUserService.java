@@ -2,10 +2,12 @@ package com.samadhansetu.Service;
 
 import com.samadhansetu.Repository.RoleRepository;
 import com.samadhansetu.Repository.UserRepository;
+import com.samadhansetu.Repository.NodalOfficerRepository;
 import com.samadhansetu.dto.AdminCreateUserRequest;
 import com.samadhansetu.dto.AdminUserResponseDto;
 import com.samadhansetu.model.entity.Role;
 import com.samadhansetu.model.entity.User;
+import com.samadhansetu.model.entity.NodalOfficer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -23,6 +25,7 @@ public class AdminUserService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
+    private final NodalOfficerRepository nodalOfficerRepository;
 
     public List<AdminUserResponseDto> listUsers() {
         return userRepository.findAll().stream().map(this::toDto).toList();
@@ -51,6 +54,12 @@ public class AdminUserService {
                 .password(passwordEncoder.encode(request.getPassword()))
                 .role(role)
                 .build());
+        if ("NODAL_OFFICER".equals(roleName)) {
+            nodalOfficerRepository.save(NodalOfficer.builder()
+                    .user(saved)
+                    .assignedArea(request.getAssignedArea())
+                    .build());
+        }
 
         return toDto(saved);
     }
@@ -68,11 +77,15 @@ public class AdminUserService {
     }
 
     private AdminUserResponseDto toDto(User user) {
+        String assignedArea = nodalOfficerRepository.findByUserId(user.getId())
+                .map(NodalOfficer::getAssignedArea)
+                .orElse(null);
         return AdminUserResponseDto.builder()
                 .id(user.getId())
                 .name(user.getName())
                 .email(user.getEmail())
                 .role(user.getRole() == null ? null : user.getRole().getName())
+                .assignedArea(assignedArea)
                 .build();
     }
 }

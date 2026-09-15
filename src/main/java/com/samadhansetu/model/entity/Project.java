@@ -23,6 +23,8 @@ public class Project {
     private ProjectStatus status;
     private Long sourceIssueId;
     @ManyToOne
+    private User createdBy;
+    @ManyToOne
     private University university;
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL)
     @Builder.Default

@@ -28,7 +28,9 @@ public class ProjectService {
         if (r.getSourceIssueId() != null && projects.existsBySourceIssueId(r.getSourceIssueId()))
             throw new IllegalArgumentException("A project already exists for this issue");
         Project p = Project.builder().title(r.getTitle()).description(r.getDescription())
-                .status(r.getStatus() == null ? ProjectStatus.PLANNED : r.getStatus()).build();
+                .status(r.getStatus() == null ? ProjectStatus.PLANNED : r.getStatus())
+                .createdBy(hasRole(authentication, "NODAL_OFFICER") ? currentUser(authentication) : null)
+                .build();
         if (r.getSourceIssueId() != null) {
             Issue sourceIssue = issues.findById(r.getSourceIssueId())
                     .orElseThrow(() -> new IllegalArgumentException("Issue not found: " + r.getSourceIssueId()));
@@ -188,6 +190,13 @@ public class ProjectService {
 
     private void assertProjectMutationAccess(Project project, Authentication authentication) {
         assertStaff(authentication);
+        if (project.getCreatedBy() != null) {
+            User current = currentUser(authentication);
+            if (!current.getId().equals(project.getCreatedBy().getId()) ||
+                    !hasRole(authentication, "NODAL_OFFICER"))
+                throw new AccessDeniedException("Only the creating Nodal Officer can modify this project");
+            return;
+        }
         if (hasRole(authentication, "ADMIN") || hasRole(authentication, "NODAL_OFFICER"))
             return;
         User current = currentUser(authentication);
@@ -239,6 +248,8 @@ public class ProjectService {
                 .status(p.getStatus()).universityId(p.getUniversity() == null ? null : p.getUniversity().getId())
                 .universityName(p.getUniversity() == null ? null : p.getUniversity().getName())
                 .sourceIssueId(p.getSourceIssueId()).teamSize(members.findByProjectId(p.getId()).size())
+                .createdById(p.getCreatedBy() == null ? null : p.getCreatedBy().getId())
+                .createdByName(p.getCreatedBy() == null ? null : p.getCreatedBy().getName())
                 .milestoneCount(milestones.findByProjectId(p.getId()).size())
                 .taskCount(tasks.findByProjectId(p.getId()).size()).build();
     }

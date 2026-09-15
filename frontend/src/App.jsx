@@ -14,6 +14,7 @@ import { IndustryDashboard } from "./pages/industry/IndustryDashboard";
 import { AdminDashboard } from "./pages/admin/AdminDashboard";
 import { AdminIssuesPage } from "./pages/admin/AdminIssuesPage";
 import { ProfilePage } from "./pages/shared/ProfilePage";
+import { NodalProjectsPage } from "./pages/nodal/NodalProjectsPage";
 import { ROLES } from "./utils/constants";
 
 const ROLE_PATHS = Object.values(ROLES);
@@ -102,6 +103,8 @@ function MainAppContent() {
           <CitizenDashboard currentPath={currentPath} onNavigate={navigate} />
         );
       case ROLES.NODAL:
+        if (currentPath === "created-projects")
+          return <NodalProjectsPage />;
         return (
           <NodalDashboard currentPath={currentPath} onNavigate={navigate} />
         );

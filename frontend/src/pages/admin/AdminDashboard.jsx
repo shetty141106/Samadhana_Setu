@@ -16,6 +16,7 @@ import {
   Search,
   X,
 } from "lucide-react";
+import { JHARKHAND_DISTRICTS } from "../../utils/constants";
 import {
   ResponsiveContainer,
   BarChart,
@@ -66,6 +67,7 @@ export const AdminDashboard = ({ currentPath }) => {
     email: "",
     password: "",
     role: "NODAL_OFFICER",
+    assignedArea: "",
   });
   const [savingUser, setSavingUser] = useState(false);
 
@@ -369,13 +371,14 @@ export const AdminDashboard = ({ currentPath }) => {
                   <th className="p-3">Name</th>
                   <th className="p-3">Email</th>
                   <th className="p-3">Role</th>
+                  <th className="p-3">District</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-jh-earth-100">
                 {usersLoading ? (
                   <tr>
                     <td
-                      colSpan="3"
+                      colSpan="4"
                       className="p-6 text-center text-jh-earth-500"
                     >
                       Loading users…
@@ -391,12 +394,51 @@ export const AdminDashboard = ({ currentPath }) => {
                       <td className="p-3 uppercase font-semibold text-jh-green-900">
                         {formatLabel(u.role)}
                       </td>
+                      <td className="p-3">
+                        {u.role === "NODAL_OFFICER" ? (
+                          <select
+                            value={u.assignedArea || ""}
+                            onChange={async (event) => {
+                              try {
+                                await usersApi.updateDistrict(
+                                  u.id,
+                                  event.target.value,
+                                );
+                                setUsers((prev) =>
+                                  prev.map((item) =>
+                                    item.id === u.id
+                                      ? {
+                                          ...item,
+                                          assignedArea: event.target.value,
+                                        }
+                                      : item,
+                                  ),
+                                );
+                              } catch (error) {
+                                setUserError(
+                                  error.message || "Unable to assign district.",
+                                );
+                              }
+                            }}
+                            className="px-2 py-1 text-xs border rounded-lg"
+                          >
+                            <option value="">Unassigned</option>
+                            {JHARKHAND_DISTRICTS.map((district) => (
+                              <option key={district} value={district}>
+                                {district}
+                              </option>
+                            ))}
+                          </select>
+                        ) : (
+                          "—"
+                        )}
+                      </td>
                     </tr>
                   ))
                 ) : (
                   <tr>
                     <td
-                      colSpan="3"
+                      colSpan="4"
                       className="p-6 text-center text-jh-earth-500"
                     >
                       No users found.
@@ -460,6 +502,22 @@ export const AdminDashboard = ({ currentPath }) => {
                       </option>
                     ))}
                   </select>
+                  {form.role === "NODAL_OFFICER" && (
+                    <select
+                      value={form.assignedArea}
+                      onChange={(e) =>
+                        setForm({ ...form, assignedArea: e.target.value })
+                      }
+                      className="w-full px-3 py-2 text-sm border rounded-xl"
+                    >
+                      <option value="">Assign district (optional)</option>
+                      {JHARKHAND_DISTRICTS.map((district) => (
+                        <option key={district} value={district}>
+                          {district}
+                        </option>
+                      ))}
+                    </select>
+                  )}
                 </div>
                 <button
                   disabled={savingUser}

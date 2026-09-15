@@ -16,6 +16,8 @@ public class ProjectResponseDto {
     private Long universityId;
     private String universityName;
     private Long sourceIssueId;
+    private Long createdById;
+    private String createdByName;
     private long teamSize;
     private long milestoneCount;
     private long taskCount;

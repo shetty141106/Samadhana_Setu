@@ -54,6 +54,7 @@ export const Sidebar = ({
           },
           { id: "area-map", label: "District GIS Map", icon: Map },
           { id: "assigned-issues", label: "Assigned to R&D", icon: FileCheck2 },
+          { id: "created-projects", label: "Created Projects", icon: ClipboardList },
           { id: "profile", label: "Officer Profile", icon: User },
         ];
       case ROLES.FACULTY:

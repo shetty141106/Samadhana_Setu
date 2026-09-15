@@ -236,6 +236,14 @@ export const DataProvider = ({ children }) => {
     return created;
   };
 
+  const updateProject = async (projectId, payload) => {
+    const updated = await projectApi.updateProject(projectId, payload);
+    setProjects((prev) =>
+      prev.map((project) => (project.id === projectId ? { ...project, ...updated } : project)),
+    );
+    return updated;
+  };
+
   const updateTaskStatus = async (projectId, taskId, newStatus) => {
     const project = projects.find((p) => p.id === projectId);
     const task = project?.kanbanTasks?.find((t) => t.id === taskId);
@@ -356,6 +364,7 @@ export const DataProvider = ({ children }) => {
         isIssueLiked: (id) => likedIssueIds.has(String(id)),
         verifyIssue,
         createProjectFromIssue,
+        updateProject,
         updateTaskStatus,
         addKanbanTask,
         sponsorProject,
