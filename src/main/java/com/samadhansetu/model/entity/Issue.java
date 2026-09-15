@@ -6,21 +6,35 @@ import jakarta.persistence.*;
 import lombok.*;
 import java.util.*;
 
-@Entity @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
+@Entity
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Issue {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY) private Long id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
     private String title;
-    @Column(columnDefinition="TEXT") private String description;
+    @Column(columnDefinition = "TEXT")
+    private String description;
     private String location;
     private String latitude;
     private String longitude;
     private String category;
-    @Enumerated(EnumType.STRING) private IssueStatus status;
-    @Enumerated(EnumType.STRING) private IssuePriority priority;
-    @ManyToOne private Citizen reportedBy;
-    @OneToMany(mappedBy="issue", cascade=CascadeType.ALL, orphanRemoval=true)
-    @Builder.Default private List<EvidenceMedia> evidenceMedia = new ArrayList<>();
-    @OneToMany(mappedBy="issue", cascade=CascadeType.ALL, orphanRemoval=true)
+    private String district;
+    @Enumerated(EnumType.STRING)
+    private IssueStatus status;
+    @Enumerated(EnumType.STRING)
+    private IssuePriority priority;
+    @ManyToOne
+    private Citizen reportedBy;
+    @OneToMany(mappedBy = "issue", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<EvidenceMedia> evidenceMedia = new ArrayList<>();
+    @OneToMany(mappedBy = "issue", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("ranAt DESC")
-    @Builder.Default private List<AiAnalysis> aiAnalyses = new ArrayList<>();
+    @Builder.Default
+    private List<AiAnalysis> aiAnalyses = new ArrayList<>();
 }

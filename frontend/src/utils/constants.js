@@ -97,6 +97,13 @@ export const ISSUE_STATUSES = {
   },
 };
 
+export const ISSUE_PRIORITIES = {
+  CRITICAL: "CRITICAL",
+  HIGH: "HIGH",
+  MEDIUM: "MEDIUM",
+  LOW: "LOW",
+};
+
 export const ISSUE_CATEGORIES = [
   {
     id: "water",

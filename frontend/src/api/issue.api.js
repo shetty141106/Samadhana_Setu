@@ -36,6 +36,8 @@ export const mapIssueToUiModel = (issue = {}) => {
 
   return {
     ...issue,
+    category: issue.category || "",
+    district: issue.district || "",
     status: statusToUi[issue.status] || issue.status,
     uiStatus: statusToUi[issue.status] || issue.status,
     priority: priorityToUi(issue.priority),
@@ -70,6 +72,8 @@ export const mapIssueToApiModel = (issue = {}) => ({
       : issue.coordinates?.lng != null
         ? String(issue.coordinates.lng)
         : undefined,
+  category: issue.category,
+  district: issue.district,
   priority: priorityToBackend(issue.priority),
   evidenceMedia: issue.evidenceMedia || [],
 });

@@ -12,6 +12,8 @@ public class IssueResponseDto {
     private String location;
     private String latitude;
     private String longitude;
+    private String category;
+    private String district;
     private IssueStatus status;
     private IssuePriority priority;
     private Long citizenId;

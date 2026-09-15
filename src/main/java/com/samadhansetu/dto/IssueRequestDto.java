@@ -21,6 +21,8 @@ public class IssueRequestDto {
     private String location;
     private String latitude;
     private String longitude;
+    private String category;
+    private String district;
     private IssuePriority priority;
     private List<EvidenceMediaDto> evidenceMedia;
 }

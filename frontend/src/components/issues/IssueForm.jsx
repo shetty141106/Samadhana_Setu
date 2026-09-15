@@ -1,7 +1,7 @@
 import React, { useRef, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { useData } from "../../context/DataContext";
-import { ISSUE_CATEGORIES, JHARKHAND_DISTRICTS } from "../../utils/constants";
+import {ISSUE_CATEGORIES, ISSUE_PRIORITIES, JHARKHAND_DISTRICTS } from "../../utils/constants";
 import { Button } from "../ui/Button";
 import { LocationPicker } from "../maps/LocationPicker";
 import { uploadImage } from "../../api/media.api";
@@ -27,7 +27,7 @@ export const IssueForm = ({ onSuccess, onCancel }) => {
     district: "",
     locationName: "",
     description: "",
-    priority: "High",
+    priority: ISSUE_PRIORITIES.HIGH,
   });
   const [selectedCoordinates, setSelectedCoordinates] = useState(null);
   const [mediaItems, setMediaItems] = useState([]);
@@ -272,10 +272,14 @@ export const IssueForm = ({ onSuccess, onCancel }) => {
             }
             className="w-full px-4 py-2.5 text-sm bg-jh-earth-50 border border-jh-earth-300 rounded-xl"
           >
-            <option value="Critical">Critical (Immediate Hazard)</option>
-            <option value="High">High (Impacting Community)</option>
-            <option value="Medium">Medium</option>
-            <option value="Low">Low</option>
+            <option value={ISSUE_PRIORITIES.CRITICAL}>
+              Critical (Immediate Hazard)
+            </option>
+            <option value={ISSUE_PRIORITIES.HIGH}>
+              High (Impacting Community)
+            </option>
+            <option value={ISSUE_PRIORITIES.MEDIUM}>Medium</option>
+            <option value={ISSUE_PRIORITIES.LOW}>Low</option>
           </select>
         </div>
       </div>
