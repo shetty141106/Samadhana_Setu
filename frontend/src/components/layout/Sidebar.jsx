@@ -6,7 +6,6 @@ import {
   FilePlus2,
   ListOrdered,
   Map,
-  ShieldCheck,
   GraduationCap,
   KanbanSquare,
   CheckSquare,
@@ -46,7 +45,6 @@ export const Sidebar = ({
       case ROLES.NODAL:
         return [
           { id: "nodal", label: "Verification Desk", icon: LayoutDashboard },
-          { id: "nodal", label: "Verification Desk", icon: ShieldCheck },
           { id: "area-map", label: "District GIS Map", icon: Map },
           { id: "created-projects", label: "Created Projects", icon: ClipboardList },
           { id: "profile", label: "Officer Profile", icon: User },

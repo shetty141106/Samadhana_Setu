@@ -51,7 +51,7 @@ export const NodalProjectsPage = () => {
         </p>
       </div>
       {error && <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-xs text-red-800">{error}</div>}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         <div className="rounded-2xl border border-jh-earth-200 bg-white p-4">
           <p className="text-[10px] uppercase font-bold text-jh-earth-600">Total Created</p>
           <p className="text-2xl font-bold text-jh-green-950">{createdProjects.length}</p>
@@ -65,7 +65,19 @@ export const NodalProjectsPage = () => {
         <div className="rounded-2xl border border-jh-earth-200 bg-white p-4">
           <p className="text-[10px] uppercase font-bold text-jh-earth-600">Active</p>
           <p className="text-2xl font-bold text-jh-green-950">
-            {createdProjects.filter((p) => !["PLANNED", "COMPLETED"].includes(String(p.status).toUpperCase())).length}
+            {createdProjects.filter((p) => String(p.status).toUpperCase() === "ACTIVE").length}
+          </p>
+        </div>
+        <div className="rounded-2xl border border-jh-earth-200 bg-white p-4">
+          <p className="text-[10px] uppercase font-bold text-jh-earth-600">Completed</p>
+          <p className="text-2xl font-bold text-jh-green-950">
+            {createdProjects.filter((p) => String(p.status).toUpperCase() === "COMPLETED").length}
+          </p>
+        </div>
+        <div className="rounded-2xl border border-jh-earth-200 bg-white p-4">
+          <p className="text-[10px] uppercase font-bold text-jh-earth-600">On Hold</p>
+          <p className="text-2xl font-bold text-jh-green-950">
+            {createdProjects.filter((p) => String(p.status).toUpperCase() === "ON_HOLD").length}
           </p>
         </div>
       </div>
