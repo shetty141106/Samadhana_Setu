@@ -288,7 +288,7 @@ export const LandingPage = ({ onNavigate }) => {
             <Button
               variant="secondary"
               size="lg"
-              onClick={() => handleLaunchRole(ROLES.CITIZEN, "report-issue")}
+              onClick={() => onNavigate("login")}
             >
               Report an Issue Now
             </Button>

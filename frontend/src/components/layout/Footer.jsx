@@ -122,7 +122,7 @@ export const Footer = ({ onNavigate }) => {
             <ul className="space-y-2 text-xs text-jh-earth-300">
               <li>
                 <button
-                  onClick={() => onNavigate && onNavigate("report-issue")}
+                  onClick={() => onNavigate && onNavigate("login")}
                   className="hover:text-jh-terracotta-400 transition-colors"
                 >
                   Report an Issue
