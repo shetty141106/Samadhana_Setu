@@ -20,6 +20,11 @@
   }
 }
 
+/* Hide the removed institutional / CSR alliance section. */
+#universities {
+  display: none !important;
+}
+
 /* Sohrai & Kohbar Tribal Geometric Pattern Backgrounds */
 .sohrai-pattern {
   background-color: #F8F5EE;
