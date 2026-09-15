@@ -20,12 +20,7 @@ export const CitizenDashboard = ({ currentPath, onNavigate }) => {
   const { currentUser } = useAuth();
   const { issues, communityIssues } = useData();
   const [selectedIssue, setSelectedIssue] = useState(null);
-
-  const myIssues = issues.filter(
-    (i) =>
-      String(i.submittedBy || "").includes(currentUser.name) ||
-      i.district === currentUser.district,
-  );
+  const myIssues = issues;
   const resolvedCount = issues.filter(
     (i) => String(i.status || "").toUpperCase() === "RESOLVED",
   ).length;
