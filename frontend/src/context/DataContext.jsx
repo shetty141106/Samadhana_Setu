@@ -7,6 +7,12 @@ import { dashboardApi } from '../api/dashboard.api';
 
 const DataContext = createContext(null);
 const LIVE_API = import.meta.env.VITE_ENABLE_LIVE_API === 'true';
+const EMPTY_STATS = {
+  totalIssuesVerified: 0,
+  activeUniversityProjects: 0,
+  totalCSRFundingSanctioned: 0,
+  forestWaterAreaRestoredSqKm: 0,
+};
 const projectToUi = project => ({ ...project, status: String(project.status || 'PLANNED').toLowerCase(), kanbanTasks: project.kanbanTasks || [], milestones: project.milestones || [], teamMembers: project.teamMembers || [], progressPercentage: Number(project.progressPercentage ?? 0) });
 
 export const DataProvider = ({ children }) => {
@@ -14,7 +20,7 @@ export const DataProvider = ({ children }) => {
   const [issues, setIssues] = useState([]);
   const [projects, setProjects] = useState([]);
   const [sponsors, setSponsors] = useState([]);
-  const [stats, setStats] = useState({});
+  const [stats, setStats] = useState(EMPTY_STATS);
   const [dashboard, setDashboard] = useState(null);
   const [likedIssueIds, setLikedIssueIds] = useState(new Set());
   const [dataLoading, setDataLoading] = useState(false);
@@ -26,9 +32,19 @@ export const DataProvider = ({ children }) => {
     try { const saved = JSON.parse(localStorage.getItem(storageKey) || '[]'); setLikedIssueIds(new Set(Array.isArray(saved) ? saved.map(String) : [])); } catch { setLikedIssueIds(new Set()); }
   }, [currentUser?.id]);
 
+  // Public landing-page metrics are loaded from the backend even before login.
+  useEffect(() => {
+    if (!LIVE_API) { setStats(EMPTY_STATS); return; }
+    let cancelled = false;
+    dashboardApi.getSummary()
+      .then(summary => { if (!cancelled) setStats({ ...EMPTY_STATS, ...(summary || {}) }); })
+      .catch(() => { if (!cancelled) setStats(EMPTY_STATS); });
+    return () => { cancelled = true; };
+  }, []);
+
   useEffect(() => {
     if (!LIVE_API || !isAuthenticated) {
-      setIssues([]); setProjects([]); setSponsors([]); setDashboard(null); setStats({}); setDataLoading(false); setDataError(''); return;
+      setIssues([]); setProjects([]); setSponsors([]); setDashboard(null); setDataLoading(false); setDataError(''); return;
     }
     let cancelled = false;
     (async () => {
