@@ -94,7 +94,7 @@ export const DataProvider = ({ children }) => {
         const isIndustry = role === "industry";
         const issuePromise =
           isCitizen && currentUser?.id
-            ? issueApi.getCitizenIssues(currentUser.id)
+            ? issueApi.getMyIssues()
             : canReadOperationalIssues
               ? issueApi.listIssues()
               : Promise.resolve([]);
@@ -331,7 +331,7 @@ export const DataProvider = ({ children }) => {
       .toLowerCase();
     const loaded =
       role === "citizen"
-        ? await issueApi.getCitizenIssues(currentUser.id)
+        ? await issueApi.getMyIssues()
         : role === "admin" || role === "nodal"
           ? await issueApi.listIssues()
           : [];

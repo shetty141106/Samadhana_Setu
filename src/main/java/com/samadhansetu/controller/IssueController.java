@@ -33,6 +33,11 @@ public class IssueController {
         return service.getCommunityIssues();
     }
 
+    @GetMapping("/mine")
+    public List<IssueResponseDto> mine(Authentication authentication) {
+        return service.getByCurrentCitizen(authentication.getName());
+    }
+
     @GetMapping("/{id}")
     public IssueResponseDto one(@PathVariable Long id, Authentication authentication) {
         return service.getById(id, authentication.getName(), isStaff(authentication));

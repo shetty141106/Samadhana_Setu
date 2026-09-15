@@ -70,6 +70,12 @@ public class IssueService {
         return issueRepository.findByReportedById(id).stream().map(this::toDto).toList();
     }
 
+    public List<IssueResponseDto> getByCurrentCitizen(String email) {
+        Citizen citizen = citizenRepository.findByUserEmail(email)
+                .orElseThrow(() -> new AccessDeniedException("Citizen profile not found"));
+        return issueRepository.findByReportedById(citizen.getId()).stream().map(this::toDto).toList();
+    }
+
     public List<IssueResponseDto> getByStatus(IssueStatus s) {
         return issueRepository.findByStatus(s).stream().map(this::toDto).toList();
     }

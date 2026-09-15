@@ -66,6 +66,23 @@ const createHeatmapDotIcon = (priority) => {
   });
 };
 
+const resolveDistrict = (issue) => {
+  if (issue.district) return issue.district;
+  const lat = Number(issue.coordinates?.lat);
+  const lng = Number(issue.coordinates?.lng);
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) return "";
+  return Object.entries(DISTRICT_COORDINATES).reduce(
+    (closest, [district, coordinate]) => {
+      const distance =
+        (coordinate.lat - lat) ** 2 + (coordinate.lng - lng) ** 2;
+      return distance < closest.distance
+        ? { district, distance }
+        : closest;
+    },
+    { district: "", distance: Number.POSITIVE_INFINITY },
+  ).district;
+};
+
 function ChangeMapView({ center, zoom }) {
   const map = useMap();
   map.setView(center, zoom);
@@ -98,7 +115,7 @@ export const IssueMap = ({
     const issueCategory = String(issue.category ?? "")
       .trim()
       .toLowerCase();
-    const issueDistrict = String(issue.district ?? "")
+    const issueDistrict = String(resolveDistrict(issue))
       .trim()
       .toLowerCase();
     const matchCat =
@@ -221,7 +238,7 @@ export const IssueMap = ({
                     )}
                     <div className="flex items-center justify-between gap-1 mb-1.5">
                       <span className="text-[10px] font-bold text-jh-green-800 uppercase tracking-wider">
-                        {issue.district || "District not specified"}
+                        {resolveDistrict(issue) || "District not specified"}
                       </span>
                       <StatusBadge status={issue.status || "REPORTED"} />
                     </div>
