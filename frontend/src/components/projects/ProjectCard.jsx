@@ -1,13 +1,22 @@
-import React from 'react';
-import { School, UserCheck, Coins, Award, ArrowRight, Target } from 'lucide-react';
-import { Button } from '../ui/Button';
+import React from "react";
+import {
+  School,
+  UserCheck,
+  Coins,
+  Award,
+  ArrowRight,
+  Target,
+} from "lucide-react";
+import { Button } from "../ui/Button";
 
 export const ProjectCard = ({ project, onSelect, onSponsorClick }) => {
-  const fundingPercent = Math.min(100, Math.round((project.budgetFunded / project.budgetTotal) * 100));
+  const fundingPercent = Math.min(
+    100,
+    Math.round((project.budgetFunded / project.budgetTotal) * 100),
+  );
 
   return (
     <div className="bg-white rounded-2xl border border-jh-earth-200/90 shadow-jh-soft p-5 md:p-6 hover:shadow-jh-card transition-all duration-200 flex flex-col justify-between">
-      
       <div>
         {/* Domain & Stage */}
         <div className="flex items-center justify-between gap-2 mb-2">
@@ -47,8 +56,12 @@ export const ProjectCard = ({ project, onSelect, onSponsorClick }) => {
         {/* Progress Bar */}
         <div className="space-y-1.5 mb-4">
           <div className="flex items-center justify-between text-xs">
-            <span className="text-jh-earth-600 font-medium">Research Milestone Velocity:</span>
-            <span className="font-bold text-jh-green-900">{project.progressPercentage}%</span>
+            <span className="text-jh-earth-600 font-medium">
+              Research Milestone Velocity:
+            </span>
+            <span className="font-bold text-jh-green-900">
+              {project.progressPercentage}%
+            </span>
           </div>
           <div className="w-full h-2 bg-jh-earth-200 rounded-full overflow-hidden">
             <div
@@ -61,12 +74,21 @@ export const ProjectCard = ({ project, onSelect, onSponsorClick }) => {
         {/* CSR Funding Stats */}
         <div className="pt-3 border-t border-jh-earth-200 grid grid-cols-2 gap-2 text-xs mb-2">
           <div>
-            <span className="text-[10px] uppercase text-jh-earth-500 block">Total Budget</span>
-            <span className="font-bold text-jh-charcoal">₹ {(project.budgetTotal / 100000).toFixed(2)} Lakh</span>
+            <span className="text-[10px] uppercase text-jh-earth-500 block">
+              Total Budget
+            </span>
+            <span className="font-bold text-jh-charcoal">
+              ₹ {(project.budgetTotal / 100000).toFixed(2)} Lakh
+            </span>
           </div>
           <div>
-            <span className="text-[10px] uppercase text-jh-earth-500 block">CSR Backing</span>
-            <span className="font-bold text-jh-terracotta-700">₹ {(project.budgetFunded / 100000).toFixed(2)} Lakh ({fundingPercent}%)</span>
+            <span className="text-[10px] uppercase text-jh-earth-500 block">
+              CSR Backing
+            </span>
+            <span className="font-bold text-jh-terracotta-700">
+              ₹ {(project.budgetFunded / 100000).toFixed(2)} Lakh (
+              {fundingPercent}%)
+            </span>
           </div>
         </div>
       </div>
@@ -95,7 +117,6 @@ export const ProjectCard = ({ project, onSelect, onSponsorClick }) => {
           </Button>
         )}
       </div>
-
     </div>
   );
 };

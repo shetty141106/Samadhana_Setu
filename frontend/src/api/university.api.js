@@ -1,12 +1,19 @@
-import { apiClient } from './client';
+import { apiClient } from "./client";
 
-export const listUniversities = () => apiClient.get('/api/universities');
+export const listUniversities = () => apiClient.get("/api/universities");
 export const getUniversity = (id) => apiClient.get(`/api/universities/${id}`);
-export const searchUniversities = (name) => apiClient.get(`/api/universities/search?name=${encodeURIComponent(name)}`);
-export const searchUniversitiesByLocation = (value) => apiClient.get(`/api/universities/location?value=${encodeURIComponent(value)}`);
-export const createUniversity = (payload) => apiClient.post('/api/universities', payload);
-export const updateUniversity = (id, payload) => apiClient.put(`/api/universities/${id}`, payload);
-export const deleteUniversity = (id) => apiClient.delete(`/api/universities/${id}`);
+export const searchUniversities = (name) =>
+  apiClient.get(`/api/universities/search?name=${encodeURIComponent(name)}`);
+export const searchUniversitiesByLocation = (value) =>
+  apiClient.get(
+    `/api/universities/location?value=${encodeURIComponent(value)}`,
+  );
+export const createUniversity = (payload) =>
+  apiClient.post("/api/universities", payload);
+export const updateUniversity = (id, payload) =>
+  apiClient.put(`/api/universities/${id}`, payload);
+export const deleteUniversity = (id) =>
+  apiClient.delete(`/api/universities/${id}`);
 
 export const universityApi = {
   listUniversities,
@@ -15,5 +22,5 @@ export const universityApi = {
   searchUniversitiesByLocation,
   createUniversity,
   updateUniversity,
-  deleteUniversity
+  deleteUniversity,
 };

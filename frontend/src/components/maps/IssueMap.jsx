@@ -1,20 +1,27 @@
-import React, { useState } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
-import L from 'leaflet';
-import { JHARKHAND_MAP_CENTER, JHARKHAND_DEFAULT_ZOOM, DISTRICT_COORDINATES } from '../../utils/geoData';
-import { StatusBadge } from '../ui/StatusBadge';
-import { JHARKHAND_DISTRICTS } from '../../utils/constants';
-import { MapPin, Eye } from 'lucide-react';
+import React, { useState } from "react";
+import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import L from "leaflet";
+import {
+  JHARKHAND_MAP_CENTER,
+  JHARKHAND_DEFAULT_ZOOM,
+  DISTRICT_COORDINATES,
+} from "../../utils/geoData";
+import { StatusBadge } from "../ui/StatusBadge";
+import { JHARKHAND_DISTRICTS } from "../../utils/constants";
+import { MapPin, Eye } from "lucide-react";
 
 // Custom Pin Icons for Leaflet
 const createPinIcon = (category, priority) => {
-  const normalizedPriority = String(priority ?? '').trim().toLowerCase();
-  const isHigh = normalizedPriority === 'critical' || normalizedPriority === 'high';
-  const color = isHigh ? '#C45C26' : '#0B3D2E';
-  const border = '#D4AF37';
+  const normalizedPriority = String(priority ?? "")
+    .trim()
+    .toLowerCase();
+  const isHigh =
+    normalizedPriority === "critical" || normalizedPriority === "high";
+  const color = isHigh ? "#C45C26" : "#0B3D2E";
+  const border = "#D4AF37";
 
   return L.divIcon({
-    className: 'custom-leaflet-pin',
+    className: "custom-leaflet-pin",
     html: `
       <div style="
         background: ${color};
@@ -39,7 +46,7 @@ const createPinIcon = (category, priority) => {
     `,
     iconSize: [28, 28],
     iconAnchor: [14, 28],
-    popupAnchor: [0, -28]
+    popupAnchor: [0, -28],
   });
 };
 
@@ -49,34 +56,46 @@ function ChangeMapView({ center, zoom }) {
   return null;
 }
 
-export const IssueMap = ({ 
-  issues = [], 
-  onSelectIssue, 
-  height = '480px',
-  selectedDistrict = 'all',
-  onDistrictChange
+export const IssueMap = ({
+  issues = [],
+  onSelectIssue,
+  height = "480px",
+  selectedDistrict = "all",
+  onDistrictChange,
 }) => {
-  const [activeCategory, setActiveCategory] = useState('all');
+  const [activeCategory, setActiveCategory] = useState("all");
   const [mapCenter, setMapCenter] = useState(JHARKHAND_MAP_CENTER);
   const [zoomLevel, setZoomLevel] = useState(JHARKHAND_DEFAULT_ZOOM);
 
   const safeIssues = Array.isArray(issues) ? issues : [];
-  const normalizedSelectedDistrict = String(selectedDistrict ?? 'all').trim().toLowerCase();
-  const normalizedActiveCategory = String(activeCategory ?? 'all').trim().toLowerCase();
+  const normalizedSelectedDistrict = String(selectedDistrict ?? "all")
+    .trim()
+    .toLowerCase();
+  const normalizedActiveCategory = String(activeCategory ?? "all")
+    .trim()
+    .toLowerCase();
 
-  const filteredIssues = safeIssues.filter(issue => {
-    if (!issue || typeof issue !== 'object') return false;
+  const filteredIssues = safeIssues.filter((issue) => {
+    if (!issue || typeof issue !== "object") return false;
 
-    const issueCategory = String(issue.category ?? '').trim().toLowerCase();
-    const issueDistrict = String(issue.district ?? '').trim().toLowerCase();
-    const matchCat = normalizedActiveCategory === 'all' || issueCategory === normalizedActiveCategory;
-    const matchDist = normalizedSelectedDistrict === 'all' || issueDistrict.includes(normalizedSelectedDistrict);
+    const issueCategory = String(issue.category ?? "")
+      .trim()
+      .toLowerCase();
+    const issueDistrict = String(issue.district ?? "")
+      .trim()
+      .toLowerCase();
+    const matchCat =
+      normalizedActiveCategory === "all" ||
+      issueCategory === normalizedActiveCategory;
+    const matchDist =
+      normalizedSelectedDistrict === "all" ||
+      issueDistrict.includes(normalizedSelectedDistrict);
     return matchCat && matchDist;
   });
 
   const handleDistrictFilter = (district) => {
     if (onDistrictChange) onDistrictChange(district);
-    if (district === 'all') {
+    if (district === "all") {
       setMapCenter(JHARKHAND_MAP_CENTER);
       setZoomLevel(JHARKHAND_DEFAULT_ZOOM);
     } else if (DISTRICT_COORDINATES[district]) {
@@ -88,7 +107,6 @@ export const IssueMap = ({
 
   return (
     <div className="bg-white rounded-2xl border border-jh-earth-200 overflow-hidden shadow-jh-soft flex flex-col">
-      
       {/* Map Control Toolbar */}
       <div className="p-3.5 bg-jh-earth-50 border-b border-jh-earth-200 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
@@ -100,7 +118,8 @@ export const IssueMap = ({
               Jharkhand GIS Heatmap
             </h4>
             <p className="text-[11px] text-jh-earth-600">
-              Showing {filteredIssues.length} active geolocated civic & environmental interventions
+              Showing {filteredIssues.length} active geolocated civic &
+              environmental interventions
             </p>
           </div>
         </div>
@@ -113,8 +132,10 @@ export const IssueMap = ({
             className="text-xs bg-white border border-jh-earth-200 rounded-lg px-2.5 py-1.5 font-medium text-jh-charcoal focus:outline-none focus:ring-2 focus:ring-jh-green-700"
           >
             <option value="all">All 24 Districts</option>
-            {JHARKHAND_DISTRICTS.map(d => (
-              <option key={d} value={d}>{d}</option>
+            {JHARKHAND_DISTRICTS.map((d) => (
+              <option key={d} value={d}>
+                {d}
+              </option>
             ))}
           </select>
 
@@ -135,15 +156,15 @@ export const IssueMap = ({
       </div>
 
       {/* Interactive Leaflet Map Container */}
-      <div style={{ height, width: '100%' }} className="relative z-10">
+      <div style={{ height, width: "100%" }} className="relative z-10">
         <MapContainer
           center={mapCenter}
           zoom={zoomLevel}
           scrollWheelZoom={false}
-          style={{ height: '100%', width: '100%' }}
+          style={{ height: "100%", width: "100%" }}
         >
           <ChangeMapView center={mapCenter} zoom={zoomLevel} />
-          
+
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors | Jharkhand Survey'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -157,7 +178,7 @@ export const IssueMap = ({
 
             return (
               <Marker
-                key={issue.id ?? `${lat}-${lng}-${issue.title ?? 'issue'}`}
+                key={issue.id ?? `${lat}-${lng}-${issue.title ?? "issue"}`}
                 position={[lat, lng]}
                 icon={createPinIcon(issue.category, issue.priority)}
               >
@@ -166,21 +187,21 @@ export const IssueMap = ({
                     {issue.images && issue.images[0] && (
                       <img
                         src={issue.images[0]}
-                        alt={issue.title || 'Issue evidence'}
+                        alt={issue.title || "Issue evidence"}
                         className="w-full h-28 object-cover rounded-lg mb-2"
                       />
                     )}
                     <div className="flex items-center justify-between gap-1 mb-1.5">
                       <span className="text-[10px] font-bold text-jh-green-800 uppercase tracking-wider">
-                        {issue.district || 'District not specified'}
+                        {issue.district || "District not specified"}
                       </span>
-                      <StatusBadge status={issue.status || 'REPORTED'} />
+                      <StatusBadge status={issue.status || "REPORTED"} />
                     </div>
                     <h5 className="text-xs font-bold text-jh-charcoal line-clamp-2 mb-1">
-                      {issue.title || 'Untitled issue'}
+                      {issue.title || "Untitled issue"}
                     </h5>
                     <p className="text-[11px] text-jh-earth-700 line-clamp-2 mb-2">
-                      {issue.description || 'No description available.'}
+                      {issue.description || "No description available."}
                     </p>
                     <div className="pt-2 border-t border-jh-earth-200 flex items-center justify-between">
                       <span className="text-[10px] text-jh-earth-600">
@@ -203,7 +224,6 @@ export const IssueMap = ({
           })}
         </MapContainer>
       </div>
-
     </div>
   );
 };

@@ -1,10 +1,20 @@
-import React from 'react';
-import { useAuth } from '../../context/AuthContext';
-import { useData } from '../../context/DataContext';
-import { ROLES } from '../../utils/constants';
-import { SohraiTribalRibbon, SohraiSideBorder } from '../../components/common/SohraiBorder';
-import { Button } from '../../components/ui/Button';
-import { Camera, Search, GraduationCap, Handshake, ArrowRight, Leaf } from 'lucide-react';
+import React from "react";
+import { useAuth } from "../../context/AuthContext";
+import { useData } from "../../context/DataContext";
+import { ROLES } from "../../utils/constants";
+import {
+  SohraiTribalRibbon,
+  SohraiSideBorder,
+} from "../../components/common/SohraiBorder";
+import { Button } from "../../components/ui/Button";
+import {
+  Camera,
+  Search,
+  GraduationCap,
+  Handshake,
+  ArrowRight,
+  Leaf,
+} from "lucide-react";
 
 export const LandingPage = ({ onNavigate }) => {
   const { switchRole, isAuthenticated } = useAuth();
@@ -17,10 +27,10 @@ export const LandingPage = ({ onNavigate }) => {
 
   const handleReportIssue = () => {
     if (!isAuthenticated) {
-      onNavigate('login');
+      onNavigate("login");
       return;
     }
-    onNavigate('report-issue');
+    onNavigate("report-issue");
   };
 
   return (
@@ -40,11 +50,13 @@ export const LandingPage = ({ onNavigate }) => {
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 sm:pt-14 md:pt-16 pb-12 sm:pb-16">
           <div className="max-w-3xl space-y-4 mb-8 sm:mb-12">
             <h1 className="font-serif text-3xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.15] text-white drop-shadow-md">
-              Report. Resolve.<br />
+              Report. Resolve.
+              <br />
               Rebuild Jharkhand.
             </h1>
             <p className="text-sm sm:text-lg lg:text-xl text-[#E8E2D6] leading-relaxed drop-shadow-sm max-w-2xl">
-              A citizen–university–industry collaboration for a greener, stronger and sustainable Jharkhand.
+              A citizen–university–industry collaboration for a greener,
+              stronger and sustainable Jharkhand.
             </p>
             <div className="pt-2 sm:pt-4 flex flex-wrap items-center gap-3">
               <Button
@@ -60,7 +72,9 @@ export const LandingPage = ({ onNavigate }) => {
                 variant="glass"
                 size="lg"
                 icon={Search}
-                onClick={() => handleLaunchRole(ROLES.INDUSTRY, 'browse-projects')}
+                onClick={() =>
+                  handleLaunchRole(ROLES.INDUSTRY, "browse-projects")
+                }
                 className="text-white bg-white/15 hover:bg-white/25 border-white/40 shadow-md font-semibold text-sm sm:text-base px-6 py-3 backdrop-blur-sm"
               >
                 Explore Projects
@@ -71,7 +85,7 @@ export const LandingPage = ({ onNavigate }) => {
           <div className="w-full pt-2">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5 lg:gap-6">
               <div
-                onClick={() => handleLaunchRole(ROLES.CITIZEN, 'citizen')}
+                onClick={() => handleLaunchRole(ROLES.CITIZEN, "citizen")}
                 className="bg-white rounded-2xl p-6 sm:p-7 shadow-xl border border-jh-earth-200/90 hover:-translate-y-1.5 hover:shadow-2xl transition-all duration-300 cursor-pointer flex flex-col justify-between group"
               >
                 <div>
@@ -79,10 +93,13 @@ export const LandingPage = ({ onNavigate }) => {
                     <div className="w-12 h-12 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 flex items-center justify-center group-hover:bg-[#0B3D2E] group-hover:text-white transition-colors">
                       <Camera className="w-6 h-6" />
                     </div>
-                    <h3 className="text-base sm:text-lg font-bold text-jh-green-950">Citizen Reporting</h3>
+                    <h3 className="text-base sm:text-lg font-bold text-jh-green-950">
+                      Citizen Reporting
+                    </h3>
                   </div>
                   <p className="text-xs sm:text-sm text-[#5C5449] leading-relaxed">
-                    Report local environmental and civic issues with photos, location and details. Your voice drives change.
+                    Report local environmental and civic issues with photos,
+                    location and details. Your voice drives change.
                   </p>
                 </div>
                 <div className="mt-5 pt-3.5 border-t border-jh-earth-100 flex items-center gap-1.5 text-xs font-bold text-[#0B3D2E]">
@@ -92,7 +109,7 @@ export const LandingPage = ({ onNavigate }) => {
               </div>
 
               <div
-                onClick={() => handleLaunchRole(ROLES.STUDENT, 'student')}
+                onClick={() => handleLaunchRole(ROLES.STUDENT, "student")}
                 className="bg-white rounded-2xl p-6 sm:p-7 shadow-xl border border-jh-earth-200/90 hover:-translate-y-1.5 hover:shadow-2xl transition-all duration-300 cursor-pointer flex flex-col justify-between group"
               >
                 <div>
@@ -100,10 +117,13 @@ export const LandingPage = ({ onNavigate }) => {
                     <div className="w-12 h-12 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 flex items-center justify-center group-hover:bg-[#0B3D2E] group-hover:text-white transition-colors">
                       <GraduationCap className="w-6 h-6" />
                     </div>
-                    <h3 className="text-base sm:text-lg font-bold text-jh-green-950">University R&D Workspace</h3>
+                    <h3 className="text-base sm:text-lg font-bold text-jh-green-950">
+                      University R&D Workspace
+                    </h3>
                   </div>
                   <p className="text-xs sm:text-sm text-[#5C5449] leading-relaxed">
-                    Access verified issues, conduct research, propose solutions and develop sustainable interventions.
+                    Access verified issues, conduct research, propose solutions
+                    and develop sustainable interventions.
                   </p>
                 </div>
                 <div className="mt-5 pt-3.5 border-t border-jh-earth-100 flex items-center gap-1.5 text-xs font-bold text-[#0B3D2E]">
@@ -113,7 +133,7 @@ export const LandingPage = ({ onNavigate }) => {
               </div>
 
               <div
-                onClick={() => handleLaunchRole(ROLES.INDUSTRY, 'industry')}
+                onClick={() => handleLaunchRole(ROLES.INDUSTRY, "industry")}
                 className="bg-white rounded-2xl p-6 sm:p-7 shadow-xl border border-jh-earth-200/90 hover:-translate-y-1.5 hover:shadow-2xl transition-all duration-300 cursor-pointer flex flex-col justify-between group"
               >
                 <div>
@@ -121,10 +141,13 @@ export const LandingPage = ({ onNavigate }) => {
                     <div className="w-12 h-12 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 flex items-center justify-center group-hover:bg-[#0B3D2E] group-hover:text-white transition-colors">
                       <Handshake className="w-6 h-6" />
                     </div>
-                    <h3 className="text-base sm:text-lg font-bold text-jh-green-950">Industry CSR Impact</h3>
+                    <h3 className="text-base sm:text-lg font-bold text-jh-green-950">
+                      Industry CSR Impact
+                    </h3>
                   </div>
                   <p className="text-xs sm:text-sm text-[#5C5449] leading-relaxed">
-                    Discover projects, partner with institutions and implement CSR initiatives with measurable impact.
+                    Discover projects, partner with institutions and implement
+                    CSR initiatives with measurable impact.
                   </p>
                 </div>
                 <div className="mt-5 pt-3.5 border-t border-jh-earth-100 flex items-center gap-1.5 text-xs font-bold text-[#0B3D2E]">
@@ -138,7 +161,10 @@ export const LandingPage = ({ onNavigate }) => {
       </section>
 
       {/* HOW IT WORKS */}
-      <section id="how-it-works" className="py-12 md:py-16 bg-[#F5F0E6] border-y border-jh-earth-200 relative overflow-hidden">
+      <section
+        id="how-it-works"
+        className="py-12 md:py-16 bg-[#F5F0E6] border-y border-jh-earth-200 relative overflow-hidden"
+      >
         <div className="hidden lg:block absolute left-4 top-0 bottom-0">
           <SohraiSideBorder orientation="left" />
         </div>
@@ -151,19 +177,39 @@ export const LandingPage = ({ onNavigate }) => {
             How it Works
           </h2>
           <p className="text-xs sm:text-sm text-jh-earth-700 max-w-xl mx-auto mb-10">
-            A seamless four-stage bridge uniting civic awareness with academic R&D and corporate CSR funding.
+            A seamless four-stage bridge uniting civic awareness with academic
+            R&D and corporate CSR funding.
           </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 relative">
             <div className="hidden lg:block absolute top-8 left-[12%] right-[12%] h-0.5 border-t-2 border-dashed border-jh-green-800/40 z-0" />
 
             {[
-              [Camera, 'Report an Issue', 'Capture and submit the issue with location and details.'],
-              [GraduationCap, 'Research & Solution', 'Verified issues are analysed by universities and experts.'],
-              [Handshake, 'Partner & Implement', 'Industry partners adopt and implement solutions on ground.'],
-              [Leaf, 'Impact & Rebuild', 'Sustainable change is created, tracked and scaled across Jharkhand.'],
+              [
+                Camera,
+                "Report an Issue",
+                "Capture and submit the issue with location and details.",
+              ],
+              [
+                GraduationCap,
+                "Research & Solution",
+                "Verified issues are analysed by universities and experts.",
+              ],
+              [
+                Handshake,
+                "Partner & Implement",
+                "Industry partners adopt and implement solutions on ground.",
+              ],
+              [
+                Leaf,
+                "Impact & Rebuild",
+                "Sustainable change is created, tracked and scaled across Jharkhand.",
+              ],
             ].map(([Icon, title, description], index) => (
-              <div key={title} className="relative z-10 flex flex-col items-center group">
+              <div
+                key={title}
+                className="relative z-10 flex flex-col items-center group"
+              >
                 <div className="relative mb-3">
                   <div className="w-16 h-16 rounded-full bg-white border-2 border-jh-green-900 flex items-center justify-center text-jh-green-900 shadow-sm group-hover:scale-110 transition-transform">
                     <Icon className="w-7 h-7" />
@@ -172,8 +218,12 @@ export const LandingPage = ({ onNavigate }) => {
                     {index + 1}
                   </span>
                 </div>
-                <h4 className="text-sm font-bold text-jh-green-950 mb-1">{title}</h4>
-                <p className="text-xs text-jh-earth-700 max-w-[200px] leading-relaxed">{description}</p>
+                <h4 className="text-sm font-bold text-jh-green-950 mb-1">
+                  {title}
+                </h4>
+                <p className="text-xs text-jh-earth-700 max-w-[200px] leading-relaxed">
+                  {description}
+                </p>
               </div>
             ))}
           </div>
@@ -188,25 +238,33 @@ export const LandingPage = ({ onNavigate }) => {
               <span className="text-3xl sm:text-4xl font-extrabold text-jh-gold-400 font-mono">
                 {stats.totalIssuesVerified || 0}
               </span>
-              <p className="text-xs uppercase tracking-wider text-jh-earth-200 mt-1 font-semibold">Verified Issues Triaged</p>
+              <p className="text-xs uppercase tracking-wider text-jh-earth-200 mt-1 font-semibold">
+                Verified Issues Triaged
+              </p>
             </div>
             <div className="p-3">
               <span className="text-3xl sm:text-4xl font-extrabold text-white font-mono">
                 {stats.activeUniversityProjects || 0}
               </span>
-              <p className="text-xs uppercase tracking-wider text-jh-earth-200 mt-1 font-semibold">Active University Labs</p>
+              <p className="text-xs uppercase tracking-wider text-jh-earth-200 mt-1 font-semibold">
+                Active University Labs
+              </p>
             </div>
             <div className="p-3">
               <span className="text-3xl sm:text-4xl font-extrabold text-jh-terracotta-400 font-mono">
                 {stats.totalCSRFundingSanctioned || 0}
               </span>
-              <p className="text-xs uppercase tracking-wider text-jh-earth-200 mt-1 font-semibold">CSR Pledged & Allocated</p>
+              <p className="text-xs uppercase tracking-wider text-jh-earth-200 mt-1 font-semibold">
+                CSR Pledged & Allocated
+              </p>
             </div>
             <div className="p-3">
               <span className="text-3xl sm:text-4xl font-extrabold text-emerald-400 font-mono">
                 {stats.forestWaterAreaRestoredSqKm || 0}
               </span>
-              <p className="text-xs uppercase tracking-wider text-jh-earth-200 mt-1 font-semibold">Ecology Restored on Ground</p>
+              <p className="text-xs uppercase tracking-wider text-jh-earth-200 mt-1 font-semibold">
+                Ecology Restored on Ground
+              </p>
             </div>
           </div>
         </div>
@@ -222,13 +280,23 @@ export const LandingPage = ({ onNavigate }) => {
             Be the Catalyst for a Greener Jharkhand
           </h2>
           <p className="text-xs sm:text-sm text-jh-earth-200 leading-relaxed">
-            Whether you are a concerned citizen, student innovator, faculty researcher, or industry partner, your involvement shapes Jharkhand’s sustainable future.
+            Whether you are a concerned citizen, student innovator, faculty
+            researcher, or industry partner, your involvement shapes Jharkhand’s
+            sustainable future.
           </p>
           <div className="pt-4 flex flex-wrap justify-center gap-3">
-            <Button variant="secondary" size="lg" onClick={() => handleLaunchRole(ROLES.CITIZEN, 'report-issue')}>
+            <Button
+              variant="secondary"
+              size="lg"
+              onClick={() => handleLaunchRole(ROLES.CITIZEN, "report-issue")}
+            >
               Report an Issue Now
             </Button>
-            <Button variant="glass" size="lg" onClick={() => handleLaunchRole(ROLES.ADMIN, 'admin')}>
+            <Button
+              variant="glass"
+              size="lg"
+              onClick={() => handleLaunchRole(ROLES.ADMIN, "admin")}
+            >
               State Admin Dashboard
             </Button>
           </div>

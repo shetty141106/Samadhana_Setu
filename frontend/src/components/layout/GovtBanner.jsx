@@ -1,6 +1,6 @@
-import React from 'react';
-import { useAuth } from '../../context/AuthContext';
-import { Globe } from 'lucide-react';
+import React from "react";
+import { useAuth } from "../../context/AuthContext";
+import { Globe } from "lucide-react";
 
 export const GovtBanner = () => {
   const { language, toggleLanguage } = useAuth();
@@ -15,12 +15,27 @@ export const GovtBanner = () => {
             className="flex items-center gap-1 hover:text-jh-terracotta-400 font-medium transition-colors cursor-pointer"
           >
             <Globe className="w-3 h-3" />
-            <span>{language === 'en' ? 'हिन्दी' : 'English'}</span>
+            <span>{language === "en" ? "हिन्दी" : "English"}</span>
           </button>
           <div className="hidden sm:flex items-center gap-2 text-jh-earth-300">
-            <span className="cursor-pointer hover:text-white" title="Standard text">A-</span>
-            <span className="cursor-pointer hover:text-white font-bold" title="Medium text">A</span>
-            <span className="cursor-pointer hover:text-white" title="Large text">A+</span>
+            <span
+              className="cursor-pointer hover:text-white"
+              title="Standard text"
+            >
+              A-
+            </span>
+            <span
+              className="cursor-pointer hover:text-white font-bold"
+              title="Medium text"
+            >
+              A
+            </span>
+            <span
+              className="cursor-pointer hover:text-white"
+              title="Large text"
+            >
+              A+
+            </span>
           </div>
         </div>
       </div>

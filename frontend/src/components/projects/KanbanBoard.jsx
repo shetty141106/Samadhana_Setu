@@ -1,19 +1,49 @@
-import React, { useState } from 'react';
-import { useData } from '../../context/DataContext';
-import { Plus, CheckCircle2, Clock, AlertCircle, MoveRight, MoveLeft, User } from 'lucide-react';
-import { Button } from '../ui/Button';
+import React, { useState } from "react";
+import { useData } from "../../context/DataContext";
+import {
+  Plus,
+  CheckCircle2,
+  Clock,
+  AlertCircle,
+  MoveRight,
+  MoveLeft,
+  User,
+} from "lucide-react";
+import { Button } from "../ui/Button";
 
 export const KanbanBoard = ({ project }) => {
   const { updateTaskStatus, addKanbanTask } = useData();
-  const [newTaskTitle, setNewTaskTitle] = useState('');
-  const [newTaskAssignee, setNewTaskAssignee] = useState(project.studentLead || 'Rohan Sharma');
+  const [newTaskTitle, setNewTaskTitle] = useState("");
+  const [newTaskAssignee, setNewTaskAssignee] = useState(
+    project.studentLead || "Rohan Sharma",
+  );
   const [showAddForm, setShowAddForm] = useState(false);
 
   const columns = [
-    { id: 'todo', label: 'To Do / Backlog', color: 'border-jh-earth-300 bg-jh-earth-100/50', badgeColor: 'bg-jh-earth-200 text-jh-earth-800' },
-    { id: 'in_progress', label: 'In Lab / Prototyping', color: 'border-blue-300 bg-blue-50/40', badgeColor: 'bg-blue-100 text-blue-800' },
-    { id: 'review', label: 'Faculty & Lab Review', color: 'border-purple-300 bg-purple-50/40', badgeColor: 'bg-purple-100 text-purple-800' },
-    { id: 'done', label: 'Verified & Deployed', color: 'border-emerald-300 bg-emerald-50/40', badgeColor: 'bg-emerald-100 text-emerald-800' }
+    {
+      id: "todo",
+      label: "To Do / Backlog",
+      color: "border-jh-earth-300 bg-jh-earth-100/50",
+      badgeColor: "bg-jh-earth-200 text-jh-earth-800",
+    },
+    {
+      id: "in_progress",
+      label: "In Lab / Prototyping",
+      color: "border-blue-300 bg-blue-50/40",
+      badgeColor: "bg-blue-100 text-blue-800",
+    },
+    {
+      id: "review",
+      label: "Faculty & Lab Review",
+      color: "border-purple-300 bg-purple-50/40",
+      badgeColor: "bg-purple-100 text-purple-800",
+    },
+    {
+      id: "done",
+      label: "Verified & Deployed",
+      color: "border-emerald-300 bg-emerald-50/40",
+      badgeColor: "bg-emerald-100 text-emerald-800",
+    },
   ];
 
   const handleCreateTask = (e) => {
@@ -22,16 +52,17 @@ export const KanbanBoard = ({ project }) => {
     addKanbanTask(project.id, {
       title: newTaskTitle,
       assignee: newTaskAssignee,
-      priority: 'high'
+      priority: "high",
     });
-    setNewTaskTitle('');
+    setNewTaskTitle("");
     setShowAddForm(false);
   };
 
   const moveTask = (taskId, currentStatus, direction) => {
-    const order = ['todo', 'in_progress', 'review', 'done'];
+    const order = ["todo", "in_progress", "review", "done"];
     const currentIndex = order.indexOf(currentStatus);
-    const nextIndex = direction === 'forward' ? currentIndex + 1 : currentIndex - 1;
+    const nextIndex =
+      direction === "forward" ? currentIndex + 1 : currentIndex - 1;
     if (nextIndex >= 0 && nextIndex < order.length) {
       updateTaskStatus(project.id, taskId, order[nextIndex]);
     }
@@ -39,12 +70,15 @@ export const KanbanBoard = ({ project }) => {
 
   return (
     <div className="space-y-4">
-      
       {/* Top action bar */}
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-base font-bold text-jh-green-950">R&D Sprint Kanban Board</h3>
-          <p className="text-xs text-jh-earth-600">Drag or advance milestones to update sprint velocity</p>
+          <h3 className="text-base font-bold text-jh-green-950">
+            R&D Sprint Kanban Board
+          </h3>
+          <p className="text-xs text-jh-earth-600">
+            Drag or advance milestones to update sprint velocity
+          </p>
         </div>
 
         <Button
@@ -53,13 +87,16 @@ export const KanbanBoard = ({ project }) => {
           icon={Plus}
           onClick={() => setShowAddForm(!showAddForm)}
         >
-          {showAddForm ? 'Close' : 'Add Research Task'}
+          {showAddForm ? "Close" : "Add Research Task"}
         </Button>
       </div>
 
       {/* Add Task Quick Form */}
       {showAddForm && (
-        <form onSubmit={handleCreateTask} className="p-4 bg-white rounded-xl border border-jh-green-300 shadow-xs flex flex-wrap gap-3 items-center animate-in fade-in">
+        <form
+          onSubmit={handleCreateTask}
+          className="p-4 bg-white rounded-xl border border-jh-green-300 shadow-xs flex flex-wrap gap-3 items-center animate-in fade-in"
+        >
           <input
             type="text"
             required
@@ -84,7 +121,9 @@ export const KanbanBoard = ({ project }) => {
       {/* 4 Column Kanban Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {columns.map((col) => {
-          const tasksInCol = (project.kanbanTasks || []).filter(t => t.status === col.id);
+          const tasksInCol = (project.kanbanTasks || []).filter(
+            (t) => t.status === col.id,
+          );
           return (
             <div
               key={col.id}
@@ -96,7 +135,9 @@ export const KanbanBoard = ({ project }) => {
                   <h4 className="text-xs font-bold uppercase tracking-wider text-jh-green-950">
                     {col.label}
                   </h4>
-                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${col.badgeColor}`}>
+                  <span
+                    className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${col.badgeColor}`}
+                  >
                     {tasksInCol.length}
                   </span>
                 </div>
@@ -118,9 +159,13 @@ export const KanbanBoard = ({ project }) => {
                             {task.id}
                           </span>
                           {task.priority && (
-                            <span className={`text-[9px] font-extrabold uppercase px-1.5 py-0.2 rounded ${
-                              task.priority === 'high' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'
-                            }`}>
+                            <span
+                              className={`text-[9px] font-extrabold uppercase px-1.5 py-0.2 rounded ${
+                                task.priority === "high"
+                                  ? "bg-red-100 text-red-700"
+                                  : "bg-amber-100 text-amber-700"
+                              }`}
+                            >
                               {task.priority}
                             </span>
                           )}
@@ -133,23 +178,29 @@ export const KanbanBoard = ({ project }) => {
                         <div className="pt-2 border-t border-jh-earth-100 flex items-center justify-between text-[11px]">
                           <div className="flex items-center gap-1 text-jh-earth-700 font-medium truncate max-w-[110px]">
                             <User className="w-3 h-3 text-jh-green-800" />
-                            <span className="truncate">{task.assignee || 'Unassigned'}</span>
+                            <span className="truncate">
+                              {task.assignee || "Unassigned"}
+                            </span>
                           </div>
 
                           {/* Move arrows */}
                           <div className="flex items-center gap-1">
-                            {col.id !== 'todo' && (
+                            {col.id !== "todo" && (
                               <button
-                                onClick={() => moveTask(task.id, task.status, 'backward')}
+                                onClick={() =>
+                                  moveTask(task.id, task.status, "backward")
+                                }
                                 className="p-1 rounded bg-jh-earth-100 hover:bg-jh-earth-200 text-jh-charcoal"
                                 title="Move left"
                               >
                                 <MoveLeft className="w-3 h-3" />
                               </button>
                             )}
-                            {col.id !== 'done' && (
+                            {col.id !== "done" && (
                               <button
-                                onClick={() => moveTask(task.id, task.status, 'forward')}
+                                onClick={() =>
+                                  moveTask(task.id, task.status, "forward")
+                                }
                                 className="p-1 rounded bg-jh-green-900 text-white hover:bg-jh-green-800"
                                 title="Advance task"
                               >
@@ -158,7 +209,6 @@ export const KanbanBoard = ({ project }) => {
                             )}
                           </div>
                         </div>
-
                       </div>
                     ))
                   )}
@@ -166,13 +216,12 @@ export const KanbanBoard = ({ project }) => {
               </div>
 
               <div className="pt-3 text-[10px] text-jh-earth-500 text-center">
-                {col.id === 'done' ? '✓ Completed' : '→ Drag or click arrows'}
+                {col.id === "done" ? "✓ Completed" : "→ Drag or click arrows"}
               </div>
             </div>
           );
         })}
       </div>
-
     </div>
   );
 };
