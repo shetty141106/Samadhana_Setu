@@ -109,7 +109,7 @@ export const IssueMap = ({
     <div className="bg-white rounded-2xl border border-jh-earth-200 overflow-hidden shadow-jh-soft flex flex-col">
       {/* Map Control Toolbar */}
       <div className="p-3.5 bg-jh-earth-50 border-b border-jh-earth-200 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 min-w-0 max-w-full flex-wrap justify-end">
           <div className="w-8 h-8 rounded-lg bg-jh-green-900 text-white flex items-center justify-center shadow-xs">
             <MapPin className="w-4 h-4" />
           </div>
@@ -129,7 +129,7 @@ export const IssueMap = ({
           <select
             value={selectedDistrict}
             onChange={(e) => handleDistrictFilter(e.target.value)}
-            className="text-xs bg-white border border-jh-earth-200 rounded-lg px-2.5 py-1.5 font-medium text-jh-charcoal focus:outline-none focus:ring-2 focus:ring-jh-green-700"
+            className="min-w-0 max-w-full text-xs bg-white border border-jh-earth-200 rounded-lg px-2.5 py-1.5 font-medium text-jh-charcoal focus:outline-none focus:ring-2 focus:ring-jh-green-700"
           >
             <option value="all">All 24 Districts</option>
             {JHARKHAND_DISTRICTS.map((d) => (
@@ -142,7 +142,7 @@ export const IssueMap = ({
           <select
             value={activeCategory}
             onChange={(e) => setActiveCategory(e.target.value)}
-            className="text-xs bg-white border border-jh-earth-200 rounded-lg px-2.5 py-1.5 font-medium text-jh-charcoal focus:outline-none focus:ring-2 focus:ring-jh-green-700"
+            className="min-w-0 max-w-full text-xs bg-white border border-jh-earth-200 rounded-lg px-2.5 py-1.5 font-medium text-jh-charcoal focus:outline-none focus:ring-2 focus:ring-jh-green-700"
           >
             <option value="all">All Domains</option>
             <option value="water">Water & Rivers</option>

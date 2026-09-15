@@ -13,7 +13,6 @@ import {
   Clock,
   MapPin,
   Sparkles,
-  Award,
   ArrowRight,
 } from "lucide-react";
 
@@ -35,7 +34,11 @@ export const CitizenDashboard = ({ currentPath, onNavigate }) => {
     ["IN_RD", "CSR_FUNDED"].includes(String(i.status || "").toUpperCase()),
   ).length;
   const filteredIssues = issues.filter(
-    (i) => filterCategory === "all" || i.category === filterCategory,
+    (i) =>
+      filterCategory === "all" ||
+      String(i.category || "")
+        .toLowerCase()
+        .includes(filterCategory),
   );
 
   if (currentPath === "report-issue") {
@@ -232,13 +235,6 @@ export const CitizenDashboard = ({ currentPath, onNavigate }) => {
           subtitle="Ecological restoration complete"
           icon={CheckCircle2}
           color="terracotta"
-        />
-        <StatCard
-          title="Citizen Trust Score"
-          value={`${currentUser.reputationPoints || 480} pts`}
-          subtitle="Top 5% active contributor"
-          icon={Award}
-          color="gold"
         />
       </div>
 
