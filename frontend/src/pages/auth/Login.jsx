@@ -127,12 +127,6 @@ export const Login = ({ onNavigate }) => {
               })}
             </div>
           </div>
-          <div className="pt-5 mt-4 border-t border-jh-earth-200 flex items-center justify-between text-xs text-jh-earth-600">
-            <span>Govt of Jharkhand Unified SSO</span>
-            <span className="font-semibold text-jh-green-900">
-              Security Standard v2.4
-            </span>
-          </div>
         </div>
 
         <div className="md:col-span-6 p-6 sm:p-8 flex flex-col justify-between">

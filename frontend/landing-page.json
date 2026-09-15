@@ -100,7 +100,6 @@
     <nav class="hidden xl:flex items-center gap-7 text-[15px] font-semibold text-jh-green-900">
       <a href="#top" class="hover:text-jh-terracotta-600">Home</a>
       <a href="#how-it-works" class="hover:text-jh-terracotta-600">How It Works</a>
-      <a href="#focus-areas" class="hover:text-jh-terracotta-600">Key Focus Areas</a>
       <a href="#student" class="hover:text-jh-terracotta-600">For Universities</a>
       <a href="#industry" class="hover:text-jh-terracotta-600">For Industry &amp; CSR</a>
     </nav>
@@ -142,7 +141,7 @@
         <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 8.5A2.5 2.5 0 016.5 6h1.6l1-1.6A1.5 1.5 0 0110.4 3.6h3.2a1.5 1.5 0 011.3.8l1 1.6h1.6A2.5 2.5 0 0120 8.5v9A2.5 2.5 0 0117.5 20h-11A2.5 2.5 0 014 17.5v-9z"/><circle cx="12" cy="13" r="3.4"/></svg>
         Report an Issue
       </a>
-      <a href="#focus-areas" class="inline-flex items-center gap-2.5 border-2 border-jh-earth-100/70 hover:border-jh-earth-50 text-jh-earth-50 font-bold px-6 py-4 rounded-lg transition">
+      <a href="#" class="inline-flex items-center gap-2.5 border-2 border-jh-earth-100/70 hover:border-jh-earth-50 text-jh-earth-50 font-bold px-6 py-4 rounded-lg transition">
         <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
         Explore Projects
       </a>
@@ -445,7 +444,6 @@
         <ul class="space-y-2.5 text-sm">
           <li><a href="#" class="hover:text-white">About</a></li>
           <li><a href="#how-it-works" class="hover:text-white">How it Works</a></li>
-          <li><a href="#focus-areas" class="hover:text-white">Key Focus Areas</a></li>
           <li><a href="#contact" class="hover:text-white">Contact</a></li>
         </ul>
       </div>

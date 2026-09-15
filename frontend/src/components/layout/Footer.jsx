@@ -75,7 +75,7 @@ export const Footer = ({ onNavigate }) => {
               </li>
               <li>
                 <a
-                  href="#about"
+                  href="#"
                   className="hover:text-jh-terracotta-400 transition-colors"
                 >
                   About
@@ -83,19 +83,19 @@ export const Footer = ({ onNavigate }) => {
               </li>
               <li>
                 <a
-                  href="#how-it-works"
+                  href="#"
                   className="hover:text-jh-terracotta-400 transition-colors"
                 >
                   How It Works
                 </a>
               </li>
               <li>
-                <a
-                  href="#universities"
+                <button
+                  onClick={() => onNavigate && onNavigate("login")}
                   className="hover:text-jh-terracotta-400 transition-colors"
                 >
                   For Universities
-                </a>
+                </button>
               </li>
               <li>
                 <a
@@ -107,7 +107,7 @@ export const Footer = ({ onNavigate }) => {
               </li>
               <li>
                 <a
-                  href="#privacy"
+                  href="#"
                   className="hover:text-jh-terracotta-400 transition-colors"
                 >
                   Privacy Policy
@@ -138,7 +138,7 @@ export const Footer = ({ onNavigate }) => {
               </li>
               <li>
                 <a
-                  href="#success"
+                  href="#"
                   className="hover:text-jh-terracotta-400 transition-colors"
                 >
                   Success Stories
@@ -146,7 +146,7 @@ export const Footer = ({ onNavigate }) => {
               </li>
               <li>
                 <a
-                  href="#guidelines"
+                  href="#"
                   className="hover:text-jh-terracotta-400 transition-colors"
                 >
                   Guidelines
@@ -154,7 +154,7 @@ export const Footer = ({ onNavigate }) => {
               </li>
               <li>
                 <a
-                  href="#faqs"
+                  href="#"
                   className="hover:text-jh-terracotta-400 transition-colors"
                 >
                   FAQs
@@ -174,7 +174,7 @@ export const Footer = ({ onNavigate }) => {
           </div>
         </div>
         <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-jh-earth-400">
-          <p>© 2025 SamadhanSetu | A collaborative civic-innovation platform</p>
+          <p>© 2026 SamadhanSetu | A collaborative civic-innovation platform</p>
           <div className="flex items-center gap-4 text-[11px]">
             <span className="hover:text-jh-earth-200 cursor-pointer">
               Security

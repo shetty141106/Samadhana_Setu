@@ -128,18 +128,12 @@ export const Topbar = ({
               >
                 How It Works
               </a>
-              <a
-                href="#initiatives"
-                className="px-3 py-1.5 text-sm font-semibold text-jh-earth-800"
-              >
-                Key Focus Areas
-              </a>
-              <a
-                href="#universities"
+              <button
+                onClick={() => onNavigate && onNavigate("login")}
                 className="px-3 py-1.5 text-sm font-semibold text-jh-earth-800"
               >
                 For Universities
-              </a>
+              </button>
               <a
                 href="#industry"
                 className="px-3 py-1.5 text-sm font-semibold text-jh-earth-800"
