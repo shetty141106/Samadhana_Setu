@@ -11,11 +11,9 @@ import {
   CheckSquare,
   Users,
   Building2,
-  Coins,
   BarChart3,
   UserCog,
   User,
-  Award,
   Globe2,
   ClipboardList,
 } from "lucide-react";
@@ -57,12 +55,6 @@ export const Sidebar = ({
             label: "Mentored Projects",
             icon: GraduationCap,
           },
-          {
-            id: "milestone-approvals",
-            label: "Milestone Approvals",
-            icon: Award,
-          },
-          { id: "csr-connect", label: "Industry & CSR Grants", icon: Coins },
           { id: "profile", label: "Faculty Profile", icon: User },
         ];
       case ROLES.STUDENT:
@@ -86,8 +78,6 @@ export const Sidebar = ({
             label: "Browse R&D Projects",
             icon: Building2,
           },
-          { id: "my-sponsorships", label: "Active CSR Grants", icon: Coins },
-          { id: "csr-impact", label: "ESG Impact Analytics", icon: BarChart3 },
           { id: "profile", label: "Corporate Profile", icon: User },
         ];
       case ROLES.ADMIN:
