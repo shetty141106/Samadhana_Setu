@@ -6,5 +6,6 @@ import java.util.List;
 
 public interface TeamMemberRepository extends JpaRepository<TeamMember, Long> {
     List<TeamMember> findByProjectId(Long projectId);
+    List<TeamMember> findByUserId(Long userId);
     boolean existsByProjectIdAndUserId(Long projectId, Long userId);
 }

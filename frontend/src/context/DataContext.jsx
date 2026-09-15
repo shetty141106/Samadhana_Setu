@@ -101,20 +101,32 @@ export const DataProvider = ({ children }) => {
         const communityIssuePromise = isCitizen
           ? issueApi.getCommunityIssues()
           : Promise.resolve([]);
+        const projectList =
+          role === "faculty"
+            ? projectApi.listMentoredProjects()
+            : projectApi.listProjectsWithDetails();
         const [loadedIssues, loadedCommunityIssues, loadedProjects] =
           await Promise.all([
           issuePromise,
           communityIssuePromise,
-          projectApi.listProjectsWithDetails(),
+          projectList,
         ]);
         if (cancelled) return;
         setIssues(Array.isArray(loadedIssues) ? loadedIssues : []);
         setCommunityIssues(
           Array.isArray(loadedCommunityIssues) ? loadedCommunityIssues : [],
         );
-        setProjects(
-          Array.isArray(loadedProjects) ? loadedProjects.map(projectToUi) : [],
-        );
+        const hydratedProjects =
+          role === "faculty"
+            ? await Promise.all(
+                (Array.isArray(loadedProjects) ? loadedProjects : []).map(
+                  projectApi.hydrateProject,
+                ),
+              )
+            : Array.isArray(loadedProjects)
+              ? loadedProjects
+              : [];
+        setProjects(hydratedProjects.map(projectToUi));
         if (role === "admin" || role === "nodal") {
           try {
             setDashboard(await dashboardApi.getSummary());
@@ -122,7 +134,13 @@ export const DataProvider = ({ children }) => {
             setDashboard(null);
           }
         }
-        if (isIndustry || role === "admin") {
+        if (role === "faculty") {
+          try {
+            setSponsors(await projectApi.listMentoredSponsorships());
+          } catch {
+            setSponsors([]);
+          }
+        } else if (isIndustry || role === "admin") {
           try {
             setSponsors(await industryApi.listSponsorships());
           } catch {

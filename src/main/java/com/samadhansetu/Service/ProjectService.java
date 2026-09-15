@@ -21,6 +21,7 @@ public class ProjectService {
     private final TaskRepository tasks;
     private final UserRepository users;
     private final IssueRepository issues;
+    private final SponsorshipRepository sponsorships;
 
     @Transactional
     public ProjectResponseDto create(ProjectRequestDto r, Authentication authentication) {
@@ -55,6 +56,24 @@ public class ProjectService {
 
     public List<ProjectResponseDto> all() {
         return projects.findAll().stream().map(this::map).toList();
+    }
+
+    public List<ProjectResponseDto> mentored(Authentication authentication) {
+        User faculty = currentUser(authentication);
+        if (!hasRole(authentication, "FACULTY"))
+            throw new AccessDeniedException("Faculty account required");
+        return members.findByUserId(faculty.getId()).stream()
+                .map(TeamMember::getProject).distinct().map(this::map).toList();
+    }
+
+    public List<SponsorshipResponseDto> mentoredSponsorships(Authentication authentication) {
+        User faculty = currentUser(authentication);
+        if (!hasRole(authentication, "FACULTY"))
+            throw new AccessDeniedException("Faculty account required");
+        return members.findByUserId(faculty.getId()).stream()
+                .map(TeamMember::getProject).distinct()
+                .flatMap(p -> sponsorships.findByProjectId(p.getId()).stream())
+                .map(this::sponsorshipMap).toList();
     }
 
     public List<ProjectResponseDto> publicAll() {
@@ -285,5 +304,14 @@ public class ProjectService {
                 .assignedToId(t.getAssignedTo() == null ? null : t.getAssignedTo().getId())
                 .assignedToName(t.getAssignedTo() == null ? null : t.getAssignedTo().getName()).title(t.getTitle())
                 .description(t.getDescription()).dueDate(t.getDueDate()).status(t.getStatus()).build();
+    }
+
+    private SponsorshipResponseDto sponsorshipMap(Sponsorship s) {
+        return SponsorshipResponseDto.builder().id(s.getId())
+                .organizationId(s.getOrganization().getId())
+                .organizationName(s.getOrganization().getName())
+                .projectId(s.getProject().getId())
+                .projectTitle(s.getProject().getTitle())
+                .amount(s.getAmount()).status(s.getStatus()).build();
     }
 }

@@ -18,6 +18,8 @@ public class ProjectController {
         return ResponseEntity.status(HttpStatus.CREATED).body(service.create(r, authentication));
     }
     @GetMapping public List<ProjectResponseDto> all(){return service.all();}
+    @GetMapping("/mentored") public List<ProjectResponseDto> mentored(Authentication authentication){return service.mentored(authentication);}
+    @GetMapping("/mentored/sponsorships") public List<SponsorshipResponseDto> mentoredSponsorships(Authentication authentication){return service.mentoredSponsorships(authentication);}
     @GetMapping("/public") public List<ProjectResponseDto> publicAll(){return service.publicAll();}
     @GetMapping("/{id}") public ProjectResponseDto get(@PathVariable Long id){return service.get(id);}
     @GetMapping("/university/{id}") public List<ProjectResponseDto> byUniversity(@PathVariable Long id){return service.byUniversity(id);}
