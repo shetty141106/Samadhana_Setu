@@ -43,8 +43,7 @@ export const PublicProjectsPage = ({ onNavigate }) => {
             Explore R&D Projects
           </h1>
           <p className="mt-3 max-w-2xl text-sm text-jh-earth-200 leading-relaxed">
-            Browse projects submitted through the platform. Project information
-            is loaded directly from the backend.
+            Browse projects submitted through the platform.
           </p>
         </div>
       </section>
