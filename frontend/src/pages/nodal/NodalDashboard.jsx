@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { useData } from "../../context/DataContext";
 import { StatCard } from "../../components/ui/Card";
@@ -23,21 +23,19 @@ export const NodalDashboard = ({ currentPath, onNavigate }) => {
   const [selectedIssue, setSelectedIssue] = useState(null);
   const [projectError, setProjectError] = useState("");
   const [creatingProjectId, setCreatingProjectId] = useState(null);
-  const [activeTab, setActiveTab] = useState(
-    currentPath === "assigned-issues" ? "verified" : "pending",
-  );
-
-  useEffect(() => {
-    if (currentPath === "assigned-issues") setActiveTab("verified");
-    if (currentPath === "verify-issues") setActiveTab("pending");
-  }, [currentPath]);
+  const [activeTab, setActiveTab] = useState("pending");
 
   const pendingIssues = issues.filter(
     (i) => String(i.status || "").toUpperCase() === "SUBMITTED",
   );
-  const verifiedIssues = issues.filter(
-    (i) =>
-      ["IN_RD"].includes(String(i.status || "").toUpperCase()),
+  const nodalVerifiedIssues = issues.filter(
+    (i) => String(i.status || "").toUpperCase() === "VERIFIED",
+  );
+  const assignedIssues = issues.filter(
+    (i) => String(i.status || "").toUpperCase() === "IN_RD",
+  );
+  const resolvedIssues = issues.filter(
+    (i) => String(i.status || "").toUpperCase() === "RESOLVED",
   );
   const criticalCount = issues.filter(
     (i) =>
@@ -78,8 +76,12 @@ export const NodalDashboard = ({ currentPath, onNavigate }) => {
     );
   }
 
-  const visibleIssues =
-    activeTab === "pending" ? pendingIssues : verifiedIssues;
+  const visibleIssues = {
+    pending: pendingIssues,
+    verified: nodalVerifiedIssues,
+    assigned: assignedIssues,
+    resolved: resolvedIssues,
+  }[activeTab];
   const handleCreateProject = async (event, issue) => {
     event.stopPropagation();
     setProjectError("");
@@ -182,41 +184,24 @@ export const NodalDashboard = ({ currentPath, onNavigate }) => {
         )}
         <div className="p-4 bg-jh-earth-50 border-b border-jh-earth-200 flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            {currentPath !== "verify-issues" &&
-              currentPath !== "assigned-issues" && (
-                <>
-                  <button
-                    onClick={() => setActiveTab("pending")}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                      activeTab === "pending"
-                        ? "bg-jh-green-900 text-white shadow-xs"
-                        : "text-jh-earth-700 hover:bg-jh-earth-200"
-                    }`}
-                  >
-                    Pending Verification ({pendingIssues.length})
-                  </button>
-                  <button
-                    onClick={() => setActiveTab("verified")}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                      activeTab === "verified"
-                        ? "bg-jh-green-900 text-white shadow-xs"
-                        : "text-jh-earth-700 hover:bg-jh-earth-200"
-                    }`}
-                  >
-                    Assigned to R&D ({verifiedIssues.length})
-                  </button>
-                </>
-              )}
-            {currentPath === "verify-issues" && (
-              <span className="px-3 py-1.5 rounded-xl text-xs font-bold bg-jh-green-900 text-white">
-                Pending Verification ({pendingIssues.length})
-              </span>
-            )}
-            {currentPath === "assigned-issues" && (
-              <span className="px-3 py-1.5 rounded-xl text-xs font-bold bg-jh-green-900 text-white">
-                Assigned to R&D ({verifiedIssues.length})
-              </span>
-            )}
+            {[
+              ["pending", "Pending Verification", pendingIssues.length],
+              ["verified", "Verified by Nodal", nodalVerifiedIssues.length],
+              ["assigned", "Assigned to R&D", assignedIssues.length],
+              ["resolved", "Resolved Cases", resolvedIssues.length],
+            ].map(([tab, label, count]) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                  activeTab === tab
+                    ? "bg-jh-green-900 text-white shadow-xs"
+                    : "text-jh-earth-700 hover:bg-jh-earth-200"
+                }`}
+              >
+                {label} ({count})
+              </button>
+            ))}
           </div>
           <span className="text-xs text-jh-earth-600 font-medium">
             Click any row to open the verification and assignment modal

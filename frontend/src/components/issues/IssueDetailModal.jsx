@@ -362,13 +362,9 @@ export const IssueDetailModal = ({ issue, isOpen, onClose, onNavigate }) => {
                     onChange={(e) => setTriageStatus(e.target.value)}
                     className="w-full text-xs p-2 bg-white border border-jh-green-300 rounded-lg"
                   >
-                    <option value="VERIFIED">
-                      Verify & Approve for Solution
-                    </option>
-                    <option value="IN_RD">
-                      Direct Assign to University R&D
-                    </option>
-                    <option value="RESOLVED">Mark Resolved on Ground</option>
+                    <option value="VERIFIED">Verified on Ground</option>
+                    <option value="IN_RD">Assigned to University for R&D</option>
+                    <option value="RESOLVED">Completed on Ground</option>
                     <option value="REJECTED">Reject / Duplicate</option>
                   </select>
                 </div>

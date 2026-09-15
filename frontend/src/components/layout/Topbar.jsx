@@ -73,7 +73,7 @@ export const Topbar = ({
       type === "Issue"
         ? {
             [ROLES.CITIZEN]: "my-issues",
-            [ROLES.NODAL]: "verify-issues",
+            [ROLES.NODAL]: "nodal",
             [ROLES.ADMIN]: "heatmaps",
           }[currentRole] || "admin"
         : {
@@ -81,7 +81,7 @@ export const Topbar = ({
             [ROLES.STUDENT]: "kanban",
             [ROLES.INDUSTRY]: "browse-projects",
             [ROLES.ADMIN]: "admin",
-            [ROLES.NODAL]: "assigned-issues",
+            [ROLES.NODAL]: "created-projects",
             [ROLES.CITIZEN]: "citizen",
           }[currentRole] || currentRole;
     setSearchQuery("");

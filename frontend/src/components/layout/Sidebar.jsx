@@ -18,7 +18,6 @@ import {
   User,
   Award,
   Globe2,
-  FileCheck2,
   ClipboardList,
 } from "lucide-react";
 
@@ -47,13 +46,8 @@ export const Sidebar = ({
       case ROLES.NODAL:
         return [
           { id: "nodal", label: "Verification Desk", icon: LayoutDashboard },
-          {
-            id: "verify-issues",
-            label: "Pending Verification",
-            icon: ShieldCheck,
-          },
+          { id: "nodal", label: "Verification Desk", icon: ShieldCheck },
           { id: "area-map", label: "District GIS Map", icon: Map },
-          { id: "assigned-issues", label: "Assigned to R&D", icon: FileCheck2 },
           { id: "created-projects", label: "Created Projects", icon: ClipboardList },
           { id: "profile", label: "Officer Profile", icon: User },
         ];
